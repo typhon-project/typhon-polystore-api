@@ -10,13 +10,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.clms.typhonapi.models.*;
 import com.clms.typhonapi.storage.ModelStorage;
+import com.clms.typhonapi.storage.UserStorage;
 
 @RestController
-public class UserController {
+public class MainController {
 
     @RequestMapping(path = "/user/register", method = RequestMethod.POST)
-    public User get(@RequestBody User u) {
-        return u;
+    public void add(@RequestBody User u) {
+        UserStorage.addUser(u);
     }
     
     @RequestMapping(path = "/api/model/dl", method = RequestMethod.POST)
