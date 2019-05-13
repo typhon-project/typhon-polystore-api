@@ -1,25 +1,57 @@
 package com.clms.typhonapi.controllers;
 
-import java.util.Map;
-
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.clms.typhonapi.models.*;
+import com.clms.typhonapi.models.User;
 import com.clms.typhonapi.storage.ModelStorage;
 import com.clms.typhonapi.storage.UserStorage;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+import java.util.Optional;
 
 @RestController
 public class MainController {
 
+
+    @Autowired
+    private UserStorage userRepository;
+
     @RequestMapping(path = "/user/register", method = RequestMethod.POST)
     public void add(@RequestBody User u) {
-        UserStorage.addUser(u);
+        userRepository.save(u);
     }
-    
+
+    @RequestMapping(path = "/user/{userName}", method = RequestMethod.GET)
+    public ResponseEntity get(@PathVariable String userName) {
+        Optional<User> user = userRepository.findById(userName);
+        if(user.get()!=null){
+            return ResponseEntity.status(200).body(user.get());
+        }
+        else{
+            return ResponseEntity.status(404).body(null);
+        }
+    }
+
+    @RequestMapping(path = "/user/{userName}", method = RequestMethod.POST)
+    public ResponseEntity update(@PathVariable String userName, @RequestBody User u) {
+        Optional<User> user = userRepository.findById(userName);
+        if(user.get()!=null){
+            userRepository.save(u);
+            return ResponseEntity.status(200).body(u);
+        }
+        else{
+            return ResponseEntity.status(404).body(null);
+        }
+    }
+
+    @RequestMapping(path = "/user/{userName}", method = RequestMethod.DELETE)
+    public void delete(@PathVariable String userName) {
+
+    }
+
+
     @RequestMapping(path = "/api/model/dl", method = RequestMethod.POST)
     public void setTyphoneDLModel(@RequestBody Map<String, String> json) {
     	ModelStorage.addDlModel(json.get("name"), json.get("contents"));
@@ -38,5 +70,19 @@ public class MainController {
     @RequestMapping("/api/model/ml")
     public String getTyphonMLModel() {
     	return ModelStorage.getMlModel();
+    }
+
+    @RequestMapping(path = "/api/query", method = RequestMethod.POST)
+    public ResponseEntity executeQuery(@RequestBody String query){
+        //Run the query on the TQL compiler and pass the result to the body
+        ResponseEntity response=ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(null);
+        return response;
+    }
+
+    @RequestMapping(path = "/api/evolve", method = RequestMethod.POST)
+    public ResponseEntity executeQuery(@RequestBody Map<String,String> json){
+        //Run consume the evolution toolset
+        ResponseEntity response=ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(null);
+        return response;
     }
 }

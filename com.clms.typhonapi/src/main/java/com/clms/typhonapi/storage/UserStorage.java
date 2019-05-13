@@ -1,18 +1,13 @@
 package com.clms.typhonapi.storage;
 
 import com.clms.typhonapi.models.User;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
-public class UserStorage extends FileStorage {
 
-	public static void addUser(User u) {
-		
-	}
-	
-	public static void updateUser(String userName, User u) {
-		
-	}
-	
-	public static User getUser(String userName) {
-		return null;
-	}
+public interface UserStorage extends MongoRepository<User, String> {
+
+	public void addUser(User u);
+	public User updateUser(String userName, User u);
+	public User getUser(String userName) ;
+	public void deleteUser(String userName);
 }
