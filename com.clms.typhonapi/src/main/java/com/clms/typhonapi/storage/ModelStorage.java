@@ -32,7 +32,7 @@ public class ModelStorage extends FileStorage {
 	private static String getModel(String extention) {
 		String latestPath = getLatestPath();
 		
-		for (File f : new File(latestPath).listFiles()) {
+			for (File f : new File(latestPath).listFiles()) {
 		      if (getFileExtention(f).equals(extention)) {
 		    	  return readFile(f);
 		      }

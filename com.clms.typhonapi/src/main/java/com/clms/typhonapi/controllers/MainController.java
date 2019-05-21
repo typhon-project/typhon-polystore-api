@@ -80,9 +80,41 @@ public class MainController {
     }
 
     @RequestMapping(path = "/api/evolve", method = RequestMethod.POST)
-    public ResponseEntity executeQuery(@RequestBody Map<String,String> json){
+    public ResponseEntity Evolve(@RequestBody Map<String,String> json){
         //Run consume the evolution toolset
         ResponseEntity response=ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(null);
         return response;
     }
+
+    @RequestMapping(path = "/api/backup", method = RequestMethod.POST)
+    public ResponseEntity Backup(@RequestBody Map<String,String> json){
+        //Run consume the evolution toolset
+        ResponseEntity response;
+        if(!json.containsKey("db_name") || !json.containsKey("db_type") || !json.containsKey("backup_name")){
+            response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            return response;
+        }
+        else{
+            response=ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(null);
+            return response;
+        }
+
+    }
+
+
+    @RequestMapping(path = "/api/restore", method = RequestMethod.POST)
+    public ResponseEntity Restore(@RequestBody Map<String,String> json){
+        //Run consume the evolution toolset
+        ResponseEntity response;
+        if(!json.containsKey("db_name") || !json.containsKey("db_type") || !json.containsKey("backup_name")){
+            response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            return response;
+        }
+        else{
+            response=ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(null);
+            return response;
+        }
+
+    }
+
 }
