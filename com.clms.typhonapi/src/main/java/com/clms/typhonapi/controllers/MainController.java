@@ -1,5 +1,6 @@
 package com.clms.typhonapi.controllers;
 
+import com.clms.typhonapi.Utils.DbUtils;
 import com.clms.typhonapi.models.User;
 import com.clms.typhonapi.storage.ModelStorage;
 import com.clms.typhonapi.storage.UserStorage;
@@ -88,15 +89,24 @@ public class MainController {
 
     @RequestMapping(path = "/api/backup", method = RequestMethod.POST)
     public ResponseEntity Backup(@RequestBody Map<String,String> json){
-        //Run consume the evolution toolset
         ResponseEntity response;
-        if(!json.containsKey("db_name") || !json.containsKey("db_type") || !json.containsKey("backup_name")){
+        if(!json.containsKey("db_name") || !json.containsKey("db_type")){
             response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
             return response;
         }
         else{
-            response=ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(null);
-            return response;
+            boolean fuck = (json.get("db_type").equals("mariadb"));
+            if(json.get("db_type").equals("mariadb")) {
+                if (DbUtils.MariaBackupProcess(json.get("host"), json.get("port"), json.get("username"), json.get("password"), json.get("db_name")).equals("OK"))
+                    response = ResponseEntity.status(HttpStatus.OK).body("Backup Executed successfully!");
+                else
+                    response = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+                return response;
+            }
+            else{
+                response = ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(json.get("db_type"));
+                return response;
+            }
         }
 
     }
@@ -111,8 +121,19 @@ public class MainController {
             return response;
         }
         else{
-            response=ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(null);
-            return response;
+            if(json.get("db_type").equals("mariadb")){
+                String status=DbUtils.MariaRestore(json.get("host"),json.get("port"),json.get("username"),json.get("password"),json.get("db_name"),json.get("backup_name"));
+                if(!status.equals("OK")){
+                    response=ResponseEntity.status(HttpStatus.BAD_REQUEST).body(status);
+                    return response;
+                }
+                else
+                    return ResponseEntity.status(HttpStatus.OK).body(null);
+            }
+            else{
+                response=ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(null);
+                return response;
+            }
         }
 
     }

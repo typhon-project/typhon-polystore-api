@@ -2,4 +2,4 @@ spring.profiles: integration
 spring.data.mongodb.uri: mongodb://admin:admin@0.0.0.0:27017/polystoredb
 ---
 spring.profiles: production
-spring.data.mongodb.uri: mongodb://admin:admin@mongostore:27012/admin
+spring.data.mongodb.uri: mongodb://admin:admin@mongostore:27017/admin

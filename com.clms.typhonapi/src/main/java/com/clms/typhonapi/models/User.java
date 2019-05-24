@@ -6,7 +6,16 @@ public class User {
 
     @Id
     private String username;
-    private String first_name;
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    private String password;
 
     public User () {}
 
@@ -18,7 +27,4 @@ public class User {
         this.username = username;
     }
 
-    public String getFirst_name() {return first_name;}
-
-    public void setFirst_name(String first_name) {this.first_name = first_name;}
 }
