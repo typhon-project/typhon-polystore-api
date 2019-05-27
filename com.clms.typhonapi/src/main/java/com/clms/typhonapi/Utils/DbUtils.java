@@ -47,8 +47,9 @@ public class DbUtils {
         if(!f.exists() || f.isDirectory()) {
             return "Backup does not exist! ";
         }
-        pb.command("mysql","--host="+host,"-p "+port,"--user="+user,"--password="+password,database_name,"<",backup_name);
-        pb.directory(new File(System.getProperty("user.home")));
+        pb.command("mysql","--host="+host,"--port="+port,"--user="+user,"--password="+password, database_name,"--execute=source "+"/backups/"+backup_name);
+        System.out.println("" + pb.command());
+        pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
         pb.redirectError(ProcessBuilder.Redirect.INHERIT);
 
         Process process;

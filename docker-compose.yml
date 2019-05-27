@@ -32,5 +32,3 @@ services:
       - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: admin
-    volumes:
-      - "./mariatestdata:/var/lib/mysql"
