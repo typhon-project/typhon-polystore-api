@@ -1,4 +1,5 @@
-export class Service {
+export interface Service {
   name: string;
   status: string;
+  url?: string;
 }

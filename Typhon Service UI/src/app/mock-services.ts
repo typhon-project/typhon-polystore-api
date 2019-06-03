@@ -1,7 +1,7 @@
 import { Service } from './service';
 
 export const SERVICES: Service[] = [
-  { name: 'userAPI', status: 'WORKING' },
+  { name: 'Manage users', status: 'WORKING', url: "users" },
   { name: 'queryAPI', status: 'NOT IMPLEMENTED' },
   { name: 'modelAPI', status: 'WORKING' },
   { name: 'queryAPI', status: 'NOT IMPLEMENTED'},

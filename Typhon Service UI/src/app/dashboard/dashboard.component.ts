@@ -23,7 +23,9 @@ export class DashboardComponent implements OnInit {
 
   onSelect(service: Service) {
     this.selectedService = service;
-    if (this.selectedService.name === 'backupAPI') {
+    if (this.selectedService.url != null) {
+      this.router.navigate(['/' + this.selectedService.url]);
+    } else if (this.selectedService.name === 'backupAPI') {
       this.router.navigate(['/backup']);
     } else {
       this.router.navigate(['/detail/' + this.selectedService.name]);
