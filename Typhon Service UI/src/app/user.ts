@@ -1,3 +1,3 @@
-class User {
-    username: string;
+export class User {
+    public username: string;
 }
