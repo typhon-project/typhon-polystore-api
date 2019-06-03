@@ -29,7 +29,7 @@ public class MainController {
     @RequestMapping(path = "/users", method = RequestMethod.GET)
     public List<User> all() {
     	return userRepository.findAll();
-        
+
     }
 
     @RequestMapping(path = "/user/{userName}", method = RequestMethod.GET)
