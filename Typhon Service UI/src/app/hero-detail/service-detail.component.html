@@ -1,0 +1,10 @@
+<div>
+  <h2>{{service.name | uppercase}} Details</h2>
+  <div><span>status: </span>{{service.status}}</div>
+  <div>
+    <label>name:
+      <input [(ngModel)]="service.name" placeholder="name"/>
+    </label>
+  </div>
+</div>
+

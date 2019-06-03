@@ -1,0 +1,46 @@
+<div>
+  <h2>Backup API</h2>
+  <div><span>status: </span>WORKING</div>
+  <div>
+    <span></span>
+    <table>
+      <tr>
+    <label>Database Name:
+      <input [(ngModel)]="database_name" placeholder="testdb"/>
+    </label>
+      </tr>
+    <tr>
+    <label>Database Type:
+    <input [(ngModel)]="database_type" placeholder="mariadb"/>
+  </label>
+    </tr>
+      <tr>
+    <label>Database Host:
+      <input [(ngModel)]="host" placeholder="test.mariadb"/>
+    </label>
+      </tr>
+      <tr>
+        <label>Database Port:
+          <input [(ngModel)]="port" placeholder="3306"/>
+        </label>
+      </tr>
+      <tr>
+        <label>Database Username:
+          <input [(ngModel)]="username" placeholder="root"/>
+        </label>
+      </tr>
+      <tr>
+        <label>Database Password:
+          <input type="password" [(ngModel)]="password" placeholder="admin"/>
+        </label>
+      </tr>
+      <tr>
+        <label>Backup filename:
+          <input [(ngModel)]="backup_name" placeholder="testdb_backup"/>
+        </label>
+      </tr>
+      <tr><button (click)="callAPI()">Click me!</button></tr>
+    </table>
+  </div>
+</div>
+

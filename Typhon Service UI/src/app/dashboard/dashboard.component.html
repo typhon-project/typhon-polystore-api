@@ -1,0 +1,11 @@
+<h3>Current Services</h3>
+<div class="grid grid-pad">
+  <a *ngFor="let service of services" class="col-1-4"
+     [class.selected]="service === selectedService"
+     (click)="onSelect(service)">
+    <div class="module hero">
+      <h4>{{service.name}}</h4>
+    </div>
+  </a>
+</div>
+

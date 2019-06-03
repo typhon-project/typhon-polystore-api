@@ -95,12 +95,9 @@ public class MainController {
             return response;
         }
         else{
-            boolean fuck = (json.get("db_type").equals("mariadb"));
             if(json.get("db_type").equals("mariadb")) {
-                if (DbUtils.MariaBackupProcess(json.get("host"), json.get("port"), json.get("username"), json.get("password"), json.get("db_name")).equals("OK"))
-                    response = ResponseEntity.status(HttpStatus.OK).body("Backup Executed successfully!");
-                else
-                    response = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+                    String filename=DbUtils.MariaBackupProcess(json.get("host"), json.get("port"), json.get("username"), json.get("password"), json.get("db_name"), json.get("backup_name"));
+                    response = ResponseEntity.status(HttpStatus.OK).body("Backup "+filename+" Executed successfully!");
                 return response;
             }
             else{

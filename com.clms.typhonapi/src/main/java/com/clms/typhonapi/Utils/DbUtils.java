@@ -7,16 +7,16 @@ import java.io.IOException;
 public class DbUtils {
 
 
-    public static String MariaBackupProcess(String host,String port,String user,String password,String database_name){
+    public static String MariaBackupProcess(String host, String port, String user, String password, String database_name, String backup_name){
         ProcessBuilder pb = new ProcessBuilder();
         File backupFile;
         File f = new File("/backups/");
         if(f.exists() && f.isDirectory()) {
-             backupFile = new File("/backups/"+"maria_"+database_name+"_"+DateTime.now().toString("ddMMyyyy")+".sql");
+             backupFile = new File("/backups/"+backup_name+"maria_"+database_name+"_"+DateTime.now().toString("ddMMyyyy")+".sql");
         }
         else{
             boolean direcot = new File("/backups/").mkdir();
-            backupFile=new File("/backups/"+"maria_"+database_name+"_"+DateTime.now().toString("ddMMyyyy")+".sql");
+            backupFile=new File("/backups/"+backup_name+"maria_"+database_name+"_"+DateTime.now().toString("ddMMyyyy")+".sql");
         }
 
 
@@ -37,7 +37,7 @@ public class DbUtils {
             backupFile.delete();
             e.printStackTrace();
         }
-        return "OK";
+        return backupFile.getName();
     }
 
 
