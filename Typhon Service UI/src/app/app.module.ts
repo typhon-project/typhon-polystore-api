@@ -11,6 +11,7 @@ import { MessagesComponent }    from './messages/messages.component';
 import {ServicesComponent} from './heroes/services';
 import { BackupComponent } from './backup/backup.component';
 import { RestoreComponent } from './restore/restore.component';
+import { UserComponent } from './user/user.component';
 
 @NgModule({
   imports: [
@@ -31,6 +32,7 @@ import { RestoreComponent } from './restore/restore.component';
     MessagesComponent,
     BackupComponent,
     RestoreComponent,
+    UserComponent,
   ],
   bootstrap: [ AppComponent ]
 })

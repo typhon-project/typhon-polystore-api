@@ -1,0 +1,17 @@
+
+<h2>Manage Users</h2>
+
+<table class="table table-bordered table-hover">
+  <thead>
+    <tr>
+      <th>
+        Username
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let user of users">
+      <td>{{ user.username }}</td>
+    </tr>
+  </tbody>
+</table>
