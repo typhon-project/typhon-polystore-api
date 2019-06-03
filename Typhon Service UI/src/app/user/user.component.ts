@@ -12,6 +12,7 @@ export class UserComponent implements OnInit {
   users: User[] = [];
   editingUser: User = null;
   newUser: boolean;
+  private editingUserName: string;
 
   constructor(private api: ApiService) { }
 
@@ -29,6 +30,7 @@ export class UserComponent implements OnInit {
   edit(user: User) {
     this.newUser = false;
     this.editingUser = user;
+    this.editingUserName = user.username;
   }
 
   cancel() {
@@ -41,7 +43,9 @@ export class UserComponent implements OnInit {
         this.userSaved();
       });
     } else {
-
+      this.api.updateUser(this.editingUserName, this.editingUser).subscribe(() => {
+        this.userSaved();
+      });
     }
   }
 

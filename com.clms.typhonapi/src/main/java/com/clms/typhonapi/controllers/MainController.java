@@ -45,9 +45,11 @@ public class MainController {
 
     @RequestMapping(path = "/user/{userName}", method = RequestMethod.POST)
     public ResponseEntity update(@PathVariable String userName, @RequestBody User u) {
-        Optional<User> user = userRepository.findById(userName);
-        if(user.get()!=null){
-            userRepository.save(u);
+    	User user = userRepository.findById(userName).get();
+        if(user != null){
+        	user.setUsername(u.getUsername());
+        	user.setPassword(u.getPassword());
+            userRepository.save(user);
             return ResponseEntity.status(200).body(u);
         }
         else{

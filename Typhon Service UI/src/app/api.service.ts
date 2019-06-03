@@ -24,13 +24,13 @@ export class ApiService {
 
   getUsers(): Observable<User[]> {
     return this.http.get<User[]>(this.getApiPath("/users"));
-    //.pipe(
-      //catchError(this.handleError)
-    //);
-    //return of([{ username: "nemo" }, { username: "lakis" }]);
   }
 
   addUser(user: User): Observable<void> {
     return this.http.post<void>(this.getApiPath("/user/register"), JSON.stringify(user), httpOptions);
+  }
+
+  updateUser(username: string, user: User): Observable<void> {
+    return this.http.post<void>(this.getApiPath("/user/" + username), JSON.stringify(user), httpOptions);
   }
 }
