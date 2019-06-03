@@ -13,6 +13,8 @@ services:
       - "8080:8080"
     volumes:
      - "./models:/models"
+    depends_on:
+      - mongostore
   mongostore:
     image: mongo:latest
     hostname: polystore.api.db

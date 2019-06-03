@@ -1,15 +1,14 @@
 package com.clms.typhonapi.controllers;
 
-import com.clms.typhonapi.utils.DbUtils;
 import com.clms.typhonapi.models.User;
 import com.clms.typhonapi.storage.ModelStorage;
 import com.clms.typhonapi.storage.UserStorage;
+import com.clms.typhonapi.utils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -29,12 +28,8 @@ public class MainController {
     
     @RequestMapping(path = "/users", method = RequestMethod.GET)
     public List<User> all() {
-    	ArrayList<User> users = new ArrayList<User>();
-    	User u1 = new User();
-    	u1.setUsername("lakis");
-    	users.add(u1);
-    	return users;
-        //return userRepository.findAll();
+    	return userRepository.findAll();
+        
     }
 
     @RequestMapping(path = "/user/{userName}", method = RequestMethod.GET)
