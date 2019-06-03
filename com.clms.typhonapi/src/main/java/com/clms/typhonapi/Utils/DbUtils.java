@@ -1,4 +1,4 @@
-package com.clms.typhonapi.Utils;
+package com.clms.typhonapi.utils;
 
 import org.joda.time.DateTime;
 

@@ -1,6 +1,6 @@
 package com.clms.typhonapi.controllers;
 
-import com.clms.typhonapi.Utils.DbUtils;
+import com.clms.typhonapi.utils.DbUtils;
 import com.clms.typhonapi.models.User;
 import com.clms.typhonapi.storage.ModelStorage;
 import com.clms.typhonapi.storage.UserStorage;
