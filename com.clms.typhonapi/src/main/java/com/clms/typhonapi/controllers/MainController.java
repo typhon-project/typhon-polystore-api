@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class MainController {
 
 
@@ -25,6 +25,16 @@ public class MainController {
     @RequestMapping(path = "/user/register", method = RequestMethod.POST)
     public void add(@RequestBody User u) {
         userRepository.save(u);
+    }
+    
+    @RequestMapping(path = "/users", method = RequestMethod.GET)
+    public List<User> all() {
+    	ArrayList<User> users = new ArrayList<User>();
+    	User u1 = new User();
+    	u1.setUsername("lakis");
+    	users.add(u1);
+    	return users;
+        //return userRepository.findAll();
     }
 
     @RequestMapping(path = "/user/{userName}", method = RequestMethod.GET)
