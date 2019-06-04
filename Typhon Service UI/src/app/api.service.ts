@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { User } from './user';
+import { Database } from './database';
 
 const httpOptions = {
   headers: new HttpHeaders({
@@ -20,6 +21,17 @@ export class ApiService {
 
   getApiPath(path: string) {
     return "http://localhost:8080" + path;
+  }
+
+  getDatabases(): Observable<Database[]> {
+    return this.http.get<Database[]>(this.getApiPath("/api/databases"));
+  }
+
+  backupDatabase(db: Database, backupName: string): void {
+    var data = db as any;
+    data[":backup_name"] = backupName;
+    console.log(JSON.stringify(data));
+    this.http.post<void>(this.getApiPath("/api/backup"), JSON.stringify(data), httpOptions);
   }
 
   getUsers(): Observable<User[]> {

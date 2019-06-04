@@ -11,6 +11,7 @@ import { BackupComponent } from './backup/backup.component';
 import { RestoreComponent } from './restore/restore.component';
 import { UserComponent } from './user/user.component';
 import { ModelsComponent } from './models/models.component';
+import { DatabasesComponent } from './databases/databases.component';
 
 @NgModule({
   imports: [
@@ -31,6 +32,7 @@ import { ModelsComponent } from './models/models.component';
     RestoreComponent,
     UserComponent,
     ModelsComponent,
+    DatabasesComponent,
   ],
   bootstrap: [ AppComponent ]
 })

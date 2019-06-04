@@ -1,0 +1,25 @@
+<h2>Databases</h2>
+
+<table class="table table-bordered table-hover table-condensed">
+  <thead>
+    <tr>
+      <th style="width: 70px">Status</th>
+      <th>Name</th>
+      <th>Type</th>
+      <th style="width: 200px">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let db of databases">
+      <td>
+        <span class="db-status" [ngClass]="{ 'up': db.status == 'ACTIVE', 'down': db.status == 'INACTIVE' }"></span>
+      </td>
+      <td>{{ db.name }}</td>
+      <td>{{ db.type }}</td>
+      <td>
+        <button class="btn btn-success btn-sm" (click)="backup(db)">Backup</button>
+        <button class="btn btn-success btn-sm">Restore</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
