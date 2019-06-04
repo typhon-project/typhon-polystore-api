@@ -12,6 +12,7 @@ import {ServicesComponent} from './heroes/services';
 import { BackupComponent } from './backup/backup.component';
 import { RestoreComponent } from './restore/restore.component';
 import { UserComponent } from './user/user.component';
+import { ModelsComponent } from './models/models.component';
 
 @NgModule({
   imports: [
@@ -33,6 +34,7 @@ import { UserComponent } from './user/user.component';
     BackupComponent,
     RestoreComponent,
     UserComponent,
+    ModelsComponent,
   ],
   bootstrap: [ AppComponent ]
 })
