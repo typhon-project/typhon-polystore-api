@@ -30,7 +30,6 @@ export class ApiService {
   backupDatabase(db: Database, backupName: string): void {
     var data = db as any;
     data[":backup_name"] = backupName;
-    console.log(JSON.stringify(data));
     this.http.post<void>(this.getApiPath("/api/backup"), JSON.stringify(data), httpOptions);
   }
 

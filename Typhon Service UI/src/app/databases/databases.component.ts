@@ -22,7 +22,6 @@ export class DatabasesComponent implements OnInit {
   }
 
   backup(db: Database) {
-    console.log("asdsadsadsaD");
     this.api.backupDatabase(db, db.name + "_bak");
   }
 }
