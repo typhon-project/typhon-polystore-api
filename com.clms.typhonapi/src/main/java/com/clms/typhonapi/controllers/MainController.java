@@ -93,9 +93,15 @@ public class MainController {
         dbs.add(db2);
         return ResponseEntity.status(200).body(dbs);
     }
-    @RequestMapping("/api/model/dl")
-    public String getTyphonDLModel() {
-    	return ModelStorage.getDlModel();
+    
+    @RequestMapping(path = "/api/model/dl", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public @ResponseBody ResponseEntity<byte[]> getTyphonDLModel() {
+    	HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("Content-disposition", "attachment; filename=model.tml");
+     
+        return ResponseEntity.ok()
+          .headers(responseHeaders)
+          .body(ModelStorage.getDlModel().getBytes());
     }
     
     @RequestMapping(path = "/api/model/ml", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
