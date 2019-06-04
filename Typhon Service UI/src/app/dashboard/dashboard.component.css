@@ -50,6 +50,7 @@ h4 {
 }
 @media (max-width: 600px) {
   .module {
+    font-family: 'Open Sans','sans-serif';
     font-size: 10px;
     max-height: 75px; }
 }

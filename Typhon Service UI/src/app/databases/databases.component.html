@@ -15,7 +15,7 @@
         <span class="db-status" [ngClass]="{ 'up': db.status == 'ACTIVE', 'down': db.status == 'INACTIVE' }"></span>
       </td>
       <td>{{ db.name }}</td>
-      <td>{{ db.type }}</td>
+      <td><img src="../../assets/images/mariadb.png" *ngIf="db.type==='mariadb'"><img src="../../assets/images/mongodb.jpg" *ngIf="db.type==='mongodb'"></td>
       <td>
         <button class="btn btn-success btn-sm" (click)="backup(db)">Backup</button>
         <button class="btn btn-success btn-sm">Restore</button>

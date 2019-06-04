@@ -1,0 +1,25 @@
+.dl-button{
+    background-size: auto;
+    background-image: url('../../assets/images/DL_btn_1.png');
+    display: inline-block;
+    height: 66px;
+    vertical-align: top;
+    width: 188px;
+}
+
+.ml-button{
+    margin-top: 15px;
+    background-size: auto;
+    background-image: url('../../assets/images/ML_btn_1.png');
+    display: inline-block;
+    height: 66px;
+    vertical-align: top;
+    width: 188px;
+}
+
+.version-text{
+    padding-left: 48px;
+    font-size: 12px;
+    font-weight: 400;
+    opacity: 0.4;
+}
