@@ -6,9 +6,7 @@ import { AppRoutingModule }     from './app-routing.module';
 
 import { AppComponent }         from './app.component';
 import { DashboardComponent }   from './dashboard/dashboard.component';
-import { ServiceDetailComponent }  from './hero-detail/service-detail.component';
 import { MessagesComponent }    from './messages/messages.component';
-import {ServicesComponent} from './heroes/services';
 import { BackupComponent } from './backup/backup.component';
 import { RestoreComponent } from './restore/restore.component';
 import { UserComponent } from './user/user.component';
@@ -28,8 +26,6 @@ import { ModelsComponent } from './models/models.component';
   declarations: [
     AppComponent,
     DashboardComponent,
-    ServicesComponent,
-    ServiceDetailComponent,
     MessagesComponent,
     BackupComponent,
     RestoreComponent,
