@@ -1,9 +1,12 @@
 package com.clms.typhonapi.controllers;
 
+import com.clms.typhonapi.models.Database;
 import com.clms.typhonapi.models.User;
 import com.clms.typhonapi.storage.ModelStorage;
 import com.clms.typhonapi.storage.UserStorage;
 import com.clms.typhonapi.utils.DbUtils;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -11,29 +14,34 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 @RestController
 @CrossOrigin(origins = "*", maxAge = 3600)
+@Api(value="Polystore Services")
 public class MainController {
 
 
     @Autowired
     private UserStorage userRepository;
 
+    @ApiOperation(value = "Register new user")
     @RequestMapping(path = "/user/register", method = RequestMethod.POST)
     public void add(@RequestBody User u) {
         userRepository.save(u);
     }
-    
+
+    @ApiOperation(value= "List all users",response = List.class)
     @RequestMapping(path = "/users", method = RequestMethod.GET)
     public List<User> all() {
     	return userRepository.findAll();
 
     }
 
+    @ApiOperation(value= "Get user by username")
     @RequestMapping(path = "/user/{userName}", method = RequestMethod.GET)
     public ResponseEntity get(@PathVariable String userName) {
         Optional<User> user = userRepository.findById(userName);
@@ -44,7 +52,7 @@ public class MainController {
             return ResponseEntity.status(404).body(null);
         }
     }
-
+    @ApiOperation(value="Update user by username")
     @RequestMapping(path = "/user/{userName}", method = RequestMethod.POST)
     public ResponseEntity update(@PathVariable String userName, @RequestBody User u) {
     	User user = userRepository.findById(userName).get();
@@ -74,15 +82,20 @@ public class MainController {
     public void setTyphoneMlModel(@RequestBody Map<String, String> json) {
     	ModelStorage.addMlModel(json.get("name"), json.get("contents"));
     }
-    
-    @RequestMapping(path = "/api/model/dl", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public @ResponseBody ResponseEntity<byte[]> getTyphonDLModel() {
-    	HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set("Content-disposition", "attachment; filename=model.tdl");
-     
-        return ResponseEntity.ok()
-          .headers(responseHeaders)
-          .body(ModelStorage.getDlModel().getBytes());
+
+    @ApiOperation(value= "Get databases")
+    @RequestMapping(path = "/api/databases", method = RequestMethod.GET)
+    public ResponseEntity getDatabases() {
+        ArrayList<Database> dbs = new ArrayList<>();
+        Database db1 = new Database("mariadbtest","ACTIVE");
+        Database db2 = new Database("mongostore","ACTIVE");
+        dbs.add(db1);
+        dbs.add(db2);
+        return ResponseEntity.status(200).body(dbs);
+    }
+    @RequestMapping("/api/model/dl")
+    public String getTyphonDLModel() {
+    	return ModelStorage.getDlModel();
     }
     
     @RequestMapping(path = "/api/model/ml", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
