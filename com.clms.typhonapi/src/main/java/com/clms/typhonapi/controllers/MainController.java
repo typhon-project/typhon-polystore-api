@@ -5,8 +5,6 @@ import com.clms.typhonapi.models.User;
 import com.clms.typhonapi.storage.ModelStorage;
 import com.clms.typhonapi.storage.UserStorage;
 import com.clms.typhonapi.utils.DbUtils;
-//import io.swagger.annotations.Api;
-//import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -14,10 +12,16 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+//import io.swagger.annotations.Api;
+//import io.swagger.annotations.ApiOperation;
 
 @RestController
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -128,18 +132,33 @@ public class MainController {
         return response;
     }
 
-    @RequestMapping(path = "/api/backup", method = RequestMethod.POST)
-    public ResponseEntity Backup(@RequestBody Map<String,String> json){
+    @RequestMapping(path = "/api/backup", method = RequestMethod.POST,produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<byte[]> Backup(@RequestBody Map<String,String> json){
         ResponseEntity response;
-        if(!json.containsKey("db_name") || !json.containsKey("db_type")){
+        HttpHeaders responseHeaders = new HttpHeaders();
+
+        if(!json.containsKey("db_name") || !json.containsKey("type")){
             response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
             return response;
         }
         else{
-            if(json.get("db_type").equals("mariadb")) {
-                String filename  =DbUtils.MariaBackupProcess(json.get("host"), json.get("port"), json.get("username"), json.get("password"), json.get("db_name"), json.get("backup_name"));
-                response = ResponseEntity.status(HttpStatus.OK).body("Backup "+filename+" Executed successfully!");
-                return response;
+            if(json.get("type").equals("mariadb")) {
+                File filename  = DbUtils.MariaBackupProcess(json.get("host"), json.get("port"), json.get("username"), json.get("password"), json.get("db_name"), json.get("backup_name"));
+                if(filename!=null) {
+                    try {
+                        responseHeaders.set("Content-disposition", "attachment; filename="+filename.getName());
+                        return ResponseEntity.ok()
+                                .headers(responseHeaders)
+                                .body(Files.readAllBytes(filename.toPath()));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                }
+                else{
+                    response = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+                    return response;
+                }
             }
             else{
                 response = ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(json.get("db_type"));
@@ -154,12 +173,12 @@ public class MainController {
     public ResponseEntity Restore(@RequestBody Map<String,String> json){
         //Run consume the evolution toolset
         ResponseEntity response;
-        if(!json.containsKey("db_name") || !json.containsKey("db_type") || !json.containsKey("backup_name")){
+        if(!json.containsKey("db_name") || !json.containsKey("type") || !json.containsKey("backup_name")){
             response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
             return response;
         }
         else{
-            if(json.get("db_type").equals("mariadb")){
+            if(json.get("type").equals("mariadb")){
                 String status=DbUtils.MariaRestore(json.get("host"),json.get("port"),json.get("username"),json.get("password"),json.get("db_name"),json.get("backup_name"));
                 if(!status.equals("OK")){
                     response=ResponseEntity.status(HttpStatus.BAD_REQUEST).body(status);
