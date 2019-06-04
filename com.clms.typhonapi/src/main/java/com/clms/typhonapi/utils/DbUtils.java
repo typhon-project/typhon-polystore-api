@@ -4,10 +4,11 @@ import org.joda.time.DateTime;
 
 import java.io.File;
 import java.io.IOException;
+
 public class DbUtils {
 
 
-    public static String MariaBackupProcess(String host, String port, String user, String password, String database_name, String backup_name){
+    public static File MariaBackupProcess(String host, String port, String user, String password, String database_name, String backup_name){
         ProcessBuilder pb = new ProcessBuilder();
         File backupFile;
         File f = new File("/backups/");
@@ -32,12 +33,14 @@ public class DbUtils {
         } catch (IOException e) {
             backupFile.delete();
             e.printStackTrace();
-            return "nope";
+            return null;
         } catch (InterruptedException e) {
             backupFile.delete();
             e.printStackTrace();
         }
-        return backupFile.getName();
+            return backupFile;
+
+
     }
 
 

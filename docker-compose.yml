@@ -26,6 +26,16 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: admin
     #volumes:
     # - "./data:/data/db"
+  polystoreui:
+    build: 
+      dockerfile: Dockerfile-angular
+      context: .
+    hostname: polystore.ui
+    container_name: polystore.ui
+    ports:
+      - "4200:4200"
+    #volumes:
+    # - "./data:/data/db"
   mariadbtest:
     image: mariadb:latest
     hostname: test.mariadb
