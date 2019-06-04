@@ -5,8 +5,8 @@ import com.clms.typhonapi.models.User;
 import com.clms.typhonapi.storage.ModelStorage;
 import com.clms.typhonapi.storage.UserStorage;
 import com.clms.typhonapi.utils.DbUtils;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+//import io.swagger.annotations.Api;
+//import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -21,27 +21,27 @@ import java.util.Optional;
 
 @RestController
 @CrossOrigin(origins = "*", maxAge = 3600)
-@Api(value="Polystore Services")
+//@Api(value="Polystore Services")
 public class MainController {
 
 
     @Autowired
     private UserStorage userRepository;
 
-    @ApiOperation(value = "Register new user")
+    //@ApiOperation(value = "Register new user")
     @RequestMapping(path = "/user/register", method = RequestMethod.POST)
     public void add(@RequestBody User u) {
         userRepository.save(u);
     }
 
-    @ApiOperation(value= "List all users",response = List.class)
+    //@ApiOperation(value= "List all users",response = List.class)
     @RequestMapping(path = "/users", method = RequestMethod.GET)
     public List<User> all() {
     	return userRepository.findAll();
 
     }
 
-    @ApiOperation(value= "Get user by username")
+    //@ApiOperation(value= "Get user by username")
     @RequestMapping(path = "/user/{userName}", method = RequestMethod.GET)
     public ResponseEntity get(@PathVariable String userName) {
         Optional<User> user = userRepository.findById(userName);
@@ -52,7 +52,7 @@ public class MainController {
             return ResponseEntity.status(404).body(null);
         }
     }
-    @ApiOperation(value="Update user by username")
+    //@ApiOperation(value="Update user by username")
     @RequestMapping(path = "/user/{userName}", method = RequestMethod.POST)
     public ResponseEntity update(@PathVariable String userName, @RequestBody User u) {
     	User user = userRepository.findById(userName).get();
@@ -83,7 +83,7 @@ public class MainController {
     	ModelStorage.addMlModel(json.get("name"), json.get("contents"));
     }
 
-    @ApiOperation(value= "Get databases")
+    //@ApiOperation(value= "Get databases")
     @RequestMapping(path = "/api/databases", method = RequestMethod.GET)
     public ResponseEntity getDatabases() {
         ArrayList<Database> dbs = new ArrayList<>();
@@ -131,8 +131,8 @@ public class MainController {
         }
         else{
             if(json.get("db_type").equals("mariadb")) {
-                    String filename=DbUtils.MariaBackupProcess(json.get("host"), json.get("port"), json.get("username"), json.get("password"), json.get("db_name"), json.get("backup_name"));
-                    response = ResponseEntity.status(HttpStatus.OK).body("Backup "+filename+" Executed successfully!");
+                String filename  =DbUtils.MariaBackupProcess(json.get("host"), json.get("port"), json.get("username"), json.get("password"), json.get("db_name"), json.get("backup_name"));
+                response = ResponseEntity.status(HttpStatus.OK).body("Backup "+filename+" Executed successfully!");
                 return response;
             }
             else{
