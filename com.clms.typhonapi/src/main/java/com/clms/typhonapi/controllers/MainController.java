@@ -5,7 +5,9 @@ import com.clms.typhonapi.storage.ModelStorage;
 import com.clms.typhonapi.storage.UserStorage;
 import com.clms.typhonapi.utils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -73,14 +75,24 @@ public class MainController {
     	ModelStorage.addMlModel(json.get("name"), json.get("contents"));
     }
     
-    @RequestMapping("/api/model/dl")
-    public String getTyphonDLModel() {
-    	return ModelStorage.getDlModel();
+    @RequestMapping(path = "/api/model/dl", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public @ResponseBody ResponseEntity<byte[]> getTyphonDLModel() {
+    	HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("Content-disposition", "attachment; filename=model.tdl");
+     
+        return ResponseEntity.ok()
+          .headers(responseHeaders)
+          .body(ModelStorage.getDlModel().getBytes());
     }
     
-    @RequestMapping("/api/model/ml")
-    public String getTyphonMLModel() {
-    	return ModelStorage.getMlModel();
+    @RequestMapping(path = "/api/model/ml", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public @ResponseBody ResponseEntity<byte[]> getTyphonMLModel() {
+    	HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("Content-disposition", "attachment; filename=model.tml");
+     
+        return ResponseEntity.ok()
+          .headers(responseHeaders)
+          .body(ModelStorage.getMlModel().getBytes());
     }
 
     @RequestMapping(path = "/api/query", method = RequestMethod.POST)
