@@ -16,10 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 //import io.swagger.annotations.Api;
 //import io.swagger.annotations.ApiOperation;
@@ -165,37 +162,42 @@ public class MainController {
     }
 
     @RequestMapping(path = "/api/backup", method = RequestMethod.POST)
-    public String Backup(@RequestBody Map<String,String> json){
+    public ResponseEntity Backup(@RequestBody Map<String,String> json){
+        ResponseEntity response;
         if(!json.containsKey("db_name") || !json.containsKey("type")){
-            return "";
+            response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            return response;
         }
         else{
             if(json.get("type").equals("mariadb")) {
                 File filename  = DbUtils.MariaBackupProcess(json.get("host"), json.get("port"), json.get("username"), json.get("password"), json.get("db_name"), json.get("backup_name"));
                 if(filename!=null) {
-                	return filename.getName();
+                    Map<String,String> resp = new HashMap<String, String>();
+                    resp.put("filename",filename.getName());
+                    response = ResponseEntity.status(HttpStatus.OK).body(resp);
+                	return response;
                 }
                 else{
-                    return "";
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
                 }
             }
             else{
-                return "";
+                return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(null);
             }
         }
     }
     
-    @RequestMapping(path = "/api/download", method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<byte[]> Backup(String fileName) throws IOException{
+    @RequestMapping(path = "/api/download/{fileName}", method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<byte[]> Backup(@PathVariable String fileName) throws IOException{
         ResponseEntity response;
         HttpHeaders responseHeaders = new HttpHeaders();
 
-        File f = new File("/backups/" + fileName);
+        File f = new File("backups/" + fileName);
         
-        responseHeaders.set("Content-disposition", "attachment; filename="+ fileName);
+        responseHeaders.set("Content-disposition", "attachment; filename="+ f.getName());
         return ResponseEntity.ok()
                 .headers(responseHeaders)
-                .body(Files.readAllBytes(Paths.get(f.getAbsolutePath())));
+                .body(Files.readAllBytes(Paths.get(f.getPath())));
     }
 
 

@@ -29,12 +29,11 @@ export class ApiService {
 
   backupDatabase(db: Database, backupName: string): void {
     var data = db as any;
-    data[":backup_name"] = backupName;
+    data["backup_name"] = backupName;
     this.http.post<void>(this.getApiPath("/api/backup"), JSON.stringify(data), httpOptions)
       .subscribe(data => {
-        if (data != null) {
-          window.open(this.getApiPath("/api/download/" + data));
-        }
+        console.log(data['filename']);
+        window.open(this.getApiPath("/api/download/" + data['filename']));
       });
   }
 
