@@ -10,6 +10,12 @@
                 <a routerLink="{{item.url}}">{{item.name}}</a>
             </li>
         </ul>
+
+        <div class="status-inidcator" (click)="toogleStatus()">
+            <span [ngClass]="{ 'up': status, 'down': !status, 'updating': waitingForStatusUpdate }" class="status-icon"></span>
+            <span class="status-text" *ngIf="!waitingForStatusUpdate">{{ status ? "ONLINE"  : "OFFLINE" }}</span>
+            <span class="status-text" *ngIf="waitingForStatusUpdate">UPDATING</span>
+        </div>
     </nav>
 
     <div id="content">

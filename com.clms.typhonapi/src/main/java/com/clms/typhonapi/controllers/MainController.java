@@ -29,9 +29,40 @@ import java.util.Optional;
 public class MainController {
 
 
+	private static boolean status = true;
+	
     @Autowired
     private UserStorage userRepository;
 
+    @RequestMapping("/api/status")
+    public boolean getStatus() {
+    	return status;
+    }
+    
+    @RequestMapping("/api/down")
+    public boolean down() {
+    	try {
+			Thread.sleep(4000);
+			status = false;
+		} catch (InterruptedException e) {
+			
+		}
+    	return status;
+    }
+    
+    @RequestMapping("/api/up")
+    public boolean up() {
+    	try {
+			Thread.sleep(4000);
+			status = true;
+		} catch (InterruptedException e) {
+			
+		}
+    	
+    	
+    	return status;
+    }
+    
     //@ApiOperation(value = "Register new user")
     @RequestMapping(path = "/user/register", method = RequestMethod.POST)
     public void add(@RequestBody User u) {

@@ -50,4 +50,16 @@ export class ApiService {
     //const options = { responseType: 'blob' as 'json' };
     //return this.http.get<Blob>(this.getApiPath("/api/model/" + type), options);
   }
+
+  getApiStatus(): Observable<boolean> {
+    return this.http.get<boolean>(this.getApiPath("/api/status"));
+  }
+
+  bringApiUp(): Observable<boolean> {
+    return this.http.get<boolean>(this.getApiPath("/api/up"));
+  }
+
+  bringApiDown(): Observable<boolean> {
+    return this.http.get<boolean>(this.getApiPath("/api/down"));
+  }
 }
