@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -163,40 +164,38 @@ public class MainController {
         return response;
     }
 
-    @RequestMapping(path = "/api/backup", method = RequestMethod.POST,produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<byte[]> Backup(@RequestBody Map<String,String> json){
-        ResponseEntity response;
-        HttpHeaders responseHeaders = new HttpHeaders();
-
+    @RequestMapping(path = "/api/backup", method = RequestMethod.POST)
+    public String Backup(@RequestBody Map<String,String> json){
         if(!json.containsKey("db_name") || !json.containsKey("type")){
-            response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-            return response;
+            return "";
         }
         else{
             if(json.get("type").equals("mariadb")) {
                 File filename  = DbUtils.MariaBackupProcess(json.get("host"), json.get("port"), json.get("username"), json.get("password"), json.get("db_name"), json.get("backup_name"));
                 if(filename!=null) {
-                    try {
-                        responseHeaders.set("Content-disposition", "attachment; filename="+filename.getName());
-                        return ResponseEntity.ok()
-                                .headers(responseHeaders)
-                                .body(Files.readAllBytes(filename.toPath()));
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        return null;
-                    }
+                	return filename.getName();
                 }
                 else{
-                    response = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-                    return response;
+                    return "";
                 }
             }
             else{
-                response = ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(json.get("db_type"));
-                return response;
+                return "";
             }
         }
+    }
+    
+    @RequestMapping(path = "/api/download", method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<byte[]> Backup(String fileName) throws IOException{
+        ResponseEntity response;
+        HttpHeaders responseHeaders = new HttpHeaders();
 
+        File f = new File("/backups/" + fileName);
+        
+        responseHeaders.set("Content-disposition", "attachment; filename="+ fileName);
+        return ResponseEntity.ok()
+                .headers(responseHeaders)
+                .body(Files.readAllBytes(Paths.get(f.getAbsolutePath())));
     }
 
 

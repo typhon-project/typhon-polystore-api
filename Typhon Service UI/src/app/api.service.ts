@@ -30,7 +30,11 @@ export class ApiService {
   backupDatabase(db: Database, backupName: string): void {
     var data = db as any;
     data[":backup_name"] = backupName;
-    this.http.post<void>(this.getApiPath("/api/backup"), JSON.stringify(data), httpOptions);
+    this.http.post<void>(this.getApiPath("/api/backup"), JSON.stringify(data), httpOptions)
+      .subscribe(data => {
+        console.log(data);
+        window.open(this.getApiPath("/api/download/" + data));
+      });
   }
 
   getUsers(): Observable<User[]> {
