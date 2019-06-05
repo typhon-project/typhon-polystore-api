@@ -32,8 +32,9 @@ export class ApiService {
     data[":backup_name"] = backupName;
     this.http.post<void>(this.getApiPath("/api/backup"), JSON.stringify(data), httpOptions)
       .subscribe(data => {
-        console.log(data);
-        window.open(this.getApiPath("/api/download/" + data));
+        if (data != null) {
+          window.open(this.getApiPath("/api/download/" + data));
+        }
       });
   }
 
