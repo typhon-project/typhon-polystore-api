@@ -121,7 +121,7 @@ public class MainController {
     public ResponseEntity getDatabases() {
         ArrayList<Database> dbs = new ArrayList<>();
         Database db1 = new Database("mariadbtest","ACTIVE","test.mariadb","3306","root","admin","mariadb","testdb");
-        Database db2 = new Database("mongostore","ACTIVE","mongodb","27017","admin","admin","mongodb","admin");
+        Database db2 = new Database("polystoredb","ACTIVE","mongodb","27017","admin","admin","mongodb","admin");
         dbs.add(db1);
         dbs.add(db2);
         return ResponseEntity.status(200).body(dbs);

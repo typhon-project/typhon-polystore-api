@@ -14,8 +14,8 @@ services:
     volumes:
      - "./models:/models"
     depends_on:
-      - mongostore
-  mongostore:
+      - polystoredb
+  polystoredb:
     image: mongo:latest
     hostname: polystore.api.db
     container_name: polystore.mongo
