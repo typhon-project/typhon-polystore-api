@@ -1,0 +1,28 @@
+<div>
+  <div class="col-md-12 uploadfrm">
+    <p><span class="btn btn-primary btn-file">
+        Upload new version <input type="file" (change)="fileChanged($event)">
+      </span></p>
+  </div>
+</div>
+
+<table class="table table-bordered table-hover table-condensed">
+  <thead>
+    <tr>
+      <th>Version</th>
+      <th>Date Received</th>
+      <th>Status</th>
+      <th style="width: 200px">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let model of models">
+      <td>{{ model.version }}</td>
+      <td>{{ model.dateReceived | date:'medium' }}</td>
+      <td></td>
+      <td>
+        <button class="btn btn-success btn-sm" (click)="download(model)">Donwload</button>
+      </td>
+    </tr>
+  </tbody>
+</table>

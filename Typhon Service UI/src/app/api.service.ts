@@ -3,6 +3,7 @@ import { Observable, of } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { User } from './user';
 import { Database } from './database';
+import { Model } from './model';
 
 const httpOptions = {
   headers: new HttpHeaders({
@@ -49,10 +50,32 @@ export class ApiService {
     return this.http.post<void>(this.getApiPath("/user/" + username), JSON.stringify(user), httpOptions);
   }
 
+  getMlModels(): Observable<Model[]> {
+    return this.http.get<Model[]>(this.getApiPath("/api/models/ml"));
+  }
+
+  getDlModels(): Observable<Model[]> {
+    return this.http.get<Model[]>(this.getApiPath("/api/models/dl"));
+  }
+
+  addDlModel(contents: string): Observable<Model> {
+    var data = {
+      name: "dl_model",
+      contents: contents
+    };
+    return this.http.post<Model>(this.getApiPath("/api/model/dl"), JSON.stringify(data), httpOptions);
+  }
+
+  addMlModel(contents: string): Observable<Model> {
+    var data = {
+      name: "ml_model",
+      contents: contents
+    };
+    return this.http.post<Model>(this.getApiPath("/api/model/ml"), JSON.stringify(data), httpOptions);
+  }
+
   downloadModel(type: string): void {
     window.open(this.getApiPath("/api/model/" + type));
-    //const options = { responseType: 'blob' as 'json' };
-    //return this.http.get<Blob>(this.getApiPath("/api/model/" + type), options);
   }
 
   getApiStatus(): Observable<boolean> {

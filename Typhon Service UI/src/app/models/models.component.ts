@@ -10,10 +10,6 @@ export class ModelsComponent implements OnInit {
 
   constructor(private api: ApiService) { }
 
-  ngOnInit() {
-  }
-
-  download(type: string) {
-    this.api.downloadModel(type);
-  }
+  ngOnInit() { }
+  
 }
