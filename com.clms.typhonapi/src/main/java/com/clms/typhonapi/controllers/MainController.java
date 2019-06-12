@@ -1,10 +1,12 @@
 package com.clms.typhonapi.controllers;
 
+import com.clms.typhonapi.models.Model;
 import com.clms.typhonapi.models.Service;
 import com.clms.typhonapi.models.User;
 import com.clms.typhonapi.storage.ModelStorage;
 import com.clms.typhonapi.storage.UserStorage;
 import com.clms.typhonapi.utils.DbUtils;
+import com.clms.typhonapi.utils.ModelHelper;
 import com.clms.typhonapi.utils.ServiceRegistry;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
+import javax.annotation.PostConstruct;
+
 //import io.swagger.annotations.Api;
 //import io.swagger.annotations.ApiOperation;
 
@@ -33,11 +37,20 @@ public class MainController {
 	
     @Autowired
     private UserStorage userRepository;
+    
+    @Autowired
+    private ModelStorage modelRepository;
+    
     private ServiceRegistry serviceRegistry;
 
     public MainController() {
     	serviceRegistry = new ServiceRegistry();
-    	serviceRegistry.load(ModelStorage.getDlModel());
+    }
+    
+    @PostConstruct
+    public void init() {
+    	Model dl = ModelHelper.getDlModel(modelRepository);
+    	serviceRegistry.load(dl == null ? "" : dl.getContents());
     }
     
     @RequestMapping("/api/status")
@@ -112,15 +125,25 @@ public class MainController {
     public void delete(@PathVariable String userName) {
 
     }
+    
+    @RequestMapping(path = "/api/models/dl", method = RequestMethod.GET)
+    public ArrayList<Model> getDlModels() {
+    	return ModelHelper.getDlModels(modelRepository);
+    }
+    
+    @RequestMapping(path = "/api/models/ml", method = RequestMethod.GET)
+    public ArrayList<Model> getMlModels() {
+    	return ModelHelper.getMlModels(modelRepository);
+    }
 
     @RequestMapping(path = "/api/model/dl", method = RequestMethod.POST)
     public void setTyphoneDLModel(@RequestBody Map<String, String> json) {
-    	ModelStorage.addDlModel(json.get("name"), json.get("contents"));
+    	ModelHelper.addDlModel(modelRepository, json.get("name"), json.get("contents"));
     }
     
     @RequestMapping(path = "/api/model/ml", method = RequestMethod.POST)
     public void setTyphoneMlModel(@RequestBody Map<String, String> json) {
-    	ModelStorage.addMlModel(json.get("name"), json.get("contents"));
+    	ModelHelper.addMlModel(modelRepository, json.get("name"), json.get("contents"));
     }
 
     //@ApiOperation(value= "Get databases")
@@ -134,9 +157,11 @@ public class MainController {
     	HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("Content-disposition", "attachment; filename=model.tml");
      
+        Model m = ModelHelper.getDlModel(modelRepository);
+        
         return ResponseEntity.ok()
           .headers(responseHeaders)
-          .body(ModelStorage.getDlModel().getBytes());
+          .body((m == null ? "" : m.getContents()).getBytes());
     }
     
     @RequestMapping(path = "/api/model/ml", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
@@ -144,9 +169,11 @@ public class MainController {
     	HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("Content-disposition", "attachment; filename=model.tml");
      
+    	Model m = ModelHelper.getMlModel(modelRepository);
+    	
         return ResponseEntity.ok()
           .headers(responseHeaders)
-          .body(ModelStorage.getMlModel().getBytes());
+          .body((m == null ? "" : m.getContents()).getBytes());
     }
 
     @RequestMapping(path = "/api/query", method = RequestMethod.POST)
