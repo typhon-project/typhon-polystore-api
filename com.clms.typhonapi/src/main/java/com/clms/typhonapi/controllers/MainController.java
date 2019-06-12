@@ -1,10 +1,12 @@
 package com.clms.typhonapi.controllers;
 
-import com.clms.typhonapi.models.Database;
+import com.clms.typhonapi.models.Service;
 import com.clms.typhonapi.models.User;
 import com.clms.typhonapi.storage.ModelStorage;
 import com.clms.typhonapi.storage.UserStorage;
 import com.clms.typhonapi.utils.DbUtils;
+import com.clms.typhonapi.utils.ServiceRegistry;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -31,7 +33,13 @@ public class MainController {
 	
     @Autowired
     private UserStorage userRepository;
+    private ServiceRegistry serviceRegistry;
 
+    public MainController() {
+    	serviceRegistry = new ServiceRegistry();
+    	serviceRegistry.load(ModelStorage.getDlModel());
+    }
+    
     @RequestMapping("/api/status")
     public boolean getStatus() {
     	return status;
@@ -56,8 +64,7 @@ public class MainController {
 		} catch (InterruptedException e) {
 			
 		}
-    	
-    	
+    	    	
     	return status;
     }
     
@@ -85,6 +92,7 @@ public class MainController {
             return ResponseEntity.status(404).body(null);
         }
     }
+    
     //@ApiOperation(value="Update user by username")
     @RequestMapping(path = "/user/{userName}", method = RequestMethod.POST)
     public ResponseEntity update(@PathVariable String userName, @RequestBody User u) {
@@ -105,7 +113,6 @@ public class MainController {
 
     }
 
-
     @RequestMapping(path = "/api/model/dl", method = RequestMethod.POST)
     public void setTyphoneDLModel(@RequestBody Map<String, String> json) {
     	ModelStorage.addDlModel(json.get("name"), json.get("contents"));
@@ -119,12 +126,7 @@ public class MainController {
     //@ApiOperation(value= "Get databases")
     @RequestMapping(path = "/api/databases", method = RequestMethod.GET)
     public ResponseEntity getDatabases() {
-        ArrayList<Database> dbs = new ArrayList<>();
-        Database db1 = new Database("mariadbtest","ACTIVE","test.mariadb","3306","root","admin","mariadb","testdb");
-        Database db2 = new Database("polystoredb","ACTIVE","mongodb","27017","admin","admin","mongodb","admin");
-        dbs.add(db1);
-        dbs.add(db2);
-        return ResponseEntity.status(200).body(dbs);
+        return ResponseEntity.status(200).body(serviceRegistry.getDatabases());
     }
     
     @RequestMapping(path = "/api/model/dl", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)

@@ -3,14 +3,14 @@ package com.clms.typhonapi.models;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 @JsonSerialize
-public class Database {
+public class Service {
 
-    public Database(String name, String status) {
+    public Service(String name, String status) {
         this.name = name;
         this.status = status;
     }
 
-    public Database(String name, String status, String host, String port, String username, String password, String type,String db_name) {
+    public Service(String name, String status, String host, String port, String username, String password, String type,String db_name) {
         this.name = name;
         this.status = status;
         this.host = host;
