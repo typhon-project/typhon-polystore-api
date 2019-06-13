@@ -1,7 +1,6 @@
 package com.clms.typhonapi.kafka;
 
 public interface IKafkaConstants {
-    public static String KAFKA_BROKERS = "192.168.2.28:9092";
     public static Integer MESSAGE_COUNT=2;
     public static String CLIENT_ID="client1";
     public static String TOPIC_NAME="PRE";

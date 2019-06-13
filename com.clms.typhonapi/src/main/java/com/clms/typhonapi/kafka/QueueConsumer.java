@@ -1,0 +1,50 @@
+package com.clms.typhonapi.kafka;
+
+import java.util.Collections;
+import java.util.Properties;
+
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.serialization.LongDeserializer;
+import org.apache.kafka.common.serialization.StringDeserializer;
+
+
+public class QueueConsumer implements Runnable {
+	
+	private ConsumerHandler handler;
+	private Consumer<Long, String> consumer;
+	
+    public QueueConsumer(String connectionString, String topic, ConsumerHandler handler) {
+    	this.handler = handler;
+    	
+    	Properties props = new Properties();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, connectionString);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, IKafkaConstants.GROUP_ID_CONFIG);
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class.getName());
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, IKafkaConstants.MAX_POLL_RECORDS);
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, IKafkaConstants.OFFSET_RESET_EARLIER);
+        
+        consumer = new KafkaConsumer<>(props);
+        consumer.subscribe(Collections.singletonList(topic));
+    }
+
+    @Override
+    public void run() {
+        while (true) {
+          ConsumerRecords<Long, String> consumerRecords = consumer.poll(1000);
+
+          consumerRecords.forEach(record -> {
+              System.out.println("Got result from AUTH!!! " + record.value());
+              handler.onNewMesaage(record.value());
+           });
+
+           consumer.commitAsync();
+        }
+        //consumer.close();
+    }
+
+}
