@@ -21,6 +21,15 @@ public class Service {
         this.db_name = db_name;
     }
 
+    private ServiceType serviceType;
+    public ServiceType getServiceType() {
+        return serviceType;
+    }
+
+    public void setServiceType(ServiceType serviceType) {
+        this.serviceType = serviceType;
+    }
+    
     private String name;
     private String status;
     private String host;

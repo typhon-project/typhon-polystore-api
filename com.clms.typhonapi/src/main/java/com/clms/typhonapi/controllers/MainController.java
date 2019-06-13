@@ -7,6 +7,7 @@ import com.clms.typhonapi.storage.ModelStorage;
 import com.clms.typhonapi.storage.UserStorage;
 import com.clms.typhonapi.utils.DbUtils;
 import com.clms.typhonapi.utils.ModelHelper;
+import com.clms.typhonapi.utils.QueryRunner;
 import com.clms.typhonapi.utils.ServiceRegistry;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
@@ -21,6 +24,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.Future;
 
 import javax.annotation.PostConstruct;
 
@@ -37,12 +41,11 @@ public class MainController {
 	
     @Autowired
     private UserStorage userRepository;
-    
     @Autowired
     private ModelStorage modelRepository;
-    
     private ServiceRegistry serviceRegistry;
-
+    private QueryRunner queryRunner;
+    
     public MainController() {
     	serviceRegistry = new ServiceRegistry();
     }
@@ -51,6 +54,7 @@ public class MainController {
     public void init() {
     	Model dl = ModelHelper.getDlModel(modelRepository, -1);
     	serviceRegistry.load(dl == null ? "" : dl.getContents());
+    	queryRunner = new QueryRunner();
     }
     
     @RequestMapping("/api/status")
@@ -165,10 +169,9 @@ public class MainController {
     }
     
     @RequestMapping(path = "/api/query", method = RequestMethod.POST)
-    public ResponseEntity executeQuery(@RequestBody String query){
-        //Run the query on the TQL compiler and pass the result to the body
-        ResponseEntity response=ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(null);
-        return response;
+    @Async
+    public Future<String> executeQuery(@RequestBody String query){
+    	return new AsyncResult<String>(queryRunner.run("nemo", query));
     }
 
     @RequestMapping(path = "/api/evolve", method = RequestMethod.POST)
