@@ -13,6 +13,7 @@ import { UserComponent } from './user/user.component';
 import { ModelsComponent } from './models/models.component';
 import { DatabasesComponent } from './databases/databases.component';
 import { ModelListComponent } from './model-list/model-list.component';
+import { QueryComponent } from './query/query.component';
 
 @NgModule({
   imports: [
@@ -35,6 +36,7 @@ import { ModelListComponent } from './model-list/model-list.component';
     ModelsComponent,
     DatabasesComponent,
     ModelListComponent,
+    QueryComponent,
   ],
   bootstrap: [ AppComponent ]
 })

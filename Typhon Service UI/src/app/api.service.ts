@@ -4,6 +4,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { User } from './user';
 import { Database } from './database';
 import { Model } from './model';
+import { QueryResponse } from './QueryResponse';
 
 const httpOptions = {
   headers: new HttpHeaders({
@@ -76,6 +77,10 @@ export class ApiService {
 
   downloadModel(type: string, version: number): void {
     window.open(this.getApiPath("/api/model/" + type + "/" + version));
+  }
+
+  runQuery(query: string): Observable<QueryResponse> {
+    return this.http.post<QueryResponse>(this.getApiPath("/api/query"), query, httpOptions);
   }
 
   getApiStatus(): Observable<boolean> {

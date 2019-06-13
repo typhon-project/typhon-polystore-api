@@ -1,0 +1,10 @@
+.query-container {
+    height: calc(100vh - 120px);
+
+    padding: 0;
+    margin: 0;
+}
+
+.query-container textarea {
+    height: calc(100% - 40px);
+}

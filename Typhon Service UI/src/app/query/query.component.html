@@ -1,0 +1,12 @@
+<div class="query-container row">
+  <div class="col-md-6">
+    <div>
+      <button (click)="run()" class="btn btn-success">Run</button>
+    </div>
+    <textarea [(ngModel)]="query" class="form-control"></textarea>
+  </div>
+
+  <div class="col-md-6">
+    <div class="result">{{ result }}</div>
+  </div>
+</div>
