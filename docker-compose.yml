@@ -27,9 +27,8 @@ services:
     #volumes:
     # - "./data:/data/db"
   polystoreui:
-    build: 
-      dockerfile: Dockerfile-angular
-      context: .
+    build:
+      context: Typhon Service UI
     hostname: polystore.ui
     container_name: polystore.ui
     ports:
