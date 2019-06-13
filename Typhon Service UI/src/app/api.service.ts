@@ -74,8 +74,8 @@ export class ApiService {
     return this.http.post<Model>(this.getApiPath("/api/model/ml"), JSON.stringify(data), httpOptions);
   }
 
-  downloadModel(type: string): void {
-    window.open(this.getApiPath("/api/model/" + type));
+  downloadModel(type: string, version: number): void {
+    window.open(this.getApiPath("/api/model/" + type + "/" + version));
   }
 
   getApiStatus(): Observable<boolean> {

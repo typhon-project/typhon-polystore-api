@@ -49,7 +49,7 @@ public class MainController {
     
     @PostConstruct
     public void init() {
-    	Model dl = ModelHelper.getDlModel(modelRepository);
+    	Model dl = ModelHelper.getDlModel(modelRepository, -1);
     	serviceRegistry.load(dl == null ? "" : dl.getContents());
     }
     
@@ -152,30 +152,18 @@ public class MainController {
         return ResponseEntity.status(200).body(serviceRegistry.getDatabases());
     }
     
-    @RequestMapping(path = "/api/model/dl", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public @ResponseBody ResponseEntity<byte[]> getTyphonDLModel() {
+    @RequestMapping(path = "/api/model/{type}/{version}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public @ResponseBody ResponseEntity<byte[]> getTyphonModel(@PathVariable String type, @PathVariable int version) {
     	HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set("Content-disposition", "attachment; filename=model.tml");
+        responseHeaders.set("Content-disposition", "attachment; filename=model.xmi");
      
-        Model m = ModelHelper.getDlModel(modelRepository);
-        
+        Model m = ModelHelper.getModel(modelRepository, type, version);
+        	
         return ResponseEntity.ok()
           .headers(responseHeaders)
           .body((m == null ? "" : m.getContents()).getBytes());
     }
     
-    @RequestMapping(path = "/api/model/ml", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public @ResponseBody ResponseEntity<byte[]> getTyphonMLModel() {
-    	HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set("Content-disposition", "attachment; filename=model.tml");
-     
-    	Model m = ModelHelper.getMlModel(modelRepository);
-    	
-        return ResponseEntity.ok()
-          .headers(responseHeaders)
-          .body((m == null ? "" : m.getContents()).getBytes());
-    }
-
     @RequestMapping(path = "/api/query", method = RequestMethod.POST)
     public ResponseEntity executeQuery(@RequestBody String query){
         //Run the query on the TQL compiler and pass the result to the body

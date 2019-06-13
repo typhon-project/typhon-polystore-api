@@ -1,12 +1,17 @@
-<div>
-  <div class="col-md-12 uploadfrm">
-    <p><span class="btn btn-primary btn-file">
-        Upload new version <input type="file" (change)="fileChanged($event)">
-      </span></p>
-  </div>
-</div>
-
 <table class="table table-bordered table-hover table-condensed">
+  <thead>
+    <tr>
+      <th colspan="4" style="padding: 0; text-align: center">
+          <div class="col-md-12 uploadfrm">
+              <p style="margin: 0">
+                <span class="btn btn-primary btn-file">
+                  Upload new version <input type="file" (change)="fileChanged($event)">
+                </span>
+              </p>
+            </div>
+      </th>
+    </tr>
+  </thead>
   <thead>
     <tr>
       <th>Version</th>

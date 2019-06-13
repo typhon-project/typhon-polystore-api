@@ -12,12 +12,12 @@ import com.clms.typhonapi.storage.ModelStorage;
 
 public class ModelHelper {
 
-	public static Model getDlModel(ModelStorage repo) {
-		return ModelHelper.getModel(repo, "DL");
+	public static Model getDlModel(ModelStorage repo, int version) {
+		return ModelHelper.getModel(repo, "DL", version);
 	}
 	
-	public static Model getMlModel(ModelStorage repo) {
-		return ModelHelper.getModel(repo, "ML");
+	public static Model getMlModel(ModelStorage repo, int version) {
+		return ModelHelper.getModel(repo, "ML", version);
 	}
 	
 	public static ArrayList<Model> getDlModels(ModelStorage repo) {
@@ -37,9 +37,7 @@ public class ModelHelper {
 	}
 	
 	private static void addModel(ModelStorage repo, String type, String name, String contents) {
-		Model latest = type.equalsIgnoreCase("DL") ? 
-				ModelHelper.getDlModel(repo)
-				: ModelHelper.getMlModel(repo);
+		Model latest =ModelHelper.getModel(repo, type);
 		
 		Model m = new Model();
 		m.setId(UUID.randomUUID().toString());
@@ -56,12 +54,25 @@ public class ModelHelper {
 		repo.insert(m);
 	}
 	
-	private static Model getModel(ModelStorage repo, String type) {
-		Optional<Model> model = repo.findAll()
+	public static Model getModel(ModelStorage repo, String type) {
+		return ModelHelper.getModel(repo, type, -1);
+	}
+	
+	public static Model getModel(ModelStorage repo, String type, int version) {
+		Optional<Model> model = null;
+		
+		if (version < 0) {
+			model = repo.findAll()
 				.stream()
 				.filter(m -> m.getType().equalsIgnoreCase(type))
 				.sorted(Comparator.comparing(Model::getVersion).reversed())
 				.findFirst();
+		} else {
+			model = repo.findAll()
+					.stream()
+					.filter(m -> m.getType().equalsIgnoreCase(type) && m.getVersion() == version)
+					.findFirst();
+		}
 		
 		if (model.isEmpty()) {
 			return null;

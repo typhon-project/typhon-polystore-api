@@ -20,8 +20,8 @@ export class ModelListComponent implements OnInit {
     this.getModels();
   }
 
-  download(type: string) {
-    this.api.downloadModel(type);
+  download(model: Model) {
+    this.api.downloadModel(this.type, model.version);
   }
 
   private getModels() {
