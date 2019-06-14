@@ -25,10 +25,7 @@ public class QueueConsumer implements Runnable {
     	Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, connectionString);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, IKafkaConstants.GROUP_ID_CONFIG);
-                
-        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, IKafkaConstants.MAX_POLL_RECORDS);
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
-        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, IKafkaConstants.OFFSET_RESET_EARLIER);
         
         consumer = new KafkaConsumer<>(props, new LongDeserializer(), new EventSchema(PreEvent.class));
         consumer.subscribe(Collections.singletonList(topic));
@@ -40,7 +37,7 @@ public class QueueConsumer implements Runnable {
           ConsumerRecords<Long, Event> consumerRecords = consumer.poll(1000);
 
           consumerRecords.forEach(record -> {
-              System.out.println("Got result from AUTH!!! " + record.value());
+              System.out.println("Got result from AUTH!!! " + record.value().getId());
               handler.onNewMesaage(record.value());
            });
 
