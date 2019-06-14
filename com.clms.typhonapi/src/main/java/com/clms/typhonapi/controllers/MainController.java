@@ -57,6 +57,11 @@ public class MainController {
     	queryRunner = new QueryRunner(serviceRegistry);
     }
     
+    @RequestMapping(path = "/api/users/authenticate", method = RequestMethod.POST)
+    public boolean login(@RequestBody Map<String,String> json) {
+    	return false;
+    }
+    
     @RequestMapping("/api/status")
     public boolean getStatus() {
     	return status;

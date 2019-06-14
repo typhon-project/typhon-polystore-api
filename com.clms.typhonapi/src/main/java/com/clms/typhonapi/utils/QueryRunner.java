@@ -48,12 +48,12 @@ public class QueryRunner implements ConsumerHandler {
 		event.setQuery(query);
 		event.setUser(user);
 		
-		//Post pre event to PRE queue
+		//Post pre event to PRE topic
 		this.preProducer.produce(PRE_TOPIC, event);
 		
+		//wait for response on AUTH topic
 		long startedOn = System.currentTimeMillis();
 		int timeout = 10 * 1000;
-		
 		boolean timedOut = false;
 		int eventHash = event.getId().hashCode();
 		
@@ -77,7 +77,7 @@ public class QueryRunner implements ConsumerHandler {
 	    }
 	    
 	    if (timedOut) {
-	    	return "Quert timeout";
+	    	return "Query timeout";
 	    } else {
 	    	if (event.isAuthenticated() == false) {
 	    		return "Not authorized";

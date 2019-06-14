@@ -25,6 +25,14 @@ export class ApiService {
     return "http://localhost:8080" + path;
   }
 
+  login(username: string, password: string): Observable<void> {
+    return this.http.post<any>(this.getApiPath("/api/users/authenticate"), { username, password }, httpOptions);
+  }
+
+  logout() {
+    localStorage.removeItem('currentUser');
+  }
+
   getDatabases(): Observable<Database[]> {
     return this.http.get<Database[]>(this.getApiPath("/api/databases"));
   }

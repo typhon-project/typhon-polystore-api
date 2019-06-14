@@ -1,7 +1,7 @@
 import { NgModule }       from '@angular/core';
 import { BrowserModule }  from '@angular/platform-browser';
-import { FormsModule }    from '@angular/forms';
-import { HttpClientModule }    from '@angular/common/http';
+import { FormsModule, ReactiveFormsModule }    from '@angular/forms';
+import { HttpClientModule, HTTP_INTERCEPTORS }    from '@angular/common/http';
 import { AppRoutingModule }     from './app-routing.module';
 
 import { AppComponent }         from './app.component';
@@ -14,17 +14,25 @@ import { ModelsComponent } from './models/models.component';
 import { DatabasesComponent } from './databases/databases.component';
 import { ModelListComponent } from './model-list/model-list.component';
 import { QueryComponent } from './query/query.component';
+import { BasicAuthInterceptor } from './interceptors/basic-auth.interceptor';
+import { ErrorInterceptor } from './interceptors/error.interceptor';
+import { LoginComponent } from './login/login.component';
 
 @NgModule({
   imports: [
     BrowserModule,
     FormsModule,
+    ReactiveFormsModule,
     AppRoutingModule,
     HttpClientModule,
 
     // The HttpClientInMemoryWebApiModule module intercepts HTTP requests
     // and returns simulated server responses.
     // Remove it when a real server is ready to receive requests.
+  ],
+  providers: [
+    { provide: HTTP_INTERCEPTORS, useClass: BasicAuthInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true }
   ],
   declarations: [
     AppComponent,
@@ -37,6 +45,7 @@ import { QueryComponent } from './query/query.component';
     DatabasesComponent,
     ModelListComponent,
     QueryComponent,
+    LoginComponent,
   ],
   bootstrap: [ AppComponent ]
 })
