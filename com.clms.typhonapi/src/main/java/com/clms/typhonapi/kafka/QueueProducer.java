@@ -8,26 +8,27 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.LongSerializer;
-import org.apache.kafka.common.serialization.StringSerializer;
+
+import ac.uk.york.typhon.analytics.commons.datatypes.events.Event;
+import ac.uk.york.typhon.analytics.commons.serialization.EventSchema;
 
 public class QueueProducer {
 
-	private Producer<Long, String> producer;
+	private Producer<Long, Event> producer;
 	
     public QueueProducer(String connectionString) {
         Properties props = new Properties();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, connectionString);
         props.put(ProducerConfig.CLIENT_ID_CONFIG, IKafkaConstants.CLIENT_ID);
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class.getName());
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-        //props.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, CustomPartitioner.class.getName());
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class);
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, EventSchema.class);
                 
         producer = new KafkaProducer<>(props);
     }
     
-    public void produce(String topic, String message) {
-    	ProducerRecord<Long, String> record 
-			= new ProducerRecord<Long, String>(topic, message);
+    public void produce(String topic, Event message) {
+    	ProducerRecord<Long, Event> record 
+			= new ProducerRecord<Long, Event>(topic, message);
 		try {
 			producer.send(record).get();
 		} catch (ExecutionException e) {

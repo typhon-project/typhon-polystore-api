@@ -2,11 +2,13 @@ package com.clms.typhonapi.utils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import com.clms.typhonapi.kafka.QueueConsumer;
 import com.clms.typhonapi.kafka.ConsumerHandler;
 import com.clms.typhonapi.kafka.QueueProducer;
 
+import ac.uk.york.typhon.analytics.commons.datatypes.events.Event;
 import ac.uk.york.typhon.analytics.commons.datatypes.events.PreEvent;
 
 public class QueryRunner implements ConsumerHandler {
@@ -14,7 +16,7 @@ public class QueryRunner implements ConsumerHandler {
 	private QueueProducer preProducer;
 	private static String PRE_TOPIC = "PRE";
 	private static String AUTH_TOPIC = "AUTH";
-	private Map<Integer, String> receivedQueries = new HashMap<Integer, String>();
+	private Map<Integer, PreEvent> receivedQueries = new HashMap<Integer, PreEvent>();
 	private String kafkaConnection = "192.168.2.28:9092";
 	
 	public QueryRunner() {
@@ -26,25 +28,28 @@ public class QueryRunner implements ConsumerHandler {
 	public String run(String user, String query) {
 		//Create pre event
 		PreEvent event = new PreEvent();
+		event.setId(UUID.randomUUID().toString());
 		event.setQuery(query);
 		event.setUser(user);
 		
 		//Post pre event to PRE queue
-		this.preProducer.produce(PRE_TOPIC, query);
+		this.preProducer.produce(PRE_TOPIC, event);
 		
 		long startedOn = System.currentTimeMillis();
 		int timeout = 10 * 1000;
 		
-		boolean success = false;
+		boolean timedOut = false;
+		int eventHash = event.getId().hashCode();
 		
 	    while (true) {
-	    	if (receivedQueries.containsKey(query.hashCode())) {
-	    		success = true;
-	    		receivedQueries.remove(query.hashCode());
+	    	if (receivedQueries.containsKey(eventHash)) {
+	    		event = receivedQueries.get(eventHash);
+	    		receivedQueries.remove(eventHash);
 	    		break;
 	    	}
 	    	
 	        if (System.currentTimeMillis() - startedOn > timeout) {
+	        	timedOut = true;
 	            break;
 	        }
 	        
@@ -55,17 +60,20 @@ public class QueryRunner implements ConsumerHandler {
 			}
 	    }
 	    
-	    if (success) {
+	    if (timedOut) {
+	    	return "Quert timeout";
+	    } else {
+	    	if (event.isAuthenticated() == false) {
+	    		return "Not authorized";
+	    	}
 	    	//run query...
-	    	return "Query response !!";
+	    	return "Query response: " + event.getId();
 	    }
-	    
-		return null;
 	}
 	
 	@Override
-	public void onNewMesaage(String message) {
-		receivedQueries.put(message.hashCode(), message);
+	public void onNewMesaage(Event event) {
+		receivedQueries.put(event.getId().hashCode(), (PreEvent)event);
 	}
 	
 	private void subscribeToAuthorization() {
