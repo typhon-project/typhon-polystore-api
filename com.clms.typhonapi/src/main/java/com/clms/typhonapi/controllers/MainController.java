@@ -54,7 +54,7 @@ public class MainController {
     public void init() {
     	Model dl = ModelHelper.getDlModel(modelRepository, -1);
     	serviceRegistry.load(dl == null ? "" : dl.getContents());
-    	queryRunner = new QueryRunner();
+    	queryRunner = new QueryRunner(serviceRegistry);
     }
     
     @RequestMapping("/api/status")

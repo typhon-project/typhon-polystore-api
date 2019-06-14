@@ -9,12 +9,17 @@ public class Service {
         this.name = name;
         this.status = status;
     }
-
-    public Service(String name, String status, String host, String port, String username, String password, String type,String db_name) {
-        this.name = name;
-        this.status = status;
+    
+    public Service(ServiceType serviceType, String name, String host, String port) {
+    	this.name = name;
+        this.serviceType = serviceType;
         this.host = host;
         this.port = port;
+    }
+
+    public Service(ServiceType serviceType, String name, String status, String host, String port, String username, String password, String type,String db_name) {
+    	this(serviceType, name, host, port);
+        this.status = status;
         this.username = username;
         this.password = password;
         this.type = type;

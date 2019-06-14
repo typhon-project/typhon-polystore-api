@@ -1,13 +1,16 @@
 package com.clms.typhonapi.utils;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
+
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.*;
 import java.io.*;
 
-import com.clms.typhonapi.models.Service;;
+import com.clms.typhonapi.models.Service;
+import com.clms.typhonapi.models.ServiceType;;
 
 public class ServiceRegistry {
 
@@ -19,11 +22,13 @@ public class ServiceRegistry {
 	
 	public void load(String xmi) {
 		//TODO: temporary code, read from XMI
-		_services = new ArrayList<>();
-        Service db1 = new Service("mariadbtest","ACTIVE","test.mariadb","3306","root","admin","mariadb","testdb");
-        Service db2 = new Service("polystoredb","ACTIVE","mongodb","27017","admin","admin","mongodb","admin");
-        _services.add(db1);
-        _services.add(db2);
+		_services = new ArrayList<Service>() {
+			{
+				add(new Service(ServiceType.Database, "mariadbtest","ACTIVE","test.mariadb","3306","root","admin","mariadb","testdb"));
+				add(new Service(ServiceType.Database, "polystoredb","ACTIVE","mongodb","27017","admin","admin","mongodb","admin"));
+				add(new Service(ServiceType.Analytics, "analytics", "localhost", "9092"));
+			}
+		};
         
 		if (xmi == null || xmi.isBlank()) {
 			return;
@@ -68,7 +73,16 @@ public class ServiceRegistry {
 	}
 
 	public ArrayList<Service> getDatabases() {
-        //TODO: return only databases
-        return _services;
+        return new ArrayList<>(_services.stream()
+        		.filter(s -> s.getServiceType() == ServiceType.Database)
+        		.collect(Collectors.toList()));
+	}
+
+	public Service getService(ServiceType analytics) {
+		return _services
+				.stream()
+				.filter(s -> s.getServiceType() == ServiceType.Analytics)
+				.findFirst()
+				.orElse(null);
 	}
 }

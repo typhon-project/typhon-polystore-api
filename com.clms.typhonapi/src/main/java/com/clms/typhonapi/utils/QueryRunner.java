@@ -7,6 +7,8 @@ import java.util.UUID;
 import com.clms.typhonapi.kafka.QueueConsumer;
 import com.clms.typhonapi.kafka.ConsumerHandler;
 import com.clms.typhonapi.kafka.QueueProducer;
+import com.clms.typhonapi.models.Service;
+import com.clms.typhonapi.models.ServiceType;
 
 import ac.uk.york.typhon.analytics.commons.datatypes.events.Event;
 import ac.uk.york.typhon.analytics.commons.datatypes.events.PreEvent;
@@ -17,11 +19,25 @@ public class QueryRunner implements ConsumerHandler {
 	private static String PRE_TOPIC = "PRE";
 	private static String AUTH_TOPIC = "AUTH";
 	private Map<Integer, PreEvent> receivedQueries = new HashMap<Integer, PreEvent>();
-	private String kafkaConnection = "192.168.2.28:9092";
+	private String kafkaConnection = "";
 	
-	public QueryRunner() {
+	public QueryRunner(ServiceRegistry serviceRegistry) {
+		init(serviceRegistry);
+	}
+	
+	public void init(ServiceRegistry serviceRegistry) {
+		Service analyticsService = serviceRegistry.getService(ServiceType.Analytics);
+		if (analyticsService == null) {
+			System.out.println("[~~~~~~~WARNING~~~~~~~] No analytics service found in dl...");
+			return;
+		}
+		
+		receivedQueries.clear();
+		kafkaConnection = analyticsService.getHost() + ":" + analyticsService.getPort();
 		preProducer = new QueueProducer(kafkaConnection);
 		//TODO: initialize query engine
+		
+		//TODO: kill previous consumption task (if any)
 		subscribeToAuthorization();
 	}
 	
@@ -66,7 +82,7 @@ public class QueryRunner implements ConsumerHandler {
 	    	if (event.isAuthenticated() == false) {
 	    		return "Not authorized";
 	    	}
-	    	//run query...
+	    	//TODO: run query and publish to POST topic
 	    	return "Query response: " + event.getId();
 	    }
 	}
