@@ -49,11 +49,18 @@ export class LoginComponent implements OnInit {
         this.loading = true;
         this.api.login(this.f.username.value, this.f.password.value)
             .subscribe(data => {
+                this.loading = false;
+                
+                if (data == true) {
                     localStorage.setItem('currentUser', JSON.stringify(
-                      { authdata: window.btoa(this.f.username.value + ':' + this.f.password.value) }
-                    ));
-                    this.loading = false;
-                    this.router.navigate([this.returnUrl]);
+                        { authdata: window.btoa(this.f.username.value + ':' + this.f.password.value) }
+                      ));
+                      this.router.navigate([this.returnUrl]);
+                      this.error = "";
+                } else {
+                    this.error = "Not valid credentials";
+                }
+
                 },
                 error => {
                     this.error = error;

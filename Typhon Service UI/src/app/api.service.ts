@@ -25,8 +25,8 @@ export class ApiService {
     return "http://localhost:8080" + path;
   }
 
-  login(username: string, password: string): Observable<void> {
-    return this.http.post<any>(this.getApiPath("/api/users/authenticate"), { username, password }, httpOptions);
+  login(username: string, password: string): Observable<boolean> {
+    return this.http.post<boolean>(this.getApiPath("/api/users/authenticate"), { username, password }, httpOptions);
   }
 
   logout() {

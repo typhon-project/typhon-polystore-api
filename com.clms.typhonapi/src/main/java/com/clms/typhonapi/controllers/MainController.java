@@ -9,6 +9,7 @@ import com.clms.typhonapi.utils.DbUtils;
 import com.clms.typhonapi.utils.ModelHelper;
 import com.clms.typhonapi.utils.QueryRunner;
 import com.clms.typhonapi.utils.ServiceRegistry;
+import com.clms.typhonapi.utils.UserHelper;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -39,6 +40,8 @@ public class MainController {
 
 	private static boolean status = true;
 	
+	@Autowired
+    private UserHelper userHelper;
     @Autowired
     private UserStorage userRepository;
     @Autowired
@@ -55,11 +58,13 @@ public class MainController {
     	Model dl = ModelHelper.getDlModel(modelRepository, -1);
     	serviceRegistry.load(dl == null ? "" : dl.getContents());
     	queryRunner = new QueryRunner(serviceRegistry);
+    	userHelper.createInitialUser();
     }
     
     @RequestMapping(path = "/api/users/authenticate", method = RequestMethod.POST)
     public boolean login(@RequestBody Map<String,String> json) {
-    	return false;
+    	User user = userHelper.get(json.get("username"), json.get("password"));
+    	return user != null;
     }
     
     @RequestMapping("/api/status")

@@ -10,10 +10,15 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.clms.typhonapi.utils.CustomAuthenticationProvider;
+
 @Configuration
 @EnableWebSecurity
 public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
 
+	@Autowired
+    private CustomAuthenticationProvider authProvider;
+	
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
@@ -30,10 +35,12 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     public void configureGlobal(AuthenticationManagerBuilder authentication)
             throws Exception
     {
-        authentication.inMemoryAuthentication()
+    	authentication.authenticationProvider(authProvider);
+    	
+        /*authentication.inMemoryAuthentication()
                 .withUser("admin")
                 .password(passwordEncoder().encode("admin"))
-                .authorities("ROLE_USER");
+                .authorities("ROLE_USER");*/
     }
 
     @Bean
