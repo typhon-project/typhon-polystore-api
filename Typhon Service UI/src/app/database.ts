@@ -1,5 +1,10 @@
 export class Database {
     name: string;
-    type: string;
     status: string;
+    dbType: DatabaseType;
+}
+
+export enum DatabaseType {
+	MongoDb = "MongoDb",
+	MariaDb = "MariaDb"
 }

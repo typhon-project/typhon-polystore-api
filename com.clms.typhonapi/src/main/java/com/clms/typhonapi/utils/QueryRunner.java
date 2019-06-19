@@ -26,14 +26,14 @@ public class QueryRunner implements ConsumerHandler {
 	}
 	
 	public void init(ServiceRegistry serviceRegistry) {
-		Service analyticsService = serviceRegistry.getService(ServiceType.Analytics);
-		if (analyticsService == null) {
+		Service analyticsQueue = serviceRegistry.getService(ServiceType.Queue);
+		if (analyticsQueue == null) {
 			System.out.println("[~~~~~~~WARNING~~~~~~~] No analytics service found in dl...");
 			return;
 		}
 		
 		receivedQueries.clear();
-		kafkaConnection = analyticsService.getHost() + ":" + analyticsService.getPort();
+		kafkaConnection = analyticsQueue.getHost() + ":" + analyticsQueue.getPort();
 		preProducer = new QueueProducer(kafkaConnection);
 		//TODO: initialize query engine
 		

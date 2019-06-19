@@ -9,6 +9,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.*;
 import java.io.*;
 
+import com.clms.typhonapi.models.DatabaseType;
 import com.clms.typhonapi.models.Service;
 import com.clms.typhonapi.models.ServiceType;;
 
@@ -24,9 +25,9 @@ public class ServiceRegistry {
 		//TODO: temporary code, read from XMI
 		_services = new ArrayList<Service>() {
 			{
-				add(new Service(ServiceType.Database, "mariadbtest","ACTIVE","test.mariadb","3306","root","admin","mariadb","testdb"));
-				add(new Service(ServiceType.Database, "polystoredb","ACTIVE","mongodb","27017","admin","admin","mongodb","admin"));
-				add(new Service(ServiceType.Analytics, "analytics", "localhost", "9092"));
+				add(new Service(ServiceType.Database, "mariadbtest","ACTIVE","test.mariadb","3306","root","admin", DatabaseType.MariaDb));
+				add(new Service(ServiceType.Database, "polystoredb","ACTIVE","mongodb","27017","admin","admin", DatabaseType.MongoDb));
+				add(new Service(ServiceType.Queue, "kafka for analytics", "localhost", "9092"));
 			}
 		};
         

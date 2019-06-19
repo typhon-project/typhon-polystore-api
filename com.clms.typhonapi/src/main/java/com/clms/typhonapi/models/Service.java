@@ -5,6 +5,15 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonSerialize
 public class Service {
 
+    private String name;
+    private String status;
+    private String host;
+    private String port;
+    private String username;
+    private String password;
+    private DatabaseType dbType;
+    private ServiceType serviceType;
+    
     public Service(String name, String status) {
         this.name = name;
         this.status = status;
@@ -17,16 +26,15 @@ public class Service {
         this.port = port;
     }
 
-    public Service(ServiceType serviceType, String name, String status, String host, String port, String username, String password, String type,String db_name) {
+    public Service(ServiceType serviceType, String name, String status, String host, 
+    		String port, String username, String password, DatabaseType dbType) {
     	this(serviceType, name, host, port);
         this.status = status;
         this.username = username;
         this.password = password;
-        this.type = type;
-        this.db_name = db_name;
+        this.dbType = dbType;
     }
 
-    private ServiceType serviceType;
     public ServiceType getServiceType() {
         return serviceType;
     }
@@ -35,19 +43,14 @@ public class Service {
         this.serviceType = serviceType;
     }
     
-    private String name;
-    private String status;
-    private String host;
-
-    public String getDb_name() {
-        return db_name;
+    public DatabaseType getDbType() {
+        return dbType;
     }
 
-    public void setDb_name(String db_name) {
-        this.db_name = db_name;
+    public void setDbType(DatabaseType dbType) {
+        this.dbType = dbType;
     }
 
-    private String db_name;
     public String getHost() {
         return host;
     }
@@ -79,20 +82,6 @@ public class Service {
     public void setPassword(String password) {
         this.password = password;
     }
-
-    private String port;
-    private String username;
-    private String password;
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    private String type;
 
     public String getName() {
         return name;
