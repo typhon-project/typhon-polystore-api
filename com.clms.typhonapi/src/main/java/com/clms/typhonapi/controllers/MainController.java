@@ -46,7 +46,9 @@ public class MainController {
     private UserStorage userRepository;
     @Autowired
     private ModelStorage modelRepository;
+    @Autowired
     private ServiceRegistry serviceRegistry;
+    @Autowired
     private QueryRunner queryRunner;
     
     public MainController() {
@@ -57,7 +59,7 @@ public class MainController {
     public void init() {
     	Model dl = ModelHelper.getDlModel(modelRepository, -1);
     	serviceRegistry.load(dl == null ? "" : dl.getContents());
-    	queryRunner = new QueryRunner(serviceRegistry);
+    	queryRunner.init();
     	userHelper.createInitialUser();
     }
     

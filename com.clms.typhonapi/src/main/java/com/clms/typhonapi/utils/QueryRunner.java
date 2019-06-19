@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.clms.typhonapi.kafka.QueueConsumer;
 import com.clms.typhonapi.kafka.ConsumerHandler;
 import com.clms.typhonapi.kafka.QueueProducer;
@@ -13,6 +16,7 @@ import com.clms.typhonapi.models.ServiceType;
 import ac.uk.york.typhon.analytics.commons.datatypes.events.Event;
 import ac.uk.york.typhon.analytics.commons.datatypes.events.PreEvent;
 
+@Component
 public class QueryRunner implements ConsumerHandler {
 
 	private QueueProducer preProducer;
@@ -20,12 +24,12 @@ public class QueryRunner implements ConsumerHandler {
 	private static String AUTH_TOPIC = "AUTH";
 	private Map<Integer, PreEvent> receivedQueries = new HashMap<Integer, PreEvent>();
 	private String kafkaConnection = "";
+	private Map<String, Object> dbConnections = new HashMap<String, Object>();
 	
-	public QueryRunner(ServiceRegistry serviceRegistry) {
-		init(serviceRegistry);
-	}
-	
-	public void init(ServiceRegistry serviceRegistry) {
+	@Autowired
+	private ServiceRegistry serviceRegistry;
+		
+	public void init() {
 		Service analyticsQueue = serviceRegistry.getService(ServiceType.Queue);
 		if (analyticsQueue == null) {
 			System.out.println("[~~~~~~~WARNING~~~~~~~] No analytics service found in dl...");
@@ -35,10 +39,15 @@ public class QueryRunner implements ConsumerHandler {
 		receivedQueries.clear();
 		kafkaConnection = analyticsQueue.getHost() + ":" + analyticsQueue.getPort();
 		preProducer = new QueueProducer(kafkaConnection);
-		//TODO: initialize query engine
+		//TODO: initialize query engine with xmi and dbConnections
+		updateDbConnections();
 		
 		//TODO: kill previous consumption task (if any)
 		subscribeToAuthorization();
+	}
+	
+	public void initDatabases() {
+		
 	}
 	
 	public String run(String user, String query) {
@@ -95,5 +104,9 @@ public class QueryRunner implements ConsumerHandler {
 	private void subscribeToAuthorization() {
 		Thread subscribeTask = new Thread(new QueueConsumer(kafkaConnection, AUTH_TOPIC, this));
 		subscribeTask.start();
+	}
+	
+	private void updateDbConnections() {
+		//TODO: close open connections
 	}
 }

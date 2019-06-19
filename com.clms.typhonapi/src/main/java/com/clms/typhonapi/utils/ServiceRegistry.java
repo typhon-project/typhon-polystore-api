@@ -3,6 +3,7 @@ package com.clms.typhonapi.utils;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
+import org.springframework.stereotype.Component;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
@@ -13,6 +14,7 @@ import com.clms.typhonapi.models.DatabaseType;
 import com.clms.typhonapi.models.Service;
 import com.clms.typhonapi.models.ServiceType;;
 
+@Component
 public class ServiceRegistry {
 
 	private ArrayList<Service> _services;
