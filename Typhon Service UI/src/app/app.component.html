@@ -5,11 +5,17 @@
             <img src="../assets/images/typhon_logo_ui-01.png" height="48"/>
         </div>
 
-        <ul class="list-unstyled components">
+        <ul *ngIf="isLoggedIn" class="list-unstyled components">
             <li *ngFor="let item of items">
                 <a routerLink="{{item.url}}">{{item.name}}</a>
             </li>
         </ul>
+
+        <div *ngIf="isLoggedIn" class="user-area">
+            <i class="fa fa-user user-icon"></i>
+            <span>{{ username }}</span>
+            <span (click)="logout()" class="logout-btn">LOGOUT</span>
+        </div>
 
         <div class="status-inidcator" (click)="toogleStatus()">
             <span [ngClass]="{ 'up': status, 'down': !status, 'updating': waitingForStatusUpdate }" class="status-icon"></span>

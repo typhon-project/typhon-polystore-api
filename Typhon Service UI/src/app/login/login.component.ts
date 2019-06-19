@@ -53,8 +53,12 @@ export class LoginComponent implements OnInit {
                 
                 if (data == true) {
                     localStorage.setItem('currentUser', JSON.stringify(
-                        { authdata: window.btoa(this.f.username.value + ':' + this.f.password.value) }
+                        { 
+                            username: this.f.username.value,
+                            authdata: window.btoa(this.f.username.value + ':' + this.f.password.value) 
+                        }
                       ));
+                      this.api.userStatusChanged.emit(this.f.username.value);
                       this.router.navigate([this.returnUrl]);
                       this.error = "";
                 } else {

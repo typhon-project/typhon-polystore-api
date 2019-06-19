@@ -28,6 +28,7 @@
     "angular-in-memory-web-api": "github:brandonroberts/in-memory-web-api-bazel#50a34d8",
     "codelyzer": "^5.0.1",
     "core-js": "^2.5.4",
+    "file-saver": "^2.0.2",
     "rxjs": "^6.5.1",
     "zone.js": "~0.8.26"
   },

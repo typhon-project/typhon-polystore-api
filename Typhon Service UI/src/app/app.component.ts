@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Service } from './service';
 import { SERVICES } from './mock-services';
 import { ApiService } from './api.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -14,9 +15,27 @@ export class AppComponent {
   status = false;
   waitingForStatusUpdate = false;
   items: Service[] = SERVICES;
+  username: string;
+  isLoggedIn: boolean;
 
-  constructor(private api: ApiService) {
+  constructor(private api: ApiService, private router: Router) {
     this.getStatus();
+    this.refreshLoginStatus();
+
+    this.api.userStatusChanged.subscribe(username => {
+      this.refreshLoginStatus();
+    });
+  }
+
+  refreshLoginStatus() {
+    this.username = this.api.getLogedinUser();
+    this.isLoggedIn = this.username != null && this.username != "";
+  }
+
+  logout() {
+    this.api.logout();
+    this.refreshLoginStatus();
+    this.router.navigate(["/login"]);
   }
 
   private getStatus() {

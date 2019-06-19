@@ -1,10 +1,11 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Output, EventEmitter } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { User } from './user';
 import { Database } from './database';
 import { Model } from './model';
 import { QueryResponse } from './QueryResponse';
+import { saveAs } from 'file-saver';
 
 const httpOptions = {
   headers: new HttpHeaders({
@@ -17,6 +18,8 @@ const httpOptions = {
 })
 export class ApiService {
 
+  @Output() userStatusChanged: EventEmitter<string> = new EventEmitter();
+  
   constructor(private http: HttpClient) {
 
   }
@@ -27,6 +30,16 @@ export class ApiService {
 
   login(username: string, password: string): Observable<boolean> {
     return this.http.post<boolean>(this.getApiPath("/api/users/authenticate"), { username, password }, httpOptions);
+  }
+
+  getLogedinUser(): string {
+    const currentUser = localStorage.getItem("currentUser");
+    try {
+      const userInfo = JSON.parse(currentUser);
+      return userInfo.username;
+    } catch (e) {
+      return null;
+    }
   }
 
   logout() {
@@ -42,8 +55,12 @@ export class ApiService {
     data["backup_name"] = backupName;
     this.http.post<void>(this.getApiPath("/api/backup"), JSON.stringify(data), httpOptions)
       .subscribe(data => {
-        console.log(data['filename']);
-        window.open(this.getApiPath("/api/download/" + data['filename']));
+        this.http.get<string>(
+          this.getApiPath("/api/download/" + data['filename']),
+          { responseType: 'blob' as 'json'}
+        ).subscribe(blob => {
+          saveAs(blob,  data['filename']);
+        });
       });
   }
 
@@ -84,7 +101,12 @@ export class ApiService {
   }
 
   downloadModel(type: string, version: number): void {
-    window.open(this.getApiPath("/api/model/" + type + "/" + version));
+    this.http.get<string>(
+      this.getApiPath("/api/model/" + type + "/" + version),
+      { responseType: 'blob' as 'json'}
+    ).subscribe(blob => {
+      saveAs(blob, "model_" + version + ".t" + type);
+    });
   }
 
   runQuery(query: string): Observable<QueryResponse> {

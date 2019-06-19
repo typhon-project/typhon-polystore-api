@@ -31,6 +31,30 @@
     top: -40px;
 }
 
+.user-area {
+    position: absolute;
+    bottom: 130px;
+    display: block;
+    width: 220px;
+    margin: 15px;
+    padding: 5px;
+}
+
+.user-area .logout-btn {
+    cursor: pointer;
+    float: right;
+    opacity: 0.8;
+}
+
+.user-area .logout-btn:hover {
+    opacity: 1;
+}
+
+.user-area .user-icon {
+    margin-right: 2px;
+    font-size: 22px;
+}
+
 .status-inidcator {
     position: absolute;
     bottom: 80px;
