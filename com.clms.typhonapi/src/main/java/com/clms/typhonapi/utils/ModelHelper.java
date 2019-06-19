@@ -7,37 +7,44 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.clms.typhonapi.models.Model;
 import com.clms.typhonapi.storage.ModelStorage;
 
+@Component
 public class ModelHelper {
 
-	public static Model getDlModel(ModelStorage repo, int version) {
-		return ModelHelper.getModel(repo, "DL", version);
+	@Autowired
+    private ModelStorage repo;
+	
+	public Model getDlModel(int version) {
+		return getModel("DL", version);
 	}
 	
-	public static Model getMlModel(ModelStorage repo, int version) {
-		return ModelHelper.getModel(repo, "ML", version);
+	public Model getMlModel(int version) {
+		return getModel("ML", version);
 	}
 	
-	public static ArrayList<Model> getDlModels(ModelStorage repo) {
-		return ModelHelper.getModels(repo, "DL");
+	public ArrayList<Model> getDlModels() {
+		return getModels("DL");
 	}
 	
-	public static ArrayList<Model> getMlModels(ModelStorage repo) {
-		return ModelHelper.getModels(repo, "ML");
+	public ArrayList<Model> getMlModels() {
+		return getModels("ML");
 	}
 
-	public static void addDlModel(ModelStorage repo, String name, String contents) {
-		ModelHelper.addModel(repo, "DL", name, contents);
+	public void addDlModel(String name, String contents) {
+		addModel("DL", name, contents);
 	}
 
-	public static void addMlModel(ModelStorage repo, String name, String contents) {
-		ModelHelper.addModel(repo, "ML", name, contents);
+	public void addMlModel(String name, String contents) {
+		addModel("ML", name, contents);
 	}
 	
-	private static void addModel(ModelStorage repo, String type, String name, String contents) {
-		Model latest =ModelHelper.getModel(repo, type);
+	private void addModel(String type, String name, String contents) {
+		Model latest = getModel(type);
 		
 		Model m = new Model();
 		m.setId(UUID.randomUUID().toString());
@@ -54,11 +61,11 @@ public class ModelHelper {
 		repo.insert(m);
 	}
 	
-	public static Model getModel(ModelStorage repo, String type) {
-		return ModelHelper.getModel(repo, type, -1);
+	public Model getModel(String type) {
+		return getModel(type, -1);
 	}
 	
-	public static Model getModel(ModelStorage repo, String type, int version) {
+	public Model getModel(String type, int version) {
 		Optional<Model> model = null;
 		
 		if (version < 0) {
@@ -81,7 +88,7 @@ public class ModelHelper {
 		return model.get();
 	}
 	
-	private static ArrayList<Model> getModels(ModelStorage repo, String type) {
+	private ArrayList<Model> getModels(String type) {
 		return new ArrayList<Model>(repo.findAll()
 				.stream()
 				.filter(m -> m.getType().equalsIgnoreCase(type))

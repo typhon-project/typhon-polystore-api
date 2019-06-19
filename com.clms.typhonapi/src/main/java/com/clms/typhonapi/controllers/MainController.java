@@ -45,11 +45,11 @@ public class MainController {
     @Autowired
     private UserStorage userRepository;
     @Autowired
-    private ModelStorage modelRepository;
-    @Autowired
     private ServiceRegistry serviceRegistry;
     @Autowired
     private QueryRunner queryRunner;
+    @Autowired
+    private ModelHelper modelHelper;
     
     public MainController() {
     	serviceRegistry = new ServiceRegistry();
@@ -57,7 +57,7 @@ public class MainController {
     
     @PostConstruct
     public void init() {
-    	Model dl = ModelHelper.getDlModel(modelRepository, -1);
+    	Model dl = modelHelper.getDlModel(-1);
     	serviceRegistry.load(dl == null ? "" : dl.getContents());
     	queryRunner.init();
     	userHelper.createInitialUser();
@@ -132,7 +132,7 @@ public class MainController {
             userRepository.save(user);
             return ResponseEntity.status(200).body(u);
         }
-        else{
+        else {
             return ResponseEntity.status(404).body(null);
         }
     }
@@ -144,22 +144,22 @@ public class MainController {
     
     @RequestMapping(path = "/api/models/dl", method = RequestMethod.GET)
     public ArrayList<Model> getDlModels() {
-    	return ModelHelper.getDlModels(modelRepository);
+    	return modelHelper.getDlModels();
     }
     
     @RequestMapping(path = "/api/models/ml", method = RequestMethod.GET)
     public ArrayList<Model> getMlModels() {
-    	return ModelHelper.getMlModels(modelRepository);
+    	return modelHelper.getMlModels();
     }
 
     @RequestMapping(path = "/api/model/dl", method = RequestMethod.POST)
     public void setTyphoneDLModel(@RequestBody Map<String, String> json) {
-    	ModelHelper.addDlModel(modelRepository, json.get("name"), json.get("contents"));
+    	modelHelper.addDlModel(json.get("name"), json.get("contents"));
     }
     
     @RequestMapping(path = "/api/model/ml", method = RequestMethod.POST)
     public void setTyphoneMlModel(@RequestBody Map<String, String> json) {
-    	ModelHelper.addMlModel(modelRepository, json.get("name"), json.get("contents"));
+    	modelHelper.addMlModel(json.get("name"), json.get("contents"));
     }
 
     //@ApiOperation(value= "Get databases")
@@ -173,7 +173,7 @@ public class MainController {
     	HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("Content-disposition", "attachment; filename=model.xmi");
      
-        Model m = ModelHelper.getModel(modelRepository, type, version);
+        Model m = modelHelper.getModel(type, version);
         	
         return ResponseEntity.ok()
           .headers(responseHeaders)
