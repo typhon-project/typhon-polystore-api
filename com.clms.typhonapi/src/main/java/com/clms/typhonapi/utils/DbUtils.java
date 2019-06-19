@@ -38,9 +38,8 @@ public class DbUtils {
             backupFile.delete();
             e.printStackTrace();
         }
-            return backupFile;
-
-
+        
+        return backupFile;
     }
 
 

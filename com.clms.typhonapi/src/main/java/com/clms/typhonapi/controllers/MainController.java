@@ -1,9 +1,7 @@
 package com.clms.typhonapi.controllers;
 
 import com.clms.typhonapi.models.Model;
-import com.clms.typhonapi.models.Service;
 import com.clms.typhonapi.models.User;
-import com.clms.typhonapi.storage.ModelStorage;
 import com.clms.typhonapi.storage.UserStorage;
 import com.clms.typhonapi.utils.DbUtils;
 import com.clms.typhonapi.utils.ModelHelper;
@@ -52,13 +50,12 @@ public class MainController {
     private ModelHelper modelHelper;
     
     public MainController() {
-    	serviceRegistry = new ServiceRegistry();
+
     }
     
     @PostConstruct
     public void init() {
-    	Model dl = modelHelper.getDlModel(-1);
-    	serviceRegistry.load(dl == null ? "" : dl.getContents());
+    	serviceRegistry.load(modelHelper.getDlModel(-1));
     	queryRunner.init();
     	userHelper.createInitialUser();
     }
@@ -155,17 +152,12 @@ public class MainController {
     @RequestMapping(path = "/api/model/dl", method = RequestMethod.POST)
     public void setTyphoneDLModel(@RequestBody Map<String, String> json) {
     	modelHelper.addDlModel(json.get("name"), json.get("contents"));
+    	serviceRegistry.load(modelHelper.getDlModel(-1));
     }
     
     @RequestMapping(path = "/api/model/ml", method = RequestMethod.POST)
     public void setTyphoneMlModel(@RequestBody Map<String, String> json) {
     	modelHelper.addMlModel(json.get("name"), json.get("contents"));
-    }
-
-    //@ApiOperation(value= "Get databases")
-    @RequestMapping(path = "/api/databases", method = RequestMethod.GET)
-    public ResponseEntity getDatabases() {
-        return ResponseEntity.status(200).body(serviceRegistry.getDatabases());
     }
     
     @RequestMapping(path = "/api/model/{type}/{version}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
@@ -179,7 +171,13 @@ public class MainController {
           .headers(responseHeaders)
           .body((m == null ? "" : m.getContents()).getBytes());
     }
-    
+
+    //@ApiOperation(value= "Get databases")
+    @RequestMapping(path = "/api/databases", method = RequestMethod.GET)
+    public ResponseEntity getDatabases() {
+        return ResponseEntity.status(200).body(serviceRegistry.getDatabases());
+    }
+        
     @RequestMapping(path = "/api/query", method = RequestMethod.POST)
     @Async
     public Future<String> executeQuery(@RequestBody String query){

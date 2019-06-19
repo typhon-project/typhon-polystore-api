@@ -11,6 +11,7 @@ import javax.xml.parsers.*;
 import java.io.*;
 
 import com.clms.typhonapi.models.DatabaseType;
+import com.clms.typhonapi.models.Model;
 import com.clms.typhonapi.models.Service;
 import com.clms.typhonapi.models.ServiceType;;
 
@@ -23,7 +24,15 @@ public class ServiceRegistry {
 		_services = new ArrayList<>();
 	}
 	
-	public void load(String xmi) {
+	public void load(Model dlModel) {
+		_services.clear();
+		if (dlModel == null) {
+			return;
+		}
+		load(dlModel.getContents());
+	}
+	
+	private void load(String xmi) {
 		//TODO: temporary code, read from XMI
 		_services = new ArrayList<Service>() {
 			{
