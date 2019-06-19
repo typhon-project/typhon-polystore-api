@@ -4,6 +4,7 @@ import com.clms.typhonapi.models.Model;
 import com.clms.typhonapi.models.User;
 import com.clms.typhonapi.storage.UserStorage;
 import com.clms.typhonapi.utils.DbUtils;
+import com.clms.typhonapi.utils.EvolutionHelper;
 import com.clms.typhonapi.utils.ModelHelper;
 import com.clms.typhonapi.utils.QueryRunner;
 import com.clms.typhonapi.utils.ServiceRegistry;
@@ -48,6 +49,8 @@ public class MainController {
     private QueryRunner queryRunner;
     @Autowired
     private ModelHelper modelHelper;
+    @Autowired
+    private EvolutionHelper evolutionHelper;
     
     public MainController() {
 
@@ -55,8 +58,8 @@ public class MainController {
     
     @PostConstruct
     public void init() {
-    	serviceRegistry.load(modelHelper.getDlModel(-1));
-    	queryRunner.init();
+    	serviceRegistry.load(modelHelper.getDlModel());
+    	queryRunner.init(modelHelper.getMlModel());
     	userHelper.createInitialUser();
     }
     
@@ -152,12 +155,13 @@ public class MainController {
     @RequestMapping(path = "/api/model/dl", method = RequestMethod.POST)
     public void setTyphoneDLModel(@RequestBody Map<String, String> json) {
     	modelHelper.addDlModel(json.get("name"), json.get("contents"));
-    	serviceRegistry.load(modelHelper.getDlModel(-1));
+    	serviceRegistry.load(modelHelper.getDlModel());
     }
     
     @RequestMapping(path = "/api/model/ml", method = RequestMethod.POST)
     public void setTyphoneMlModel(@RequestBody Map<String, String> json) {
     	modelHelper.addMlModel(json.get("name"), json.get("contents"));
+    	evolutionHelper.evolve(modelHelper.getMlModel());
     }
     
     @RequestMapping(path = "/api/model/{type}/{version}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)

@@ -19,8 +19,16 @@ public class ModelHelper {
 	@Autowired
     private ModelStorage repo;
 	
+	public Model getDlModel() {
+		return getModel("DL", -1);
+	}
+	
 	public Model getDlModel(int version) {
 		return getModel("DL", version);
+	}
+	
+	public Model getMlModel() {
+		return getModel("ML", -1);
 	}
 	
 	public Model getMlModel(int version) {

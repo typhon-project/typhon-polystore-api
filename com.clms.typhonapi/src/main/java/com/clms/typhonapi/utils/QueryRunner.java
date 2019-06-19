@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import com.clms.typhonapi.kafka.QueueConsumer;
 import com.clms.typhonapi.kafka.ConsumerHandler;
 import com.clms.typhonapi.kafka.QueueProducer;
+import com.clms.typhonapi.models.Model;
 import com.clms.typhonapi.models.Service;
 import com.clms.typhonapi.models.ServiceType;
 
@@ -29,7 +30,7 @@ public class QueryRunner implements ConsumerHandler {
 	@Autowired
 	private ServiceRegistry serviceRegistry;
 		
-	public void init() {
+	public void init(Model mlModel) {
 		Service analyticsQueue = serviceRegistry.getService(ServiceType.Queue);
 		if (analyticsQueue == null) {
 			System.out.println("[~~~~~~~WARNING~~~~~~~] No analytics service found in dl...");
