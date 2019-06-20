@@ -58,9 +58,9 @@ public class MainController {
     
     @PostConstruct
     public void init() {
+    	userHelper.createInitialUser();
     	serviceRegistry.load(modelHelper.getDlModel());
     	queryRunner.init(modelHelper.getMlModel());
-    	userHelper.createInitialUser();
     }
     
     @RequestMapping(path = "/api/users/authenticate", method = RequestMethod.POST)

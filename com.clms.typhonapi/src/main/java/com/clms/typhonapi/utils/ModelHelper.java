@@ -52,6 +52,7 @@ public class ModelHelper {
 	}
 	
 	private void addModel(String type, String name, String contents) {
+		//TODO: validate model: for example, is it a valid xml?
 		Model latest = getModel(type);
 		
 		Model m = new Model();

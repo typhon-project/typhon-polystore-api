@@ -36,9 +36,9 @@ public class ServiceRegistry {
 		//TODO: temporary code, read from XMI
 		_services = new ArrayList<Service>() {
 			{
-				add(new Service(ServiceType.Database, "mariadbtest","ACTIVE","test.mariadb","3306","root","admin", DatabaseType.MariaDb));
-				add(new Service(ServiceType.Database, "polystoredb","ACTIVE","mongodb","27017","admin","admin", DatabaseType.MongoDb));
-				add(new Service(ServiceType.Queue, "kafka for analytics", "localhost", "9092"));
+				add(new Service(ServiceType.Database, "mariadbtest", "ACTIVE", "localhost", 3306, "root", "admin", DatabaseType.MariaDb));
+				add(new Service(ServiceType.Database, "polystoredb","ACTIVE","localhost", 27017,"admin", "admin", DatabaseType.MongoDb));
+				add(new Service(ServiceType.Queue, "kafka for analytics", "localhost", 9092));
 			}
 		};
         
@@ -90,10 +90,10 @@ public class ServiceRegistry {
         		.collect(Collectors.toList()));
 	}
 
-	public Service getService(ServiceType analytics) {
+	public Service getService(ServiceType type) {
 		return _services
 				.stream()
-				.filter(s -> s.getServiceType() == ServiceType.Analytics)
+				.filter(s -> s.getServiceType() == type)
 				.findFirst()
 				.orElse(null);
 	}

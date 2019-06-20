@@ -8,7 +8,7 @@ public class Service {
     private String name;
     private String status;
     private String host;
-    private String port;
+    private int port;
     private String username;
     private String password;
     private DatabaseType dbType;
@@ -19,7 +19,7 @@ public class Service {
         this.status = status;
     }
     
-    public Service(ServiceType serviceType, String name, String host, String port) {
+    public Service(ServiceType serviceType, String name, String host, int port) {
     	this.name = name;
         this.serviceType = serviceType;
         this.host = host;
@@ -27,7 +27,7 @@ public class Service {
     }
 
     public Service(ServiceType serviceType, String name, String status, String host, 
-    		String port, String username, String password, DatabaseType dbType) {
+    		int port, String username, String password, DatabaseType dbType) {
     	this(serviceType, name, host, port);
         this.status = status;
         this.username = username;
@@ -59,11 +59,11 @@ public class Service {
         this.host = host;
     }
 
-    public String getPort() {
+    public int getPort() {
         return port;
     }
 
-    public void setPort(String port) {
+    public void setPort(int port) {
         this.port = port;
     }
 
