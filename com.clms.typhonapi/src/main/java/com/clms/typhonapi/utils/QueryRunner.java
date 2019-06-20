@@ -42,9 +42,10 @@ public class QueryRunner implements ConsumerHandler {
 			return;
 		}
 		
-		if (kafkaConnection == null) {
+		if (!isAnalyticsAvailiable()) {
+			Service analyticsService = serviceRegistry.getService(ServiceType.Analytics);
 			Service analyticsQueue = serviceRegistry.getService(ServiceType.Queue);
-			if (analyticsQueue != null) {
+			if (analyticsService != null && analyticsQueue != null) {
 				receivedQueries.clear();
 				kafkaConnection = analyticsQueue.getHost() + ":" + analyticsQueue.getPort();
 				preProducer = new QueueProducer(kafkaConnection);
@@ -68,14 +69,22 @@ public class QueryRunner implements ConsumerHandler {
 		return isReady;
 	}
 	
+	public boolean isAnalyticsAvailiable() {
+		return preProducer != null;
+	}
+	
 	public void initDatabases() {
 		
 	}
 	
 	public String run(String user, String query) {
-		if (kafkaConnection == null) {
+		if (!isReady()) {
+			return "Query engine is not initialized";
+		}
+		
+		if (!isAnalyticsAvailiable()) {
 			callQueryEngine(query);
-			return "Run without kafka";
+			return "Run without analytics";
 		}
 		
 		//Create pre event
