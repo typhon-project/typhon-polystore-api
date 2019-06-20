@@ -158,10 +158,10 @@ public class QueryRunner implements ConsumerHandler {
 		for (Service db : dbs) {
 			switch (db.getDbType()) {
 			 case MariaDb:
-				 dbConnections.put(db.getName(), connectToMariaDBConnection(db));
+				 dbConnections.put(db.getName(), getMariaDBConnection(db));
 				 break;
 			 case MongoDb:
-				 dbConnections.put(db.getName(), connectToMongoDBConnection(db));
+				 dbConnections.put(db.getName(), getMongoDBConnection(db));
 				 break;
 			 default:
 				 throw new Exception("Unhandled database type: " + db.getDbType());
@@ -200,7 +200,7 @@ public class QueryRunner implements ConsumerHandler {
 		}
 	}
 	
-	private Connection connectToMariaDBConnection(Service db) {
+	private Connection getMariaDBConnection(Service db) {
 		Connection conn = null;
 		
 		try {
@@ -219,7 +219,7 @@ public class QueryRunner implements ConsumerHandler {
 		return conn;
 	}
 	
-	private MongoClient connectToMongoDBConnection(Service db) {
+	private MongoClient getMongoDBConnection(Service db) {
 		String connectionString = String.format("mongodb://%s:%s@%s:%d", db.getUsername(), db.getPassword(), db.getHost(), db.getPort());
 		MongoClientURI uri = new MongoClientURI(connectionString);
 		MongoClient mongoClient = new MongoClient(uri);
