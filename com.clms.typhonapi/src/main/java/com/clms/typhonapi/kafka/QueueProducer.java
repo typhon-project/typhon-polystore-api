@@ -9,8 +9,9 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.LongSerializer;
 
-import ac.uk.york.typhon.analytics.commons.datatypes.events.Event;
-import ac.uk.york.typhon.analytics.commons.serialization.EventSchema;
+import com.clms.typhonapi.analytics.datatypes.events.Event;
+import com.clms.typhonapi.analytics.serialization.EventSchema;
+
 
 public class QueueProducer {
 

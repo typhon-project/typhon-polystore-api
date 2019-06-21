@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.clms.typhonapi.kafka.QueueConsumer;
+import com.clms.typhonapi.analytics.datatypes.events.Event;
+import com.clms.typhonapi.analytics.datatypes.events.PreEvent;
 import com.clms.typhonapi.kafka.ConsumerHandler;
 import com.clms.typhonapi.kafka.QueueProducer;
 import com.clms.typhonapi.models.Model;
@@ -18,9 +20,6 @@ import com.clms.typhonapi.models.ServiceType;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
-
-import ac.uk.york.typhon.analytics.commons.datatypes.events.Event;
-import ac.uk.york.typhon.analytics.commons.datatypes.events.PreEvent;
 
 @Component
 public class QueryRunner implements ConsumerHandler {
