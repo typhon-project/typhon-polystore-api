@@ -1,11 +1,13 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { ApiService } from '../api.service';
 import { Model } from '../model';
+import { Ng6NotifyPopupService } from 'ng6-notify-popup';
 
 @Component({
   selector: 'app-model-list',
   templateUrl: './model-list.component.html',
-  styleUrls: ['./model-list.component.css']
+  styleUrls: ['./model-list.component.css'],
+  providers: [Ng6NotifyPopupService]
 })
 export class ModelListComponent implements OnInit {
 
@@ -14,7 +16,7 @@ export class ModelListComponent implements OnInit {
   @Input()
   type: string;
 
-  constructor(private api: ApiService) { }
+  constructor(private api: ApiService, private notify: Ng6NotifyPopupService) { }
 
   ngOnInit() {
     this.getModels();
@@ -47,6 +49,7 @@ export class ModelListComponent implements OnInit {
     fileReader.onload = (e) => {
       if (this.type == "ml") {
         this.api.addMlModel(fileReader.result.toString()).subscribe(m => {
+          this.notify.show("Model uploaded succesfully", { position:'top', duration:'3000', type: 'success' });
           this.getModels();
         });
       } else {

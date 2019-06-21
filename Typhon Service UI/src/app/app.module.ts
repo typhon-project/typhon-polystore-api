@@ -18,6 +18,8 @@ import { BasicAuthInterceptor } from './interceptors/basic-auth.interceptor';
 import { ErrorInterceptor } from './interceptors/error.interceptor';
 import { LoginComponent } from './login/login.component';
 
+import { Ng6NotifyPopupModule } from 'ng6-notify-popup';
+
 @NgModule({
   imports: [
     BrowserModule,
@@ -25,7 +27,7 @@ import { LoginComponent } from './login/login.component';
     ReactiveFormsModule,
     AppRoutingModule,
     HttpClientModule,
-
+    Ng6NotifyPopupModule.forRoot()
     // The HttpClientInMemoryWebApiModule module intercepts HTTP requests
     // and returns simulated server responses.
     // Remove it when a real server is ready to receive requests.
