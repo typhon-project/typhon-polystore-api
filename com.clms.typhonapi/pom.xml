@@ -14,6 +14,12 @@
     </parent>
 
     <dependencies>
+    	<dependency>
+			<groupId>ac.uk.york.typhon.analytics.commons</groupId>
+  			<artifactId>ac.uk.york.typhon.analytics.commons</artifactId>
+  			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		
         <dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-rest</artifactId>
@@ -119,12 +125,18 @@
             </resource>
         </resources>
     </build>
+    
 	<repositories>
 		<repository>
 			<id>spring-releases</id>
 			<url>https://repo.spring.io/libs-release</url>
 		</repository>
+	    <repository>
+	      <id>internal</id>
+	      <url>http://192.168.2.201:8090/repository/internal/</url>
+	    </repository>
 	</repositories>
+	
 	<pluginRepositories>
 		<pluginRepository>
 			<id>spring-releases</id>

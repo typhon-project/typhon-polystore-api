@@ -1,6 +1,6 @@
 package com.clms.typhonapi.kafka;
 
-import com.clms.typhonapi.analytics.datatypes.events.Event;
+import ac.uk.york.typhon.analytics.commons.datatypes.events.Event;
 
 @FunctionalInterface
 public interface ConsumerHandler {
