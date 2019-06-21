@@ -12,7 +12,7 @@
   <tbody>
     <tr *ngFor="let db of databases">
       <td>
-        <span class="db-status" [ngClass]="{ 'up': db.status == 'ACTIVE', 'down': db.status == 'INACTIVE' }"></span>
+        <span class="db-status" [ngClass]="{ 'up': db.status == 'ONLINE', 'down': db.status == 'OFFLINE' }"></span>
       </td>
       <td>{{ db.name }}</td>
       <td><img [src]="getImage(db)"></td>

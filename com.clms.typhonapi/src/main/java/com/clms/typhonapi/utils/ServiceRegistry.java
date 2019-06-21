@@ -19,6 +19,7 @@ import java.io.*;
 import com.clms.typhonapi.models.DatabaseType;
 import com.clms.typhonapi.models.Model;
 import com.clms.typhonapi.models.Service;
+import com.clms.typhonapi.models.ServiceStatus;
 import com.clms.typhonapi.models.ServiceType;;
 
 @Component
@@ -87,6 +88,7 @@ public class ServiceRegistry {
 		        }
 		        
 		        if (service != null) {
+		        	service.setStatus(ServiceStatus.OFFLINE);
 					fillContainerInfo(doc, service);
 		        	_services.add(service);
 		        }

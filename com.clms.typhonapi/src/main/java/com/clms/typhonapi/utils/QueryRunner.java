@@ -30,14 +30,22 @@ public class QueryRunner implements ConsumerHandler {
 	private static String AUTH_TOPIC = "AUTH";
 	private Map<Integer, PreEvent> receivedQueries = new HashMap<Integer, PreEvent>();
 	private String kafkaConnection = "";
-	private Map<String, Object> dbConnections = new HashMap<String, Object>();
 	private boolean isReady;
 	
 	@Autowired
 	private ServiceRegistry serviceRegistry;
-		
+	@Autowired
+	private DbUtils dbHelper;
+	
 	public void init(Model mlModel) {
 		isReady = false;
+		
+		try {
+			dbHelper.updateDbConnections();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 		if (mlModel == null) {
 			return;
 		}
@@ -55,14 +63,13 @@ public class QueryRunner implements ConsumerHandler {
 			}
 		}
 		
-		try {
-			updateDbConnections();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 		//TODO: initialize query engine with xmi and dbConnections
 		
 		isReady = true;
+	}
+	
+	public void turnOff() {
+		isReady = false;
 	}
 	
 	public boolean isReady() {
@@ -150,80 +157,4 @@ public class QueryRunner implements ConsumerHandler {
 		subscribeTask.start();
 	}
 	
-	private void updateDbConnections() throws Exception {
-		closeDbConnections();
-		dbConnections.clear();
-		
-		ArrayList<Service> dbs = serviceRegistry.getDatabases();
-		for (Service db : dbs) {
-			switch (db.getDbType()) {
-			 case MariaDb:
-				 dbConnections.put(db.getName(), getMariaDBConnection(db));
-				 break;
-			 case MongoDb:
-				 dbConnections.put(db.getName(), getMongoDBConnection(db));
-				 break;
-			 default:
-				 throw new Exception("Unhandled database type: " + db.getDbType());
-			}
-		}
-	}
-	
-	private void closeDbConnections() throws Exception {
-		ArrayList<Service> dbs = serviceRegistry.getDatabases();
-		
-		for (Service db : dbs) {
-			if (!dbConnections.containsKey(db.getName())) {
-				continue;
-			}
-			
-			Object connection = dbConnections.get(db.getName());
-			
-			switch (db.getDbType()) {
-			 case MariaDb:
-				 Connection sqlCon = (Connection)connection;
-				 try {
-					if (!sqlCon.isClosed()) {
-						sqlCon.close();
-					 }
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-				 break;
-			 case MongoDb:
-				 MongoClient mongoClient = (MongoClient)connection;
-				 mongoClient.close();
-				 break;
-			 default:
-				 throw new Exception("Close db connections: Unhandled database type: " + db.getDbType());
-			}			
-		}
-	}
-	
-	private Connection getMariaDBConnection(Service db) {
-		Connection conn = null;
-		
-		try {
-			Class.forName("org.mariadb.jdbc.Driver");
-		} catch (ClassNotFoundException e1) {
-			e1.printStackTrace();
-		}
-		
-		try {
-			String connectionString = String.format("jdbc:mariadb://%s:%d", db.getHost(), db.getPort());
-			conn = DriverManager.getConnection(connectionString, db.getUsername(), db.getPassword());
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		
-		return conn;
-	}
-	
-	private MongoClient getMongoDBConnection(Service db) {
-		String connectionString = String.format("mongodb://%s:%s@%s:%d", db.getUsername(), db.getPassword(), db.getHost(), db.getPort());
-		MongoClientURI uri = new MongoClientURI(connectionString);
-		MongoClient mongoClient = new MongoClient(uri);
-				
-		return mongoClient;
-	}
 }

@@ -1,14 +1,31 @@
 package com.clms.typhonapi.utils;
 
 import org.joda.time.DateTime;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import com.clms.typhonapi.models.Service;
+import com.clms.typhonapi.models.ServiceStatus;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class DbUtils {
 
+	@Autowired
+	private ServiceRegistry serviceRegistry;
+	
+	private Map<String, Object> dbConnections = new HashMap<String, Object>();
+	
     public File mariaBackupProcess(String host, String port, String user, String password, String database_name, String backup_name){
         ProcessBuilder pb = new ProcessBuilder();
         File backupFile;
@@ -66,4 +83,115 @@ public class DbUtils {
         }
         return "OK";
     }
+    
+    public void updateDbStatus() {
+    	ArrayList<Service> dbs = serviceRegistry.getDatabases();
+    	for (Service db : dbs) {
+    		if (!dbConnections.containsKey(db.getName())) {
+    			db.setStatus(ServiceStatus.OFFLINE);
+    			continue;
+    		}
+    		
+    		db.setStatus(ServiceStatus.ONLINE);
+    	}
+    }
+    
+    public Map<String, Object> getDbConnections() {
+    	return dbConnections;
+    }
+    
+    public void bringDatabasesDown() throws Exception {
+    	closeDbConnections();
+		dbConnections.clear();
+		updateDbStatus();
+    }
+    
+    public void updateDbConnections() throws Exception {
+		closeDbConnections();
+		dbConnections.clear();
+		
+		ArrayList<Service> dbs = serviceRegistry.getDatabases();
+		for (Service db : dbs) {
+			Object con = null;
+			
+			switch (db.getDbType()) {
+			 case MariaDb:
+				 con = getMariaDBConnection(db);
+				 break;
+			 case MongoDb:
+				 con = getMongoDBConnection(db);
+				 
+				 break;
+			 default:
+				 throw new Exception("Unhandled database type: " + db.getDbType());
+			}
+			
+			if (con != null) {
+				 dbConnections.put(db.getName(), con);
+			}
+		}
+		
+		updateDbStatus();
+	}
+	
+	private void closeDbConnections() throws Exception {
+		ArrayList<Service> dbs = serviceRegistry.getDatabases();
+		
+		for (Service db : dbs) {
+			if (!dbConnections.containsKey(db.getName())) {
+				continue;
+			}
+			
+			Object connection = dbConnections.get(db.getName());
+			
+			switch (db.getDbType()) {
+			 case MariaDb:
+				 Connection sqlCon = (Connection)connection;
+				 try {
+					if (!sqlCon.isClosed()) {
+						sqlCon.close();
+					 }
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+				 break;
+			 case MongoDb:
+				 MongoClient mongoClient = (MongoClient)connection;
+				 mongoClient.close();
+				 break;
+			 default:
+				 throw new Exception("Close db connections: Unhandled database type: " + db.getDbType());
+			}			
+		}
+	}
+	
+	private Connection getMariaDBConnection(Service db) {
+		Connection conn = null;
+		
+		try {
+			Class.forName("org.mariadb.jdbc.Driver");
+		} catch (ClassNotFoundException e1) {
+			e1.printStackTrace();
+		}
+		
+		try {
+			String connectionString = String.format("jdbc:mariadb://%s:%d", db.getHost(), db.getPort());
+			conn = DriverManager.getConnection(connectionString, db.getUsername(), db.getPassword());
+			if (!conn.isValid(5000)) {
+				conn = null;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		return conn;
+	}
+	
+	private MongoClient getMongoDBConnection(Service db) {
+		String connectionString = String.format("mongodb://%s:%s@%s:%d", db.getUsername(), db.getPassword(), db.getHost(), db.getPort());
+		MongoClientURI uri = new MongoClientURI(connectionString);
+		MongoClient mongoClient = new MongoClient(uri);
+				
+		return mongoClient;
+	}
 }

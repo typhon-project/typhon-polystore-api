@@ -80,6 +80,12 @@ public class MainController {
     public boolean down() {
     	try {
 			Thread.sleep(4000);
+			queryRunner.turnOff();
+			try {
+				dbUtils.bringDatabasesDown();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			status = false;
 		} catch (InterruptedException e) {
 			
@@ -89,12 +95,8 @@ public class MainController {
     
     @RequestMapping("/api/up")
     public boolean up() {
-    	try {
-			Thread.sleep(4000);
-			status = true;
-		} catch (InterruptedException e) {
-			
-		}
+    	queryRunner.init(modelHelper.getMlModel());
+		status = true;
     	    	
     	return status;
     }
@@ -181,6 +183,7 @@ public class MainController {
     //@ApiOperation(value= "Get databases")
     @RequestMapping(path = "/api/databases", method = RequestMethod.GET)
     public ResponseEntity getDatabases() {
+    	dbUtils.updateDbStatus();
         return ResponseEntity.status(200).body(serviceRegistry.getDatabases());
     }
         

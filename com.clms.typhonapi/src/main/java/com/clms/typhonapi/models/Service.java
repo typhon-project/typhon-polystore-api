@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 public class Service {
 
     private String name;
-    private String status;
+    private ServiceStatus status;
     private String host;
     private int port;
     private String username;
@@ -18,7 +18,7 @@ public class Service {
     	
     }
     
-    public Service(String name, String status) {
+    public Service(String name, ServiceStatus status) {
         this.name = name;
         this.status = status;
     }
@@ -30,7 +30,7 @@ public class Service {
         this.port = port;
     }
 
-    public Service(ServiceType serviceType, String name, String status, String host, 
+    public Service(ServiceType serviceType, String name, ServiceStatus status, String host, 
     		int port, String username, String password, DatabaseType dbType) {
     	this(serviceType, name, host, port);
         this.status = status;
@@ -95,11 +95,11 @@ public class Service {
         this.name = name;
     }
 
-    public String getStatus() {
+    public ServiceStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(ServiceStatus status) {
         this.status = status;
     }
 

@@ -49,11 +49,12 @@ export class ModelListComponent implements OnInit {
     fileReader.onload = (e) => {
       if (this.type == "ml") {
         this.api.addMlModel(fileReader.result.toString()).subscribe(m => {
-          this.notify.show("Model uploaded succesfully", { position:'top', duration:'3000', type: 'success' });
+          this.notify.show("Model uploaded succesfully", { position:'bottom', duration:'2000', type: 'success' });
           this.getModels();
         });
       } else {
         this.api.addDlModel(fileReader.result.toString()).subscribe(m => {
+          this.notify.show("Model uploaded succesfully", { position:'bottom', duration:'2000', type: 'success' });
           this.getModels();
         });
       }
