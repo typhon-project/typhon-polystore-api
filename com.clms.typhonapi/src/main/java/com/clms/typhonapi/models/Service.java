@@ -14,6 +14,10 @@ public class Service {
     private DatabaseType dbType;
     private ServiceType serviceType;
     
+    public Service() {
+    	
+    }
+    
     public Service(String name, String status) {
         this.name = name;
         this.status = status;
