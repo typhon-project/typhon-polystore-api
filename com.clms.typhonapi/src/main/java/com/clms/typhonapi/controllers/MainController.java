@@ -153,13 +153,13 @@ public class MainController {
     }
 
     @RequestMapping(path = "/api/model/dl", method = RequestMethod.POST)
-    public void setTyphoneDLModel(@RequestBody Map<String, String> json) {
+    public void setTyphoneDLModel(@RequestBody Map<String, String> json) throws Exception {
     	modelHelper.addDlModel(json.get("name"), json.get("contents"));
     	serviceRegistry.load(modelHelper.getDlModel());
     }
     
     @RequestMapping(path = "/api/model/ml", method = RequestMethod.POST)
-    public void setTyphoneMlModel(@RequestBody Map<String, String> json) {
+    public void setTyphoneMlModel(@RequestBody Map<String, String> json) throws Exception {
     	modelHelper.addMlModel(json.get("name"), json.get("contents"));
     	evolutionHelper.evolve(modelHelper.getMlModel());
     }

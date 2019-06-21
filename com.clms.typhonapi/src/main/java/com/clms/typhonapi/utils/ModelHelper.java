@@ -56,16 +56,18 @@ public class ModelHelper {
 		return getModels("ML");
 	}
 
-	public void addDlModel(String name, String contents) {
+	public void addDlModel(String name, String contents) throws Exception {
 		addModel("DL", name, contents);
 	}
 
-	public void addMlModel(String name, String contents) {
+	public void addMlModel(String name, String contents) throws Exception {
 		addModel("ML", name, contents);
 	}
 	
-	private void addModel(String type, String name, String contents) {
-		//TODO: validate model: for example, is it a valid xml?
+	private void addModel(String type, String name, String contents) throws Exception {
+		if (!isValid(contents)) {
+			throw new Exception("Not valid model");
+		}
 		Model latest = getModel(type);
 		
 		Model m = new Model();
