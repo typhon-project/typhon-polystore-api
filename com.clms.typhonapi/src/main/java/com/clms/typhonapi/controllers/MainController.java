@@ -51,6 +51,8 @@ public class MainController {
     private ModelHelper modelHelper;
     @Autowired
     private EvolutionHelper evolutionHelper;
+    @Autowired
+    private DbUtils dbUtils;
     
     public MainController() {
 
@@ -204,7 +206,7 @@ public class MainController {
         }
         else{
             if(json.get("type").equals("mariadb")) {
-                File filename  = DbUtils.MariaBackupProcess(json.get("host"), json.get("port"), json.get("username"), json.get("password"), json.get("db_name"), json.get("backup_name"));
+                File filename  = dbUtils.mariaBackupProcess(json.get("host"), json.get("port"), json.get("username"), json.get("password"), json.get("db_name"), json.get("backup_name"));
                 if(filename!=null) {
                     Map<String,String> resp = new HashMap<String, String>();
                     resp.put("filename",filename.getName());
@@ -245,7 +247,7 @@ public class MainController {
         }
         else{
             if(json.get("type").equals("mariadb")){
-                String status=DbUtils.MariaRestore(json.get("host"),json.get("port"),json.get("username"),json.get("password"),json.get("db_name"),json.get("backup_name"));
+                String status= dbUtils.mariaRestore(json.get("host"),json.get("port"),json.get("username"),json.get("password"),json.get("db_name"),json.get("backup_name"));
                 if(!status.equals("OK")){
                     response=ResponseEntity.status(HttpStatus.BAD_REQUEST).body(status);
                     return response;

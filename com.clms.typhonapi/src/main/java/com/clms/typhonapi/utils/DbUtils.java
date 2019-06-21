@@ -1,14 +1,15 @@
 package com.clms.typhonapi.utils;
 
 import org.joda.time.DateTime;
+import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
 
+@Component
 public class DbUtils {
 
-
-    public static File MariaBackupProcess(String host, String port, String user, String password, String database_name, String backup_name){
+    public File mariaBackupProcess(String host, String port, String user, String password, String database_name, String backup_name){
         ProcessBuilder pb = new ProcessBuilder();
         File backupFile;
         File f = new File("/backups/");
@@ -42,8 +43,7 @@ public class DbUtils {
         return backupFile;
     }
 
-
-    public static String MariaRestore(String host, String port, String user, String password, String database_name, String backup_name){
+    public String mariaRestore(String host, String port, String user, String password, String database_name, String backup_name){
         ProcessBuilder pb = new ProcessBuilder();
         File f = new File("/backups/"+backup_name);
         if(!f.exists() || f.isDirectory()) {
