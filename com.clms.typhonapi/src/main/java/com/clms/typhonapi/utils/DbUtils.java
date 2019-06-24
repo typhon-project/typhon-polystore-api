@@ -113,6 +113,7 @@ public class DbUtils {
 		ArrayList<Service> dbs = serviceRegistry.getDatabases();
 		for (Service db : dbs) {
 			Object con = null;
+			System.out.println("DB: " + db);
 			
 			switch (db.getDbType()) {
 			 case MariaDb:
@@ -167,6 +168,8 @@ public class DbUtils {
 	
 	private Connection getMariaDBConnection(Service db) {
 		Connection conn = null;
+		
+		System.out.println("Trying to connect to: " + db);
 		
 		try {
 			Class.forName("org.mariadb.jdbc.Driver");

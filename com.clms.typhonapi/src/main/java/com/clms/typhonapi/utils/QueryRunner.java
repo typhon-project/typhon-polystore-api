@@ -1,7 +1,5 @@
 package com.clms.typhonapi.utils;
 
-import java.sql.*;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -15,9 +13,6 @@ import com.clms.typhonapi.kafka.QueueProducer;
 import com.clms.typhonapi.models.Model;
 import com.clms.typhonapi.models.Service;
 import com.clms.typhonapi.models.ServiceType;
-
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientURI;
 
 import ac.uk.york.typhon.analytics.commons.datatypes.events.Event;
 import ac.uk.york.typhon.analytics.commons.datatypes.events.PreEvent;

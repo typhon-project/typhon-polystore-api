@@ -90,6 +90,7 @@ public class ServiceRegistry {
 		        if (service != null) {
 		        	service.setStatus(ServiceStatus.OFFLINE);
 					fillContainerInfo(doc, service);
+					System.out.println("Parsed: " + service);
 		        	_services.add(service);
 		        }
 			}
@@ -154,7 +155,7 @@ public class ServiceRegistry {
 		
 		//find hostname
 		Element hostEl = querySelector(containerEl, ".//properties[@name='hostname']");
-		service.setHost(hostEl == null ? "localhost" : hostEl.getAttribute("hostname"));
+		service.setHost(hostEl == null ? "localhost" : hostEl.getAttribute("value"));
 		
 	}
 

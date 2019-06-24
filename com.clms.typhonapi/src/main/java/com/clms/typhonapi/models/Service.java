@@ -2,6 +2,8 @@ package com.clms.typhonapi.models;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import jdk.javadoc.internal.doclets.toolkit.OverviewElement;
+
 @JsonSerialize
 public class Service {
 
@@ -103,5 +105,8 @@ public class Service {
         this.status = status;
     }
 
-
+	@Override
+    public String toString() {
+		return String.format("Host: %s, port: %d, user: %s, pass: %s", host, port, username, password);
+    }
 }
