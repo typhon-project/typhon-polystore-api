@@ -20,7 +20,7 @@ import com.clms.typhonapi.models.DatabaseType;
 import com.clms.typhonapi.models.Model;
 import com.clms.typhonapi.models.Service;
 import com.clms.typhonapi.models.ServiceStatus;
-import com.clms.typhonapi.models.ServiceType;;
+import com.clms.typhonapi.models.ServiceType;
 
 @Component
 public class ServiceRegistry {
@@ -62,7 +62,7 @@ public class ServiceRegistry {
 			}
 		};*/
         
-		if (xmi == null || xmi.isBlank()) {
+		if (xmi == null || xmi.isEmpty()) {
 			return;
 		}
 		

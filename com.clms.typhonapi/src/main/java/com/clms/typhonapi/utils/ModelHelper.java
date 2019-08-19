@@ -105,7 +105,7 @@ public class ModelHelper {
 					.findFirst();
 		}
 		
-		if (model.isEmpty()) {
+		if (!model.isPresent()) {
 			return null;
 		}
 		

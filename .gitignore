@@ -24,3 +24,4 @@ hs_err_pid*
 
 com\.clms\.typhonapi/models/
 node_modules
+.idea
