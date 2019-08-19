@@ -1,5 +1,6 @@
 package com.clms.typhonapi.utils;
 
+import com.mongodb.client.MongoIterable;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -121,7 +122,9 @@ public class DbUtils {
 				 break;
 			 case MongoDb:
 				 con = getMongoDBConnection(db);
-				 
+				 break;
+			 case MysqlDb:
+				 con = getMysqlDBConnection(db);
 				 break;
 			 default:
 				 throw new Exception("Unhandled database type: " + db.getDbType());
@@ -147,6 +150,7 @@ public class DbUtils {
 			
 			switch (db.getDbType()) {
 			 case MariaDb:
+				case MysqlDb:
 				 Connection sqlCon = (Connection)connection;
 				 try {
 					if (!sqlCon.isClosed()) {
@@ -185,8 +189,34 @@ public class DbUtils {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
+			return null;
 		}
 		
+		return conn;
+	}
+
+	private Connection getMysqlDBConnection(Service db) {
+		Connection conn = null;
+
+		System.out.println("Trying to connect to: " + db);
+
+		try {
+			Class.forName("org.mariadb.jdbc.Driver");
+		} catch (ClassNotFoundException e1) {
+			e1.printStackTrace();
+		}
+
+		try {
+			String connectionString = String.format("jdbc:mysql://%s:%d", db.getHost(), db.getPort());
+			conn = DriverManager.getConnection(connectionString, db.getUsername(), db.getPassword());
+			if (!conn.isValid(5000)) {
+				conn = null;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+
 		return conn;
 	}
 	
@@ -194,7 +224,15 @@ public class DbUtils {
 		String connectionString = String.format("mongodb://%s:%s@%s:%d", db.getUsername(), db.getPassword(), db.getHost(), db.getPort());
 		MongoClientURI uri = new MongoClientURI(connectionString);
 		MongoClient mongoClient = new MongoClient(uri);
-				
+		try{
+			MongoIterable<String> test=mongoClient.listDatabaseNames();
+			if(test==null){
+				return null;
+			}
+		}
+		catch (Exception x){
+			return null;
+		}
 		return mongoClient;
 	}
 }

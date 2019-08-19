@@ -112,8 +112,8 @@ public class ServiceRegistry {
 		Element dbTypeElement = querySelector(eElement, ".//elements[@type='typhonDL:DBType']");
 		Element dbElement = querySelector(eElement, ".//elements[@type='typhonDL:DB']");
 		Element parameters = querySelector(dbElement, ".//parameters[@type='typhonDL:Key_KeyValueList']");
-		
-		switch (dbTypeElement.getAttribute("name").toLowerCase()) {
+		String dbType = dbTypeElement.getAttribute("name").toLowerCase();
+		switch (dbType) {
 			case "mongo":
 				Element mongoUser = querySelector(parameters, ".//key_Values[@name='MONGO_INITDB_ROOT_USERNAME']");
 				Element mongoPass = querySelector(parameters, ".//key_Values[@name='MONGO_INITDB_ROOT_PASSWORD']");
@@ -128,7 +128,15 @@ public class ServiceRegistry {
 				db.setPassword(mariaPass == null ? "admin" : mariaPass.getAttribute("value"));
 				db.setDbType(DatabaseType.MariaDb);
 				break;
+			case "mysql":
+				Element mysqlUser = querySelector(parameters, ".//key_Values[@name='MYSQL_ROOT_USERNAME']");
+				Element mysqlPass = querySelector(parameters, ".//key_Values[@name='MYSQL_ROOT_PASSWORD']");
+				db.setUsername(mysqlUser == null ? "root" : mysqlUser.getAttribute("value"));
+				db.setPassword(mysqlPass == null ? "admin" : mysqlPass.getAttribute("value"));
+				db.setDbType(DatabaseType.MysqlDb);
+				break;
 			default:
+				System.out.println("Database not supported: "+dbType);
 				break;
 		}
 		
