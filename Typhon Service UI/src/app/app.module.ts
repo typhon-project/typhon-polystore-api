@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule }    from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS }    from '@angular/common/http';
 import { AppRoutingModule }     from './app-routing.module';
 
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppComponent }         from './app.component';
 import { DashboardComponent }   from './dashboard/dashboard.component';
 import { MessagesComponent }    from './messages/messages.component';
@@ -18,16 +19,17 @@ import { BasicAuthInterceptor } from './interceptors/basic-auth.interceptor';
 import { ErrorInterceptor } from './interceptors/error.interceptor';
 import { LoginComponent } from './login/login.component';
 
-import { Ng6NotifyPopupModule } from 'ng6-notify-popup';
+import { ToastrModule } from 'ng6-toastr-notifications';
 
 @NgModule({
   imports: [
     BrowserModule,
+    BrowserAnimationsModule,
     FormsModule,
     ReactiveFormsModule,
     AppRoutingModule,
     HttpClientModule,
-    Ng6NotifyPopupModule.forRoot()
+    ToastrModule.forRoot()
     // The HttpClientInMemoryWebApiModule module intercepts HTTP requests
     // and returns simulated server responses.
     // Remove it when a real server is ready to receive requests.

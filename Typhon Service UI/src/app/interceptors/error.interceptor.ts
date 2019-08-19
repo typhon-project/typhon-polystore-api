@@ -4,16 +4,16 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 import { ApiService } from '../api.service';
-import { Ng6NotifyPopupService } from 'ng6-notify-popup';
+import { ToastrManager } from 'ng6-toastr-notifications';
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
-    constructor(private authenticationService: ApiService, private notify: Ng6NotifyPopupService) {}
+    constructor(private authenticationService: ApiService, private notify: ToastrManager) {}
 
     intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
         return next.handle(request).pipe(catchError(err => {
             if (err.status === 500) {
-                this.notify.show(err.error.message, { position:'bottom', duration:'3000', type: 'error' });
+                this.notify.errorToastr(err.error.message, 'Error');
             }
 
             if (err.status === 401) {
@@ -21,9 +21,9 @@ export class ErrorInterceptor implements HttpInterceptor {
                 this.authenticationService.logout();
                 location.reload(true);
             }
-            
+
             const error = err.error.message || err.statusText;
             return throwError(error);
-        }))
+        }));
     }
 }
