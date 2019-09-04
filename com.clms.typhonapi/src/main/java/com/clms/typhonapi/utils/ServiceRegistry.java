@@ -154,7 +154,16 @@ public class ServiceRegistry {
 		//find port
 		Element portEl = querySelector(containerEl, ".//properties[@name='ports']");
 		if (portEl != null) {
-			String portsValue = portEl.getAttribute("value");
+			String portsValue = "";
+			if (portEl.hasAttribute("value")) {
+				portsValue = portEl.getAttribute("value");
+			} else {
+				Element valueEl = querySelector(portEl, ".//values");
+				if (valueEl != null) {
+					portsValue = valueEl.getTextContent();
+				}
+			}
+
 			if (portsValue != null && portsValue.contains(":")) {
 				int port = Integer.parseInt(portsValue.split(":")[1]);
 				service.setPort(port);
