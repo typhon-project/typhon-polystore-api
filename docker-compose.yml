@@ -7,8 +7,8 @@ services:
       dockerfile: Dockerfile
       context: .
     #image: clms/typhon-polystore-api:latest
-    hostname: polystore.api
-    container_name: typhonml.polystore.service
+    hostname: polystore-api
+    container_name: typhon-polystore-service
     ports:
       - "8080:8080"
     volumes:
@@ -17,8 +17,8 @@ services:
       - polystoredb
   polystoredb:
     image: mongo:latest
-    hostname: polystore.api.db
-    container_name: polystore.mongo
+    hostname: polystore-api-db
+    container_name: polystore-mongo
     ports:
       - "27017:27017"
     environment:
@@ -27,18 +27,20 @@ services:
     #volumes:
     # - "./data:/data/db"
   polystoreui:
+    environment:
+      - APIPORT = 8080
     build:
       context: Typhon Service UI
-    hostname: polystore.ui
-    container_name: polystore.ui
+    hostname: polystore-ui
+    container_name: polystore-ui
     ports:
       - "4200:4200"
     #volumes:
     # - "./data:/data/db"
   mariadbtest:
     image: mariadb:latest
-    hostname: test.mariadb
-    container_name: test.mariadb
+    hostname: test-mariadb
+    container_name: test-mariadb
     ports:
       - "3306:3306"
     environment:
