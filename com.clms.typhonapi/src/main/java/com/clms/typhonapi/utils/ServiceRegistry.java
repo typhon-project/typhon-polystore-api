@@ -3,6 +3,8 @@ package com.clms.typhonapi.utils;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
+import com.clms.typhonapi.models.*;
+import org.apache.catalina.Engine;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
@@ -15,12 +17,6 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import java.io.*;
-
-import com.clms.typhonapi.models.DatabaseType;
-import com.clms.typhonapi.models.Model;
-import com.clms.typhonapi.models.Service;
-import com.clms.typhonapi.models.ServiceStatus;
-import com.clms.typhonapi.models.ServiceType;
 
 @Component
 public class ServiceRegistry {
@@ -120,6 +116,7 @@ public class ServiceRegistry {
 				db.setUsername(mongoUser == null ? "admin" : mongoUser.getAttribute("value"));
 				db.setPassword(mongoPass == null ? "admin" : mongoPass.getAttribute("value"));
 				db.setDbType(DatabaseType.MongoDb);
+				db.setEngineType(EngineType.Document);
 				break;
 			case "mariabd":
 				Element mariaUser = querySelector(parameters, ".//key_Values[@name='MYSQL_ROOT_USERNAME']");
@@ -127,6 +124,7 @@ public class ServiceRegistry {
 				db.setUsername(mariaUser == null ? "root" : mariaUser.getAttribute("value"));
 				db.setPassword(mariaPass == null ? "admin" : mariaPass.getAttribute("value"));
 				db.setDbType(DatabaseType.MariaDb);
+				db.setEngineType(EngineType.Relational);
 				break;
 			case "mysql":
 				Element mysqlUser = querySelector(parameters, ".//key_Values[@name='MYSQL_ROOT_USERNAME']");
@@ -134,6 +132,7 @@ public class ServiceRegistry {
 				db.setUsername(mysqlUser == null ? "root" : mysqlUser.getAttribute("value"));
 				db.setPassword(mysqlPass == null ? "admin" : mysqlPass.getAttribute("value"));
 				db.setDbType(DatabaseType.MysqlDb);
+				db.setEngineType(EngineType.Relational);
 				break;
 			default:
 				System.out.println("Database not supported: "+dbType);

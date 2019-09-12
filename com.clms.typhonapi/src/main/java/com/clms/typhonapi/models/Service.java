@@ -1,7 +1,7 @@
 package com.clms.typhonapi.models;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
+import org.apache.catalina.Engine;
 
 
 @JsonSerialize
@@ -15,6 +15,7 @@ public class Service {
     private String password;
     private DatabaseType dbType;
     private ServiceType serviceType;
+    private EngineType engineType;
     
     public Service() {
     	
@@ -32,13 +33,14 @@ public class Service {
         this.port = port;
     }
 
-    public Service(ServiceType serviceType, String name, ServiceStatus status, String host, 
-    		int port, String username, String password, DatabaseType dbType) {
+    public Service(ServiceType serviceType, String name, ServiceStatus status, String host,
+                   int port, String username, String password, DatabaseType dbType, EngineType engineType) {
     	this(serviceType, name, host, port);
         this.status = status;
         this.username = username;
         this.password = password;
         this.dbType = dbType;
+        this.engineType = engineType;
     }
 
     public ServiceType getServiceType() {
@@ -105,6 +107,14 @@ public class Service {
         this.status = status;
     }
 
+
+    public EngineType getEngineType() {
+        return engineType;
+    }
+
+    public void setEngineType(EngineType engineType) {
+        this.engineType = engineType;
+    }
 	@Override
     public String toString() {
 		return String.format("Host: %s, port: %d, user: %s, pass: %s", host, port, username, password);
