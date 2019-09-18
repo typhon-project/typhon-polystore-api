@@ -133,7 +133,7 @@
 		</repository>
 	    <repository>
 	      <id>internal</id>
-	      <url>http://192.168.2.28:8090/repository/internal/</url>
+	      <url>http://archiva.clmsuk.com:8090/repository/internal/</url>
 	    </repository>
 	</repositories>
 	
