@@ -118,7 +118,7 @@ public class ServiceRegistry {
 				db.setDbType(DatabaseType.MongoDb);
 				db.setEngineType(EngineType.Document);
 				break;
-			case "mariabd":
+			case "mariadb":
 				Element mariaUser = querySelector(parameters, ".//key_Values[@name='MYSQL_ROOT_USERNAME']");
 				Element mariaPass = querySelector(parameters, ".//key_Values[@name='MYSQL_ROOT_PASSWORD']");
 				db.setUsername(mariaUser == null ? "root" : mariaUser.getAttribute("value"));
