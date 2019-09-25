@@ -164,7 +164,7 @@ public class ServiceRegistry {
 			}
 
 			if (portsValue != null && portsValue.contains(":")) {
-				int port = Integer.parseInt(portsValue.split(":")[1]);
+				int port = Integer.parseInt(portsValue.split(":")[0]);
 				service.setPort(port);
 			}
 		}
