@@ -6,6 +6,7 @@ import { Database } from './database';
 import { Model } from './model';
 import { QueryResponse } from './QueryResponse';
 import { saveAs } from 'file-saver';
+import {environment} from '../environments/environment';
 
 const httpOptions = {
   headers: new HttpHeaders({
@@ -25,7 +26,7 @@ export class ApiService {
   }
 
   getApiPath(path: string) {
-    return "http://localhost:8080" + path;
+    return 'http://' + environment.api_host + ':' + environment.api_port + path;
   }
 
   login(username: string, password: string): Observable<boolean> {

@@ -8,8 +8,8 @@ import { ApiService } from '../api.service';
 })
 export class QueryComponent implements OnInit {
 
-  private query: string = "";
-  private result: string = "";
+  public query: string = '';
+  public result: string = '';
 
   constructor(private api: ApiService) { }
 
