@@ -4,7 +4,7 @@ services:
   polystore_ui:
     build: .
     environment:
-      API_HOST: adsadad
+      API_HOST: localhost
       API_PORT: 8081
     container_name: polystore-ui
     ports:
@@ -20,22 +20,3 @@ services:
     hostname: polystore-api-db
     ports:
       - 27017:27017
-  MariaDBDWH:
-    image: mariadb:latest
-    environment:
-      MYSQL_ROOT_PASSWORD: example
-    ports:
-      - 3306:3306
-  MariaDBFinesse:
-    image: mariadb:latest
-    environment:
-      MYSQL_ROOT_PASSWORD: example
-    ports:
-      - 3307:3306
-  MongoDB:
-    image: mongo:latest
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: admin
-    ports:
-      - 27018:27017
