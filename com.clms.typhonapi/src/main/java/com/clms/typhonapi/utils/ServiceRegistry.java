@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import com.clms.typhonapi.models.*;
 import org.apache.catalina.Engine;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
@@ -22,7 +23,9 @@ import java.io.*;
 public class ServiceRegistry {
 
 	private ArrayList<Service> _services;
-	
+	@Autowired
+	private DbUtils dbHelper;
+
 	public ServiceRegistry() {
 		_services = new ArrayList<>();
 	}
@@ -97,6 +100,12 @@ public class ServiceRegistry {
 		} catch (SAXException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		try {
+			dbHelper.updateDbConnections();
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
