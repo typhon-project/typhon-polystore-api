@@ -83,7 +83,7 @@ public class ServiceRegistry {
 				
 		        Element db = querySelector(nNode, ".//elements[@type='typhonDL:DB']");
 		        if (db != null) {
-		        	service = parseDbElement((Element)db.getParentNode());
+		        	service = parseDbElement((Element)db.getParentNode(),nList);
 		        }
 		        
 		        if (service != null) {
@@ -110,14 +110,19 @@ public class ServiceRegistry {
 		}
 	}
 	
-	private Service parseDbElement(Element eElement) {
+	private Service parseDbElement(Element eElement,NodeList nList) {
 		Service db = new Service();
 		db.setServiceType(ServiceType.Database);
-		        
-		Element dbTypeElement = querySelector(eElement, ".//elements[@type='typhonDL:DBType']");
 		Element dbElement = querySelector(eElement, ".//elements[@type='typhonDL:DB']");
+		String typeReference = dbElement.getAttribute("type");
+		int typeElement = Integer.parseInt(typeReference.substring(1,2));
+		int refDbType = Integer.parseInt(typeReference.substring(typeReference.length()-1,typeReference.length()))+1;
+		Element dbTypeElement = querySelector(nList.item(typeElement),"(.//elements[@type='typhonDL:DBType'])["+Integer.toString(refDbType)+"]");
 		Element parameters = querySelector(dbElement, ".//parameters[@type='typhonDL:Key_KeyValueList']");
-		String dbType = dbTypeElement.getAttribute("name").toLowerCase();
+		String dbType="";
+		if(dbTypeElement!=null) {
+			dbType = dbTypeElement.getAttribute("name").toLowerCase();
+		}
 		switch (dbType) {
 			case "mongo":
 				Element mongoUser = querySelector(parameters, ".//key_Values[@name='MONGO_INITDB_ROOT_USERNAME']");
