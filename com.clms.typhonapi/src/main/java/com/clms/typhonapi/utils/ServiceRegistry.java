@@ -165,17 +165,22 @@ public class ServiceRegistry {
 		}
 		
 		//find port
-		Element portEl = querySelector(containerEl, ".//properties[@name='ports']");
+		Element portEl = querySelector(containerEl, ".//ports");
 		if (portEl != null) {
 			String portsValue = "";
-			if (portEl.hasAttribute("value")) {
-				portsValue = portEl.getAttribute("value");
-			} else {
+
+				NodeList list = portEl.getElementsByTagName("key_values");
+				if(list.getLength()!=0){
+					portsValue = list.item(0).getNodeValue();
+					portsValue=portsValue+":"+list.item(1).getNodeValue();
+
+				}
+			/*} else {
 				Element valueEl = querySelector(portEl, ".//values");
 				if (valueEl != null) {
 					portsValue = valueEl.getTextContent();
 				}
-			}
+			} */
 
 			if (portsValue != null && portsValue.contains(":")) {
 				int port = Integer.parseInt(portsValue.split(":")[0]);
