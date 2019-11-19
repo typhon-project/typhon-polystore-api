@@ -1,9 +1,15 @@
 package com.clms.typhonapi.utils;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.io.IOException;
+import java.util.*;
 
+import com.clms.typhonapi.models.DatabaseType;
+
+import nl.cwi.swat.typhonql.MariaDB;
+import nl.cwi.swat.typhonql.MongoDB;
+import nl.cwi.swat.typhonql.MySQL;
+import nl.cwi.swat.typhonql.client.DatabaseInfo;
+import nl.cwi.swat.typhonql.workingset.WorkingSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +22,9 @@ import com.clms.typhonapi.models.ServiceType;
 
 import ac.york.typhon.analytics.commons.datatypes.events.Event;
 import ac.york.typhon.analytics.commons.datatypes.events.PreEvent;
+import nl.cwi.swat.typhonql.client.XMIPolystoreConnection;
+import nl.cwi.swat.typhonql.DBType;
+
 
 @Component
 public class QueryRunner implements ConsumerHandler {
@@ -26,6 +35,7 @@ public class QueryRunner implements ConsumerHandler {
 	private Map<Integer, PreEvent> receivedQueries = new HashMap<Integer, PreEvent>();
 	private String kafkaConnection = "";
 	private boolean isReady;
+	private XMIPolystoreConnection connection;
 	
 	@Autowired
 	private ServiceRegistry serviceRegistry;
@@ -57,9 +67,32 @@ public class QueryRunner implements ConsumerHandler {
 				System.out.println("[~~~~~~~WARNING~~~~~~~] No analytics service found in dl...");
 			}
 		}
-		
+		List<DatabaseInfo> infos = new ArrayList<DatabaseInfo>();
+		for (Service service: serviceRegistry.getDatabases()){
+			DBType swattype;
+			DatabaseType type = service.getDbType();
+			String dbms;
+			if(type==DatabaseType.MongoDb){
+				swattype=DBType.documentdb;
+				dbms = new MongoDB().getName();
+			}
+			else if(type==DatabaseType.MysqlDb){
+				swattype=DBType.relationaldb;
+				dbms = new MySQL().getName();
+			}
+			else {
+				swattype = DBType.relationaldb;
+				dbms = new MariaDB().getName();
+			}
+			infos.add(new DatabaseInfo(service.getHost(),service.getPort(),service.getName(),swattype,dbms,service.getUsername(),service.getPassword()));
+		}
 		//TODO: initialize query engine with xmi and dbConnections
-		
+		try {
+			connection = new XMIPolystoreConnection(mlModel.getContents(), infos);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 		isReady = true;
 	}
 	
@@ -131,15 +164,15 @@ public class QueryRunner implements ConsumerHandler {
 	    	}
 	    	
 	    	startedOn = System.currentTimeMillis();
-	    	callQueryEngine(query);
+	    	WorkingSet set = callQueryEngine(query);
 	    	long executionTime = System.currentTimeMillis() - startedOn;
 	    	//TODO: run query and publish to POST topic
 	    	return "Query response: " + event.getId();
 	    }
 	}
 	
-	private void callQueryEngine(String query) {
-		
+	private WorkingSet callQueryEngine(String query) {
+		return connection.executeQuery(query);
 	}
 	
 	@Override

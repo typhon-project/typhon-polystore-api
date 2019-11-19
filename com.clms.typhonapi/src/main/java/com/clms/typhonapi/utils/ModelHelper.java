@@ -14,6 +14,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import com.clms.typhonapi.models.MLSchema;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
@@ -81,7 +82,8 @@ public class ModelHelper {
 			//todo: temp code until model migration is implemented
 			m.setVersion(latest.getVersion() + 1);
 		}
-		
+		MLSchema schema = new MLSchema();
+
 		repo.insert(m);
 	}
 	
