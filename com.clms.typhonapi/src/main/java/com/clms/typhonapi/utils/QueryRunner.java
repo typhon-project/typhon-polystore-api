@@ -9,6 +9,7 @@ import nl.cwi.swat.typhonql.MariaDB;
 import nl.cwi.swat.typhonql.MongoDB;
 import nl.cwi.swat.typhonql.MySQL;
 import nl.cwi.swat.typhonql.client.DatabaseInfo;
+import nl.cwi.swat.typhonql.workingset.Entity;
 import nl.cwi.swat.typhonql.workingset.WorkingSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -92,7 +93,12 @@ public class QueryRunner implements ConsumerHandler {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
+		try {
+			connection.resetDatabases();
+		}
+		catch (Exception e){
+			e.printStackTrace();
+		}
 		isReady = true;
 	}
 	
@@ -118,8 +124,15 @@ public class QueryRunner implements ConsumerHandler {
 		}
 		
 		if (!isAnalyticsAvailiable()) {
-			callQueryEngine(query);
-			return "Run without analytics";
+			String result="";
+
+			WorkingSet set = callQueryEngine(query);
+			for (String ent:set.getEntityLabels()){
+				result=result+set.get(ent);
+			}
+
+			//TODO: run query and publish to POST topic
+			return "Query response(without analytics): " +  result;//event.getId();
 		}
 		
 		//Create pre event
@@ -162,12 +175,15 @@ public class QueryRunner implements ConsumerHandler {
 	    	if (event.isAuthenticated() == false) {
 	    		return "Not authorized";
 	    	}
-	    	
+	    	String result="";
 	    	startedOn = System.currentTimeMillis();
 	    	WorkingSet set = callQueryEngine(query);
+	    	for (String ent:set.getEntityLabels()){
+	    		result=result+set.get(ent);
+			}
 	    	long executionTime = System.currentTimeMillis() - startedOn;
 	    	//TODO: run query and publish to POST topic
-	    	return "Query response: " + event.getId();
+	    	return "Query response: " +  result;//event.getId();
 	    }
 	}
 	

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 import com.clms.typhonapi.models.*;
+import jdk.nashorn.internal.runtime.logging.DebugLogger;
 import org.apache.catalina.Engine;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -72,7 +73,7 @@ public class ServiceRegistry {
 			ByteArrayInputStream input = new ByteArrayInputStream(xmi.getBytes("UTF-8"));
 			Document doc = builder.parse(input);
 						
-			NodeList nList = doc.getElementsByTagName("typhonDL:DeploymentModel");
+			NodeList nList = doc.getElementsByTagName("elements");
 			for (int i = 0; i < nList.getLength(); i++) {
 				Node nNode = nList.item(i);
 				if (nNode.getNodeType() != Node.ELEMENT_NODE) {
@@ -81,9 +82,14 @@ public class ServiceRegistry {
 				
 				Service service = null;
 				
-		        Element db = querySelector(nNode, ".//elements[@type='typhonDL:DB']");
+		        Element db = (Element) nNode;
+		        if(!db.getAttribute("xsi:type").equals("typhonDL:DB")){
+					System.out.println(db.getAttribute("xsi:type"));
+
+					continue;
+		        }
 		        if (db != null) {
-		        	service = parseDbElement((Element)db.getParentNode(),nList);
+		        	service = parseDbElement(db,nList);
 		        }
 		        
 		        if (service != null) {
@@ -113,12 +119,12 @@ public class ServiceRegistry {
 	private Service parseDbElement(Element eElement,NodeList nList) {
 		Service db = new Service();
 		db.setServiceType(ServiceType.Database);
-		Element dbElement = querySelector(eElement, ".//elements[@type='typhonDL:DB']");
+		Element dbElement = eElement;
 		String typeReference = dbElement.getAttribute("type");
-		int typeElement = Integer.parseInt(typeReference.substring(1,2));
-		int refDbType = Integer.parseInt(typeReference.substring(typeReference.length()-1,typeReference.length()))+1;
-		Element dbTypeElement = querySelector(nList.item(typeElement),"(.//elements[@type='typhonDL:DBType'])["+Integer.toString(refDbType)+"]");
-		Element parameters = querySelector(dbElement, ".//parameters[@type='typhonDL:Key_KeyValueList']");
+		int typeElement = Integer.parseInt(typeReference.substring(typeReference.length()-1,typeReference.length()));
+		//int refDbType = Integer.parseInt(typeReference.substring(typeReference.length()-1,typeReference.length()))+1;
+		Element dbTypeElement = (Element) nList.item(typeElement);//"(.//elements[@type='typhonDL:DBType'])["+Integer.toString(typeElement)+"]");
+		Element parameters = querySelector(dbElement, "./parameters[@type='typhonDL:Key_KeyValueList']");
 		String dbType="";
 		if(dbTypeElement!=null) {
 			dbType = dbTypeElement.getAttribute("name").toLowerCase();
@@ -159,22 +165,51 @@ public class ServiceRegistry {
 	}
 	
 	private void fillContainerInfo(Document doc, Service service) {
-		Element containerEl = querySelector(doc, "//containers[@name='" + service.getName() + "']");
+		Element containerEl;
+		if(service.getName().equals("polystore_db")){
+			containerEl = querySelector(doc, "//containers[@name='" + "polystore-mongo" + "']");
+		}
+		else {
+			containerEl = querySelector(doc, "//containers[@name='" + service.getName() + "']");
+		}
 		if (containerEl == null) {
 			return;
 		}
 		
 		//find port
+		/*	Element portEl = querySelector(containerEl, ".//properties[@name='ports']");
+		if (portEl != null) {
+			String portsValue = "";
+			if (portEl.hasAttribute("value")) {
+				portsValue = portEl.getAttribute("value");
+			} else {
+				Element valueEl = querySelector(portEl, ".//values");
+				if (valueEl != null) {
+					portsValue = valueEl.getTextContent();
+				}
+			}
+
+			if (portsValue != null && portsValue.contains(":")) {
+				int port = Integer.parseInt(portsValue.split(":")[0]);
+				service.setPort(port);
+			}
+		}
+
+		//find hostname
+		Element hostEl = querySelector(containerEl, ".//properties[@name='hostname']");
+		service.setHost(hostEl == null ? "localhost" : hostEl.getAttribute("value")); */
+
+		//new implementation
 		Element portEl = querySelector(containerEl, ".//ports");
 		if (portEl != null) {
 			String portsValue = "";
 
-				NodeList list = portEl.getElementsByTagName("key_values");
-				if(list.getLength()!=0){
-					portsValue = list.item(0).getNodeValue();
-					portsValue=portsValue+":"+list.item(1).getNodeValue();
+				Element target = querySelector(portEl, ".//key_values[@name='target']");
+				Element published = querySelector(portEl, ".//key_values[@name='published']");
+				String targetport = target.getAttribute("value");
+				String publishport = published.getAttribute("value");
+				portsValue = publishport +":"+targetport;
 
-				}
 			/*} else {
 				Element valueEl = querySelector(portEl, ".//values");
 				if (valueEl != null) {
@@ -182,7 +217,7 @@ public class ServiceRegistry {
 				}
 			} */
 
-			if (portsValue != null && portsValue.contains(":")) {
+			if (portsValue != null) {
 				int port = Integer.parseInt(portsValue.split(":")[0]);
 				service.setPort(port);
 			}
