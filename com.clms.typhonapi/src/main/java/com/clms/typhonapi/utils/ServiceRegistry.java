@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 import com.clms.typhonapi.models.*;
+import com.clms.typhonapi.storage.ModelStorage;
 import jdk.nashorn.internal.runtime.logging.DebugLogger;
 import org.apache.catalina.Engine;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,8 @@ public class ServiceRegistry {
 	private ArrayList<Service> _services;
 	@Autowired
 	private DbUtils dbHelper;
+	@Autowired
+	private ModelStorage repo;
 
 	public ServiceRegistry() {
 		_services = new ArrayList<>();
@@ -37,6 +40,8 @@ public class ServiceRegistry {
 			return;
 		}
 		load(dlModel.getContents());
+		dlModel.setInitializedConnections(true);
+		repo.save(dlModel);
 	}
 	
 	public ArrayList<Service> getDatabases() {
@@ -114,6 +119,7 @@ public class ServiceRegistry {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+
 	}
 	
 	private Service parseDbElement(Element eElement,NodeList nList) {

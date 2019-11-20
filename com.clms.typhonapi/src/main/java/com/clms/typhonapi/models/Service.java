@@ -16,7 +16,6 @@ public class Service {
     private DatabaseType dbType;
     private ServiceType serviceType;
     private EngineType engineType;
-    private boolean initialized=false;
     
     public Service() {
     	

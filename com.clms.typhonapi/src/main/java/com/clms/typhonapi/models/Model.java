@@ -23,6 +23,26 @@ public class Model {
     
 	private int version;
 
+    public boolean isInitializedDatabases() {
+        return initializedDatabases;
+    }
+
+    public void setInitializedDatabases(boolean initializedDatabases) {
+        this.initializedDatabases = initializedDatabases;
+    }
+
+    private boolean initializedDatabases;
+
+    public boolean isInitializedConnections() {
+        return initializedConnections;
+    }
+
+    public void setInitializedConnections(boolean initializedConnections) {
+        this.initializedConnections = initializedConnections;
+    }
+
+    private boolean initializedConnections;
+
     public int getVersion() {
         return version;
     }
@@ -60,4 +80,5 @@ public class Model {
     public void setDateReceived(Date dateReceived) {
         this.dateReceived = dateReceived;
     }
+
 }

@@ -5,6 +5,7 @@ import java.util.*;
 
 import com.clms.typhonapi.models.DatabaseType;
 
+import com.clms.typhonapi.storage.ModelStorage;
 import nl.cwi.swat.typhonql.MariaDB;
 import nl.cwi.swat.typhonql.MongoDB;
 import nl.cwi.swat.typhonql.MySQL;
@@ -42,6 +43,8 @@ public class QueryRunner implements ConsumerHandler {
 	private ServiceRegistry serviceRegistry;
 	@Autowired
 	private DbUtils dbHelper;
+	@Autowired
+	private ModelStorage repo;
 	
 	public void init(Model mlModel) {
 		isReady = false;
@@ -93,11 +96,16 @@ public class QueryRunner implements ConsumerHandler {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		try {
-			connection.resetDatabases();
-		}
-		catch (Exception e){
-			e.printStackTrace();
+		if(!mlModel.isInitializedDatabases()) {
+			try {
+				connection.resetDatabases();
+				mlModel.setInitializedDatabases(true);
+				repo.save(mlModel);
+			} catch (Exception e) {
+				e.printStackTrace();
+				return;
+			}
+
 		}
 		isReady = true;
 	}

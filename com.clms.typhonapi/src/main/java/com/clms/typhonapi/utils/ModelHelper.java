@@ -76,6 +76,8 @@ public class ModelHelper {
 		m.setDateReceived(new Date());
 		m.setType(type);
 		m.setContents(contents);
+		m.setInitializedDatabases(false);
+		m.setInitializedConnections(false);
 		if (latest == null) {
 			m.setVersion(1);
 		} else {
