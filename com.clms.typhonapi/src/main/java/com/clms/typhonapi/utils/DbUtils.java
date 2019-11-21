@@ -182,7 +182,7 @@ public class DbUtils {
 		}
 		
 		try {
-			String connectionString = String.format("jdbc:mariadb://%s:%d", db.getHost(), db.getPort());
+			String connectionString = String.format("jdbc:mariadb://%s:%d", db.getInternalHost(), db.getInternalPort());
 			conn = DriverManager.getConnection(connectionString, db.getUsername(), db.getPassword());
 			if (!conn.isValid(5000)) {
 				conn = null;
@@ -207,7 +207,7 @@ public class DbUtils {
 		}
 
 		try {
-			String connectionString = String.format("jdbc:mysql://%s:%d", db.getHost(), db.getPort());
+			String connectionString = String.format("jdbc:mysql://%s:%d", db.getInternalHost(), db.getInternalPort());
 			conn = DriverManager.getConnection(connectionString, db.getUsername(), db.getPassword());
 			if (!conn.isValid(5000)) {
 				conn = null;
@@ -221,7 +221,7 @@ public class DbUtils {
 	}
 	
 	private MongoClient getMongoDBConnection(Service db) {
-		String connectionString = String.format("mongodb://%s:%s@%s:%d", db.getUsername(), db.getPassword(), db.getHost(), db.getPort());
+		String connectionString = String.format("mongodb://%s:%s@%s:%d", db.getUsername(), db.getPassword(), db.getInternalHost(), db.getInternalPort());
 		MongoClientURI uri = new MongoClientURI(connectionString);
 		MongoClient mongoClient = new MongoClient(uri);
 		try{

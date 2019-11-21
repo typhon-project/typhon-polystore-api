@@ -13,7 +13,7 @@ public class EvolutionHelper {
     
     public void evolve(Model mlModel) {
     	//TODO: if initial version tell queryRunner to initialize databases, else forward call to evolution
-    	if (true) {
+    	if (!mlModel.isInitializedDatabases()) {
     		queryRunner.initDatabases();
     	}
     	

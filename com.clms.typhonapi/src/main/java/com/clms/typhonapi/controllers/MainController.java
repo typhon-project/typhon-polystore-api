@@ -62,7 +62,12 @@ public class MainController {
     public void init() {
     	userHelper.createInitialUser();
     	serviceRegistry.load(modelHelper.getDlModel());
-    	queryRunner.init(modelHelper.getMlModel());
+    	try {
+            queryRunner.init(modelHelper.getMlModel());
+        }
+    	catch (Exception e){
+            System.out.println(e.getMessage());
+        }
     }
     
     @RequestMapping(path = "/api/users/authenticate", method = RequestMethod.POST)

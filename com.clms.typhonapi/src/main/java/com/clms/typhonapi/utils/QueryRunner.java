@@ -64,7 +64,7 @@ public class QueryRunner implements ConsumerHandler {
 			Service analyticsQueue = serviceRegistry.getService(ServiceType.Queue);
 			if (analyticsService != null && analyticsQueue != null) {
 				receivedQueries.clear();
-				kafkaConnection = analyticsQueue.getHost() + ":" + analyticsQueue.getPort();
+				kafkaConnection = analyticsQueue.getInternalHost() + ":" + analyticsQueue.getInternalPort();
 				preProducer = new QueueProducer(kafkaConnection);
 				subscribeToAuthorization();
 			} else {
@@ -88,7 +88,7 @@ public class QueryRunner implements ConsumerHandler {
 				swattype = DBType.relationaldb;
 				dbms = new MariaDB().getName();
 			}
-			infos.add(new DatabaseInfo(service.getHost(),service.getPort(),service.getName(),swattype,dbms,service.getUsername(),service.getPassword()));
+			infos.add(new DatabaseInfo(service.getInternalHost(),service.getInternalPort(),service.getName(),swattype,dbms,service.getUsername(),service.getPassword()));
 		}
 		//TODO: initialize query engine with xmi and dbConnections
 		try {

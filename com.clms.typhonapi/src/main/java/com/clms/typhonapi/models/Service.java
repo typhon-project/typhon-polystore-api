@@ -9,8 +9,43 @@ public class Service {
 
     private String name;
     private ServiceStatus status;
-    private String host;
-    private int port;
+    private String internalHost;
+    private String externalHost;
+
+    public String getInternalHost() {
+        return internalHost;
+    }
+
+    public void setInternalHost(String internalHost) {
+        this.internalHost = internalHost;
+    }
+
+    public String getExternalHost() {
+        return externalHost;
+    }
+
+    public void setExternalHost(String externalHost) {
+        this.externalHost = externalHost;
+    }
+
+    public int getInternalPort() {
+        return internalPort;
+    }
+
+    public void setInternalPort(int internalPort) {
+        this.internalPort = internalPort;
+    }
+
+    public int getExternalPort() {
+        return externalPort;
+    }
+
+    public void setExternalPort(int externalPort) {
+        this.externalPort = externalPort;
+    }
+
+    private int internalPort;
+    private int externalPort;
     private String username;
     private String password;
     private DatabaseType dbType;
@@ -26,16 +61,18 @@ public class Service {
         this.status = status;
     }
     
-    public Service(ServiceType serviceType, String name, String host, int port) {
+    public Service(ServiceType serviceType, String name, String internalHost, int internalPort,String externalHost,int externalPort) {
     	this.name = name;
         this.serviceType = serviceType;
-        this.host = host;
-        this.port = port;
+        this.internalHost = internalHost;
+        this.externalHost = externalHost;
+        this.internalPort = internalPort;
+        this.externalPort = externalPort;
     }
 
-    public Service(ServiceType serviceType, String name, ServiceStatus status, String host,
-                   int port, String username, String password, DatabaseType dbType, EngineType engineType) {
-    	this(serviceType, name, host, port);
+    public Service(ServiceType serviceType, String name, ServiceStatus status, String internalHost,String externalHost,int internalPort,
+                   int externalPort, String username, String password, DatabaseType dbType, EngineType engineType) {
+    	this(serviceType, name, internalHost, internalPort,externalHost,externalPort);
         this.status = status;
         this.username = username;
         this.password = password;
@@ -59,21 +96,9 @@ public class Service {
         this.dbType = dbType;
     }
 
-    public String getHost() {
-        return host;
-    }
 
-    public void setHost(String host) {
-        this.host = host;
-    }
 
-    public int getPort() {
-        return port;
-    }
 
-    public void setPort(int port) {
-        this.port = port;
-    }
 
     public String getUsername() {
         return username;
@@ -117,6 +142,6 @@ public class Service {
     }
 	@Override
     public String toString() {
-		return String.format("Host: %s, port: %d, user: %s, pass: %s", host, port, username, password);
+		return String.format("Host: %s, port: %d, user: %s, pass: %s", internalHost, internalPort, username, password);
     }
 }

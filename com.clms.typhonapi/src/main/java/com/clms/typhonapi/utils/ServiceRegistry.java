@@ -36,7 +36,7 @@ public class ServiceRegistry {
 	
 	public void load(Model dlModel) {
 		_services.clear();
-		if (dlModel == null) {
+		if (dlModel == null	) {
 			return;
 		}
 		load(dlModel.getContents());
@@ -181,7 +181,11 @@ public class ServiceRegistry {
 		if (containerEl == null) {
 			return;
 		}
-		
+		Element uiEl;
+		uiEl = querySelector(doc, "//elements[@name='" + "polystore_ui" +"']");
+		Element parametersEl = querySelector(uiEl, ".//parameters");
+		String externalhost = querySelector(parametersEl,"//key_Values[@name='API_HOST']").getAttribute("value");
+		service.setExternalHost(externalhost);
 		//find port
 		/*	Element portEl = querySelector(containerEl, ".//properties[@name='ports']");
 		if (portEl != null) {
@@ -224,14 +228,17 @@ public class ServiceRegistry {
 			} */
 
 			if (portsValue != null) {
-				int port = Integer.parseInt(portsValue.split(":")[0]);
-				service.setPort(port);
+				int externalPort = Integer.parseInt(portsValue.split(":")[0]);
+				int internalPort = Integer.parseInt(portsValue.split(":")[1]);
+				service.setExternalPort(externalPort);
+				service.setInternalPort(internalPort);
 			}
 		}
 		
 		//find hostname
 		Element hostEl = querySelector(containerEl, ".//properties[@name='hostname']");
-		service.setHost(hostEl == null ? "localhost" : hostEl.getAttribute("value"));
+		service.setInternalHost(hostEl == null ? service.getName() : hostEl.getAttribute("value"));
+
 		
 	}
 
