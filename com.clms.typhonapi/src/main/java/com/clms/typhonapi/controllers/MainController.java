@@ -195,7 +195,13 @@ public class MainController {
     @RequestMapping(path = "/api/query", method = RequestMethod.POST)
     @Async
     public Future<String> executeQuery(@RequestBody String query){
-    	return new AsyncResult<String>("{ \"response\": \"" + queryRunner.run("nemo", query) + "\" }");
+    	return new AsyncResult<String>("{ \"response\": \"" + queryRunner.run("nemo", query,false) + "\" }");
+    }
+
+    @RequestMapping(path = "/api/update", method = RequestMethod.POST)
+    @Async
+    public Future<String> executeUpdate(@RequestBody String query){
+        return new AsyncResult<String>("{ \"response\": \"" + queryRunner.run("nemo", query,true) + "\" }");
     }
 
     @RequestMapping(path = "/api/evolve", method = RequestMethod.POST)

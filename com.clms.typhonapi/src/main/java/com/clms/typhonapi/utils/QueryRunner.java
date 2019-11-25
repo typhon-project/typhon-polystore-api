@@ -126,21 +126,26 @@ public class QueryRunner implements ConsumerHandler {
 		
 	}
 	
-	public String run(String user, String query) {
+	public String run(String user, String query,boolean isUpdate) {
 		if (!isReady()) {
 			return "Query engine is not initialized";
 		}
 		
 		if (!isAnalyticsAvailiable()) {
-			String result="";
-
-			WorkingSet set = callQueryEngine(query);
-			for (String ent:set.getEntityLabels()){
-				result=result+set.get(ent);
+			String result = "";
+			if(isUpdate){
+				int updresult = callQueryEngineUpdate(query);
+				return "Query response: " + updresult;//event.getId();
 			}
+			else {
+				WorkingSet set = callQueryEngineSelect(query);
+				for (String ent : set.getEntityLabels()) {
+					result = result + set.get(ent);
+				}
 
-			//TODO: run query and publish to POST topic
-			return "Query response(without analytics): " +  result;//event.getId();
+				//TODO: run query and publish to POST topic
+				return "Query response: " + result;//event.getId();
+			}
 		}
 		
 		//Create pre event
@@ -185,18 +190,27 @@ public class QueryRunner implements ConsumerHandler {
 	    	}
 	    	String result="";
 	    	startedOn = System.currentTimeMillis();
-	    	WorkingSet set = callQueryEngine(query);
-	    	for (String ent:set.getEntityLabels()){
-	    		result=result+set.get(ent);
+	    	if(isUpdate){
+	    		int updresult = callQueryEngineUpdate(query);
+				return "Query response: " + updresult;//event.getId();
 			}
-	    	long executionTime = System.currentTimeMillis() - startedOn;
-	    	//TODO: run query and publish to POST topic
-	    	return "Query response: " +  result;//event.getId();
+	    	else {
+				WorkingSet set = callQueryEngineSelect(query);
+				for (String ent : set.getEntityLabels()) {
+					result = result + set.get(ent);
+				}
+				long executionTime = System.currentTimeMillis() - startedOn;
+				//TODO: run query and publish to POST topic
+				return "Query response: " + result;//event.getId();
+			}
 	    }
 	}
 	
-	private WorkingSet callQueryEngine(String query) {
+	private WorkingSet callQueryEngineSelect(String query) {
 		return connection.executeQuery(query);
+	}
+	private int callQueryEngineUpdate(String query) {
+		return connection.executeUpdate(query);
 	}
 	
 	@Override
