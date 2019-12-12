@@ -182,7 +182,7 @@ public class DbUtils {
 		}
 		
 		try {
-			String connectionString = String.format("jdbc:mariadb://%s:%d", db.getInternalHost(), db.getInternalPort());
+			String connectionString = String.format("jdbc:mariadb://%s:%d", db.getExternalHost(), db.getExternalPort());
 			conn = DriverManager.getConnection(connectionString, db.getUsername(), db.getPassword());
 			if (!conn.isValid(5000)) {
 				conn = null;
@@ -207,7 +207,7 @@ public class DbUtils {
 		}
 
 		try {
-			String connectionString = String.format("jdbc:mysql://%s:%d", db.getInternalHost(), db.getInternalPort());
+			String connectionString = String.format("jdbc:mysql://%s:%d", db.getExternalHost(), db.getExternalPort());
 			conn = DriverManager.getConnection(connectionString, db.getUsername(), db.getPassword());
 			if (!conn.isValid(5000)) {
 				conn = null;

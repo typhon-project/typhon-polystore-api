@@ -191,7 +191,14 @@ public class MainController {
     	dbUtils.updateDbStatus();
         return ResponseEntity.status(200).body(serviceRegistry.getDatabases());
     }
-        
+
+    @RequestMapping(path = "/api/resetdatabases", method = RequestMethod.GET)
+    public ResponseEntity resetDatabases() {
+        dbUtils.updateDbStatus();
+        return ResponseEntity.status(200).body(queryRunner.resetDatabases());
+    }
+
+
     @RequestMapping(path = "/api/query", method = RequestMethod.POST)
     @Async
     public Future<String> executeQuery(@RequestBody String query){

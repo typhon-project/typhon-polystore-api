@@ -1,5 +1,6 @@
 package com.clms.typhonapi.utils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
 
@@ -10,8 +11,8 @@ import nl.cwi.swat.typhonql.MariaDB;
 import nl.cwi.swat.typhonql.MongoDB;
 import nl.cwi.swat.typhonql.MySQL;
 import nl.cwi.swat.typhonql.client.DatabaseInfo;
-import nl.cwi.swat.typhonql.workingset.Entity;
 import nl.cwi.swat.typhonql.workingset.WorkingSet;
+import nl.cwi.swat.typhonql.workingset.json.WorkingSetJSON;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +27,8 @@ import ac.york.typhon.analytics.commons.datatypes.events.Event;
 import ac.york.typhon.analytics.commons.datatypes.events.PreEvent;
 import nl.cwi.swat.typhonql.client.XMIPolystoreConnection;
 import nl.cwi.swat.typhonql.DBType;
+
+
 
 
 @Component
@@ -97,17 +100,12 @@ public class QueryRunner implements ConsumerHandler {
 			e.printStackTrace();
 		}
 		if(!mlModel.isInitializedDatabases()) {
-			try {
-				connection.resetDatabases();
-				mlModel.setInitializedDatabases(true);
-				repo.save(mlModel);
-			} catch (Exception e) {
-				e.printStackTrace();
-				return;
-			}
 
+			isReady=false;
 		}
-		isReady = true;
+		else {
+			isReady = true;
+		}
 	}
 	
 	public void turnOff() {
@@ -121,7 +119,20 @@ public class QueryRunner implements ConsumerHandler {
 	public boolean isAnalyticsAvailiable() {
 		return preProducer != null;
 	}
-	
+
+	public boolean resetDatabases(){
+		try {
+			connection.resetDatabases();
+			Model mlModel = repo.findLatestByType("ML");
+			mlModel.setInitializedDatabases(true);
+			repo.save(mlModel);
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
 	public void initDatabases() {
 		
 	}
@@ -138,13 +149,17 @@ public class QueryRunner implements ConsumerHandler {
 				return "Query response: " + updresult;//event.getId();
 			}
 			else {
+				ByteArrayOutputStream str=new ByteArrayOutputStream();
 				WorkingSet set = callQueryEngineSelect(query);
-				for (String ent : set.getEntityLabels()) {
-					result = result + set.get(ent);
+				try {
+					WorkingSetJSON.toJSON(set,str);
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
 
+				result = new String(str.toByteArray());
 				//TODO: run query and publish to POST topic
-				return "Query response: " + result;//event.getId();
+				return result;//event.getId();
 			}
 		}
 		
@@ -195,13 +210,18 @@ public class QueryRunner implements ConsumerHandler {
 				return "Query response: " + updresult;//event.getId();
 			}
 	    	else {
+				ByteArrayOutputStream str=new ByteArrayOutputStream();
 				WorkingSet set = callQueryEngineSelect(query);
-				for (String ent : set.getEntityLabels()) {
-					result = result + set.get(ent);
+				try {
+					WorkingSetJSON.toJSON(set,str);
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
+
+				result = new String(str.toByteArray());
 				long executionTime = System.currentTimeMillis() - startedOn;
 				//TODO: run query and publish to POST topic
-				return "Query response: " + result;//event.getId();
+				return result;//event.getId();
 			}
 	    }
 	}
