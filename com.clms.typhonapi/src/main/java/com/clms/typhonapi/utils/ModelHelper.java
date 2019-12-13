@@ -57,15 +57,15 @@ public class ModelHelper {
 		return getModels("ML");
 	}
 
-	public void addDlModel(String name, String contents) throws Exception {
-		addModel("DL", name, contents);
+	public boolean addDlModel(String name, String contents) throws Exception {
+		return addModel("DL", name, contents);
 	}
 
 	public void addMlModel(String name, String contents) throws Exception {
 		addModel("ML", name, contents);
 	}
 	
-	private void addModel(String type, String name, String contents) throws Exception {
+	private boolean addModel(String type, String name, String contents) throws Exception {
 		if (!isValid(contents)) {
 			throw new Exception("Not valid model");
 		}
@@ -76,17 +76,24 @@ public class ModelHelper {
 		m.setDateReceived(new Date());
 		m.setType(type);
 		m.setContents(contents);
-		m.setInitializedDatabases(false);
 		m.setInitializedConnections(false);
 		if (latest == null) {
 			m.setVersion(1);
+			m.setInitializedDatabases(false);
 		} else {
 			//todo: temp code until model migration is implemented
+
 			m.setVersion(latest.getVersion() + 1);
 		}
 		MLSchema schema = new MLSchema();
 
 		repo.insert(m);
+		if(m.getType()=="DL"){
+			return true;
+		}
+		else{
+			return false;
+		}
 	}
 	
 	public Model getModel(String type) {

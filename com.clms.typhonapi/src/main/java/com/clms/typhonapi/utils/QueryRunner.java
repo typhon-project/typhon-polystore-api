@@ -14,6 +14,8 @@ import nl.cwi.swat.typhonql.client.DatabaseInfo;
 import nl.cwi.swat.typhonql.workingset.WorkingSet;
 import nl.cwi.swat.typhonql.workingset.json.WorkingSetJSON;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import com.clms.typhonapi.kafka.QueueConsumer;
@@ -96,16 +98,14 @@ public class QueryRunner implements ConsumerHandler {
 		//TODO: initialize query engine with xmi and dbConnections
 		try {
 			connection = new XMIPolystoreConnection(mlModel.getContents(), infos);
+			isReady=true;
+			System.out.println("completed initialization");
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
-		if(!mlModel.isInitializedDatabases()) {
-
+			System.out.println("Could not establish connections to the polystore databases, reupload DL model and try again!");
 			isReady=false;
 		}
-		else {
-			isReady = true;
-		}
+
 	}
 	
 	public void turnOff() {
@@ -123,7 +123,8 @@ public class QueryRunner implements ConsumerHandler {
 	public boolean resetDatabases(){
 		try {
 			connection.resetDatabases();
-			Model mlModel = repo.findLatestByType("ML");
+			//PageRequest request = new PageRequest(0, 1, new Sort(Sort.Direction.DESC, "version"));
+			Model mlModel = repo.findTopModelByTypeOrderByVersionDesc("ML");
 			mlModel.setInitializedDatabases(true);
 			repo.save(mlModel);
 			return true;

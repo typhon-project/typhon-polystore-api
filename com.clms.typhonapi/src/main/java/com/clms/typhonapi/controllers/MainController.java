@@ -163,8 +163,11 @@ public class MainController {
 
     @RequestMapping(path = "/api/model/dl", method = RequestMethod.POST)
     public void setTyphoneDLModel(@RequestBody Map<String, String> json) throws Exception {
-    	modelHelper.addDlModel(json.get("name"), json.get("contents"));
+    	boolean flagReconnect=modelHelper.addDlModel(json.get("name"), json.get("contents"));
     	serviceRegistry.load(modelHelper.getDlModel());
+    	if(flagReconnect){
+    	    queryRunner.init(modelHelper.getMlModel());
+        }
     }
     
     @RequestMapping(path = "/api/model/ml", method = RequestMethod.POST)
