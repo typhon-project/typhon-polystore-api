@@ -112,13 +112,6 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <requiresUnpack><dependency>
-                        <groupId>engineering.swat.typhon</groupId>
-                        <artifactId>typhonql-headless</artifactId>
-                    </dependency>
-                    </requiresUnpack>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>com.google.cloud.tools</groupId>
@@ -127,9 +120,17 @@
                 <configuration>
                     <from>
                         <image>adoptopenjdk:8-jdk-hotspot</image>
+                        <auth>
+                            <username>${env.REGISTRY_USERNAME}</username>
+                            <password>${env.REGISTRY_PASSWORD}</password>
+                        </auth>
                     </from>
                     <to>
                         <image>docker.io/clms/typhon-polystore-api</image>
+                        <auth>
+                            <username>${env.REGISTRY_USERNAME}</username>
+                            <password>${env.REGISTRY_PASSWORD}</password>
+                        </auth>
                     </to>
                 </configuration>
             </plugin>
