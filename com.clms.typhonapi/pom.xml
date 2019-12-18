@@ -112,6 +112,26 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <requiresUnpack><dependency>
+                        <groupId>engineering.swat.typhon</groupId>
+                        <artifactId>typhonql-headless</artifactId>
+                    </dependency>
+                    </requiresUnpack>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <version>1.8.0</version>
+                <configuration>
+                    <from>
+                        <image>adoptopenjdk:8-jdk-hotspot</image>
+                    </from>
+                    <to>
+                        <image>docker.io/clms/typhon-polystore-api</image>
+                    </to>
+                </configuration>
             </plugin>
             <plugin>
             <groupId>org.apache.felix</groupId>
@@ -134,7 +154,7 @@
 	<repositories>
         <repository>
             <id>internal</id>
-            <url>http://192.168.2.201:8090/repository/internal/</url>
+            <url>http://archiva.clmsuk.com:8090/repository/internal/</url>
         </repository>
 		<repository>
 			<id>spring-releases</id>
