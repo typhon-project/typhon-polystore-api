@@ -1,4 +1,4 @@
-[![Build Status](http://typhon.clmsuk.com:8081/buildStatus/icon?job=TyphonAPI)](http://typhon.clmsuk.com:8081/job/TyphonAPI/)
+[![Build Status](http://typhon.clmsuk.com:8080/buildStatus/icon?job=TyphonAPI)](http://typhon.clmsuk.com:8080/job/TyphonAPI/)
 
 # typhon-polystore-api
 Polystore API
