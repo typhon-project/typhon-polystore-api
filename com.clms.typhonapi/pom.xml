@@ -45,6 +45,13 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb</artifactId>
+            <exclusions>
+                <exclusion>  
+                    <groupId>org.mongodb</groupId>
+                    <artifactId>mongodb-driver</artifactId>
+                </exclusion>
+            </exclusions>
+
         </dependency>
         <dependency>
             <groupId>joda-time</groupId>
