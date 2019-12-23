@@ -125,6 +125,9 @@
                 <artifactId>jib-maven-plugin</artifactId>
                 <version>1.8.0</version>
                 <configuration>
+                    <container>
+                        <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
+                    </container>
                     <from>
                         <image>adoptopenjdk:8-jdk-hotspot</image>
                     </from>
