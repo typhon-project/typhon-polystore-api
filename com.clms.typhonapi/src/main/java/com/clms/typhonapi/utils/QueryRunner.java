@@ -7,9 +7,11 @@ import java.util.*;
 import com.clms.typhonapi.models.DatabaseType;
 
 import com.clms.typhonapi.storage.ModelStorage;
+import com.sun.corba.se.spi.orbutil.threadpool.Work;
 import nl.cwi.swat.typhonql.MariaDB;
 import nl.cwi.swat.typhonql.MongoDB;
 import nl.cwi.swat.typhonql.MySQL;
+import nl.cwi.swat.typhonql.client.CommandResult;
 import nl.cwi.swat.typhonql.client.DatabaseInfo;
 import nl.cwi.swat.typhonql.workingset.WorkingSet;
 import nl.cwi.swat.typhonql.workingset.json.WorkingSetJSON;
@@ -17,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
+
 
 import com.clms.typhonapi.kafka.QueueConsumer;
 import com.clms.typhonapi.kafka.ConsumerHandler;
@@ -146,9 +149,16 @@ public class QueryRunner implements ConsumerHandler {
 		if (!isAnalyticsAvailiable()) {
 			String result = "";
 			if(isUpdate){
-				int updresult = callQueryEngineUpdate(query);
-				return "Query response: " + updresult;//event.getId();
-			}
+				ByteArrayOutputStream str=new ByteArrayOutputStream();
+
+				CommandResult updresult = callQueryEngineUpdate(query);
+				try {
+					WorkingSetJSON.toJSON(updresult,str);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				result = new String(str.toByteArray());
+				return result;}
 			else {
 				ByteArrayOutputStream str=new ByteArrayOutputStream();
 				WorkingSet set = callQueryEngineSelect(query);
@@ -207,8 +217,16 @@ public class QueryRunner implements ConsumerHandler {
 	    	String result="";
 	    	startedOn = System.currentTimeMillis();
 	    	if(isUpdate){
-	    		int updresult = callQueryEngineUpdate(query);
-				return "Query response: " + updresult;//event.getId();
+				ByteArrayOutputStream str=new ByteArrayOutputStream();
+
+				CommandResult updresult = callQueryEngineUpdate(query);
+				try {
+					WorkingSetJSON.toJSON(updresult,str);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				result = new String(str.toByteArray());
+				return result;
 			}
 	    	else {
 				ByteArrayOutputStream str=new ByteArrayOutputStream();
@@ -230,7 +248,7 @@ public class QueryRunner implements ConsumerHandler {
 	private WorkingSet callQueryEngineSelect(String query) {
 		return connection.executeQuery(query);
 	}
-	private int callQueryEngineUpdate(String query) {
+	private CommandResult callQueryEngineUpdate(String query) {
 		return connection.executeUpdate(query);
 	}
 	
