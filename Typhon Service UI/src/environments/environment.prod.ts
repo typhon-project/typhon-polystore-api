@@ -1,1 +1,2 @@
-export const environment = {  production: true,  api_port:  api_host:};
+export const environment = {  production: true, api_host: 'localhost',
+    api_port: '8080'    };

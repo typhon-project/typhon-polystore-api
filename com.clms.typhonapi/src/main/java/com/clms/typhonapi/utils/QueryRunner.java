@@ -7,16 +7,24 @@ import java.util.*;
 import com.clms.typhonapi.models.DatabaseType;
 
 import com.clms.typhonapi.storage.ModelStorage;
+import com.google.common.net.HttpHeaders;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.mongodb.util.JSON;
+import com.sun.corba.se.spi.orbutil.threadpool.Work;
 import nl.cwi.swat.typhonql.MariaDB;
 import nl.cwi.swat.typhonql.MongoDB;
 import nl.cwi.swat.typhonql.MySQL;
+import nl.cwi.swat.typhonql.client.CommandResult;
 import nl.cwi.swat.typhonql.client.DatabaseInfo;
 import nl.cwi.swat.typhonql.workingset.WorkingSet;
 import nl.cwi.swat.typhonql.workingset.json.WorkingSetJSON;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
+
 
 import com.clms.typhonapi.kafka.QueueConsumer;
 import com.clms.typhonapi.kafka.ConsumerHandler;
@@ -29,8 +37,8 @@ import ac.york.typhon.analytics.commons.datatypes.events.Event;
 import ac.york.typhon.analytics.commons.datatypes.events.PreEvent;
 import nl.cwi.swat.typhonql.client.XMIPolystoreConnection;
 import nl.cwi.swat.typhonql.DBType;
-
-
+import org.springframework.web.client.RestTemplate;
+import scala.util.parsing.json.JSONObject;
 
 
 @Component
@@ -97,10 +105,28 @@ public class QueryRunner implements ConsumerHandler {
 		}
 		//TODO: initialize query engine with xmi and dbConnections
 		try {
-			connection = new XMIPolystoreConnection(mlModel.getContents(), infos);
-			isReady=true;
-			System.out.println("completed initialization");
-		} catch (IOException e) {
+			String uri = "http://localhost:7000/initialize";
+			Map<String, Object> vars = new HashMap<String, Object>();
+			vars.put("xmi", mlModel.getContents());
+			vars.put("databaseInfo",infos);
+
+
+			RestTemplate restTemplate = new RestTemplate();
+			Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+			System.out.println(gson.toJson(vars));
+			ResponseEntity<String> result = restTemplate.postForEntity(uri, gson.toJson(vars), String.class);
+			//connection = new XMIPolystoreConnection(mlModel.getContents(), infos);
+			System.out.println(result.getBody());
+			if (result.getStatusCode() == HttpStatus.OK) {
+				isReady = true;
+				System.out.println("completed initialization");
+			} else {
+				System.out.println("Could not establish connections to the polystore databases, reupload DL model and try again!");
+				isReady=false;
+
+			}
+
+		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println("Could not establish connections to the polystore databases, reupload DL model and try again!");
 			isReady=false;
@@ -122,12 +148,23 @@ public class QueryRunner implements ConsumerHandler {
 
 	public boolean resetDatabases(){
 		try {
-			connection.resetDatabases();
-			//PageRequest request = new PageRequest(0, 1, new Sort(Sort.Direction.DESC, "version"));
-			Model mlModel = repo.findTopModelByTypeOrderByVersionDesc("ML");
-			mlModel.setInitializedDatabases(true);
-			repo.save(mlModel);
-			return true;
+			String uri = "http://localhost:7000/reset";
+
+			RestTemplate restTemplate = new RestTemplate();
+
+
+			ResponseEntity<String> result = restTemplate.postForEntity(uri,null,String.class);
+			if(result.getStatusCode()== HttpStatus.OK) {
+				System.out.println(result);
+				//PageRequest request = new PageRequest(0, 1, new Sort(Sort.Direction.DESC, "version"));
+				Model mlModel = repo.findTopModelByTypeOrderByVersionDesc("ML");
+				mlModel.setInitializedDatabases(true);
+				repo.save(mlModel);
+				return true;
+			}
+			else{
+				return false;
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
@@ -146,9 +183,16 @@ public class QueryRunner implements ConsumerHandler {
 		if (!isAnalyticsAvailiable()) {
 			String result = "";
 			if(isUpdate){
-				int updresult = callQueryEngineUpdate(query);
-				return "Query response: " + updresult;//event.getId();
-			}
+				ByteArrayOutputStream str=new ByteArrayOutputStream();
+
+				CommandResult updresult = callQueryEngineUpdate(query);
+				try {
+					WorkingSetJSON.toJSON(updresult,str);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				result = new String(str.toByteArray());
+				return result;}
 			else {
 				ByteArrayOutputStream str=new ByteArrayOutputStream();
 				WorkingSet set = callQueryEngineSelect(query);
@@ -207,8 +251,16 @@ public class QueryRunner implements ConsumerHandler {
 	    	String result="";
 	    	startedOn = System.currentTimeMillis();
 	    	if(isUpdate){
-	    		int updresult = callQueryEngineUpdate(query);
-				return "Query response: " + updresult;//event.getId();
+				ByteArrayOutputStream str=new ByteArrayOutputStream();
+
+				CommandResult updresult = callQueryEngineUpdate(query);
+				try {
+					WorkingSetJSON.toJSON(updresult,str);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				result = new String(str.toByteArray());
+				return result;
 			}
 	    	else {
 				ByteArrayOutputStream str=new ByteArrayOutputStream();
@@ -230,7 +282,7 @@ public class QueryRunner implements ConsumerHandler {
 	private WorkingSet callQueryEngineSelect(String query) {
 		return connection.executeQuery(query);
 	}
-	private int callQueryEngineUpdate(String query) {
+	private CommandResult callQueryEngineUpdate(String query) {
 		return connection.executeUpdate(query);
 	}
 	

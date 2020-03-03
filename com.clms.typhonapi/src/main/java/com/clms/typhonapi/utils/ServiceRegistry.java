@@ -22,7 +22,7 @@ import javax.xml.xpath.XPathFactory;
 import java.io.*;
 
 @Component
-public class ServiceRegistry {
+public class 	ServiceRegistry {
 
 	private ArrayList<Service> _services;
 	@Autowired
@@ -133,9 +133,12 @@ public class ServiceRegistry {
 		Element parameters = querySelector(dbElement, "./parameters[@type='typhonDL:Key_KeyValueList']");
 		String dbType="";
 		if(dbTypeElement!=null) {
-			dbType = dbTypeElement.getAttribute("name").toLowerCase();
+			dbType = dbTypeElement.getAttribute("name");
+			if (dbType == null){
+				dbType = dbTypeElement.getAttribute("name").toLowerCase();
+			}
 		}
-		switch (dbType) {
+		switch (dbType.toLowerCase()) {
 			case "mongo":
 				Element mongoUser = querySelector(parameters, ".//key_Values[@name='MONGO_INITDB_ROOT_USERNAME']");
 				Element mongoPass = querySelector(parameters, ".//key_Values[@name='MONGO_INITDB_ROOT_PASSWORD']");
