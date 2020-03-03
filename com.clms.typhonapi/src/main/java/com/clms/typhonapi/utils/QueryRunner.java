@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
 
+import ac.york.typhon.analytics.commons.datatypes.events.PostEvent;
 import com.clms.typhonapi.models.DatabaseType;
 
 import com.clms.typhonapi.storage.ModelStorage;
@@ -45,6 +46,8 @@ import scala.util.parsing.json.JSONObject;
 public class QueryRunner implements ConsumerHandler {
 
 	private QueueProducer preProducer;
+	private QueueProducer postProducer;
+	private static String POST_TOPIC = "POST";
 	private static String PRE_TOPIC = "PRE";
 	private static String AUTH_TOPIC = "AUTH";
 	private Map<Integer, PreEvent> receivedQueries = new HashMap<Integer, PreEvent>();
@@ -79,6 +82,7 @@ public class QueryRunner implements ConsumerHandler {
 				receivedQueries.clear();
 				kafkaConnection = analyticsQueue.getInternalHost() + ":" + analyticsQueue.getInternalPort();
 				preProducer = new QueueProducer(kafkaConnection);
+				postProducer = new QueueProducer(kafkaConnection);
 				subscribeToAuthorization();
 			} else {
 				System.out.println("[~~~~~~~WARNING~~~~~~~] No analytics service found in dl...");
@@ -148,7 +152,7 @@ public class QueryRunner implements ConsumerHandler {
 
 	public boolean resetDatabases(){
 		try {
-			String uri = "http://localhost:7000/reset";
+			String uri = "http://typhonql-server/reset";
 
 			RestTemplate restTemplate = new RestTemplate();
 
@@ -179,105 +183,93 @@ public class QueryRunner implements ConsumerHandler {
 		if (!isReady()) {
 			return "Query engine is not initialized";
 		}
-		
-		if (!isAnalyticsAvailiable()) {
-			String result = "";
-			if(isUpdate){
-				ByteArrayOutputStream str=new ByteArrayOutputStream();
+		PreEvent event = new PreEvent();;
+		if (isAnalyticsAvailiable()) {
 
-				CommandResult updresult = callQueryEngineUpdate(query);
-				try {
-					WorkingSetJSON.toJSON(updresult,str);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				result = new String(str.toByteArray());
-				return result;}
-			else {
-				ByteArrayOutputStream str=new ByteArrayOutputStream();
-				WorkingSet set = callQueryEngineSelect(query);
-				try {
-					WorkingSetJSON.toJSON(set,str);
-				} catch (IOException e) {
-					e.printStackTrace();
+			event.setId(UUID.randomUUID().toString());
+			event.setQuery(query);
+			event.setUser(user);
+			this.preProducer.produce(PRE_TOPIC, event);
+			long startedOn = System.currentTimeMillis();
+			int timeout = 10 * 1000;
+			boolean timedOut = false;
+			int eventHash = event.getId().hashCode();
+			while (true) {
+				if (receivedQueries.containsKey(eventHash)) {
+					event = receivedQueries.get(eventHash);
+					receivedQueries.remove(eventHash);
+					break;
 				}
 
-				result = new String(str.toByteArray());
-				//TODO: run query and publish to POST topic
-				return result;//event.getId();
+				if (System.currentTimeMillis() - startedOn > timeout) {
+					timedOut = true;
+					break;
+				}
+
+				try {
+					Thread.sleep(50);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				if (timedOut) {
+					return "Query timeout";
+				}
+				if (event.isAuthenticated() == false) {
+					return "Not authorized";
+				}
 			}
 		}
-		
-		//Create pre event
-		PreEvent event = new PreEvent();
-		event.setId(UUID.randomUUID().toString());
-		event.setQuery(query);
-		event.setUser(user);
-		
-		//Post pre event to PRE topic
-		this.preProducer.produce(PRE_TOPIC, event);
-		
-		//wait for response on AUTH topic
-		long startedOn = System.currentTimeMillis();
-		int timeout = 10 * 1000;
-		boolean timedOut = false;
-		int eventHash = event.getId().hashCode();
-		
-	    while (true) {
-	    	if (receivedQueries.containsKey(eventHash)) {
-	    		event = receivedQueries.get(eventHash);
-	    		receivedQueries.remove(eventHash);
-	    		break;
-	    	}
-	    	
-	        if (System.currentTimeMillis() - startedOn > timeout) {
-	        	timedOut = true;
-	            break;
-	        }
-	        
-	        try {
-				Thread.sleep(50);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+
+			if(isUpdate){
+				String uri = "http://typhonql-server/update";
+				Map<String, Object> vars = new HashMap<String, Object>();
+				vars.put("command", query);
+				RestTemplate restTemplate = new RestTemplate();
+				Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+				System.out.println(gson.toJson(vars));
+				ResponseEntity<String> result = restTemplate.postForEntity(uri, gson.toJson(vars), String.class);
+				//connection = new XMIPolystoreConnection(mlModel.getContents(), infos);
+				System.out.println(result.getBody());
+				if (result.getStatusCode() == HttpStatus.OK) {
+					isReady = true;
+					System.out.println("update query executed successfully");
+
+				} else {
+					System.out.println("error in query");
+					isReady=false;
+
+				}
+				if(isAnalyticsAvailiable()) {
+					sendPostEvent(event,query,result);
+				}
+				return result.getBody();
+
+			}
+			else {
+				String uri = "http://typhonql-server/query?q="+query;
+
+				RestTemplate restTemplate = new RestTemplate();
+
+				ResponseEntity<String> result = restTemplate.getForEntity(uri,  String.class);
+				//connection = new XMIPolystoreConnection(mlModel.getContents(), infos);
+				System.out.println(result.getBody());
+				if (result.getStatusCode() == HttpStatus.OK) {
+					isReady = true;
+					System.out.println("update query executed successfully");
+
+				} else {
+					System.out.println("error in query");
+					isReady=false;
+
+				}
+				if(isAnalyticsAvailiable()) {
+					sendPostEvent(event,query,result);
+				}
+				return result.getBody();
+
 			}
 	    }
-	    
-	    if (timedOut) {
-	    	return "Query timeout";
-	    } else {
-	    	if (event.isAuthenticated() == false) {
-	    		return "Not authorized";
-	    	}
-	    	String result="";
-	    	startedOn = System.currentTimeMillis();
-	    	if(isUpdate){
-				ByteArrayOutputStream str=new ByteArrayOutputStream();
 
-				CommandResult updresult = callQueryEngineUpdate(query);
-				try {
-					WorkingSetJSON.toJSON(updresult,str);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				result = new String(str.toByteArray());
-				return result;
-			}
-	    	else {
-				ByteArrayOutputStream str=new ByteArrayOutputStream();
-				WorkingSet set = callQueryEngineSelect(query);
-				try {
-					WorkingSetJSON.toJSON(set,str);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-
-				result = new String(str.toByteArray());
-				long executionTime = System.currentTimeMillis() - startedOn;
-				//TODO: run query and publish to POST topic
-				return result;//event.getId();
-			}
-	    }
-	}
 	
 	private WorkingSet callQueryEngineSelect(String query) {
 		return connection.executeQuery(query);
@@ -294,6 +286,15 @@ public class QueryRunner implements ConsumerHandler {
 	private void subscribeToAuthorization() {
 		Thread subscribeTask = new Thread(new QueueConsumer(kafkaConnection, AUTH_TOPIC, this));
 		subscribeTask.start();
+	}
+
+	private void sendPostEvent(PreEvent event,String query,ResponseEntity<String> result){
+		PostEvent post = new PostEvent();
+		post.setId(UUID.randomUUID().toString());
+		post.setQuery(query);
+		post.setPreEvent(event);
+		post.setSuccess(true);
+		this.postProducer.produce(POST_TOPIC, post);
 	}
 	
 }
