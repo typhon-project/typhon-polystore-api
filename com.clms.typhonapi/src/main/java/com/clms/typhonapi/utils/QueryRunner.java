@@ -8,11 +8,11 @@ import ac.york.typhon.analytics.commons.datatypes.events.PostEvent;
 import com.clms.typhonapi.models.*;
 
 import com.clms.typhonapi.storage.ModelStorage;
+
 import com.google.common.net.HttpHeaders;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mongodb.util.JSON;
-import com.sun.corba.se.spi.orbutil.threadpool.Work;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -170,6 +170,7 @@ public class QueryRunner implements ConsumerHandler {
 		if (!isReady()) {
 			return "Query engine is not initialized";
 		}
+
 		PreEvent event = new PreEvent();;
 		if (isAnalyticsAvailiable()) {
 
@@ -192,7 +193,6 @@ public class QueryRunner implements ConsumerHandler {
 					timedOut = true;
 					break;
 				}
-
 				try {
 					Thread.sleep(50);
 				} catch (InterruptedException e) {
@@ -206,7 +206,6 @@ public class QueryRunner implements ConsumerHandler {
 				}
 			}
 		}
-
 			if(isUpdate){
 				String uri = "http://typhonql-server/update";
 				Map<String, Object> vars = new HashMap<String, Object>();
@@ -230,7 +229,6 @@ public class QueryRunner implements ConsumerHandler {
 					sendPostEvent(event,query,result);
 				}
 				return result.getBody();
-
 			}
 			else {
 				String uri = "http://typhonql-server/query?q="+query;
@@ -255,7 +253,7 @@ public class QueryRunner implements ConsumerHandler {
 				return result.getBody();
 
 			}
-	    }
+    }
 
 	@Override
 	public void onNewMesaage(Event event) {
