@@ -14,17 +14,11 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import com.clms.typhonapi.models.MLSchema;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.clms.typhonapi.models.Model;
-import com.clms.typhonapi.models.Service;
 import com.clms.typhonapi.storage.ModelStorage;
 
 @Component
@@ -85,7 +79,6 @@ public class ModelHelper {
 
 			m.setVersion(latest.getVersion() + 1);
 		}
-		MLSchema schema = new MLSchema();
 
 		repo.insert(m);
 		if(m.getType()=="DL"){

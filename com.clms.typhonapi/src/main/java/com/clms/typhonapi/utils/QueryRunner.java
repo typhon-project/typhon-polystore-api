@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.*;
 
 import ac.york.typhon.analytics.commons.datatypes.events.PostEvent;
-import com.clms.typhonapi.models.DatabaseType;
+import com.clms.typhonapi.models.*;
 
 import com.clms.typhonapi.storage.ModelStorage;
 import com.google.common.net.HttpHeaders;
@@ -13,13 +13,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mongodb.util.JSON;
 import com.sun.corba.se.spi.orbutil.threadpool.Work;
-import nl.cwi.swat.typhonql.MariaDB;
-import nl.cwi.swat.typhonql.MongoDB;
-import nl.cwi.swat.typhonql.MySQL;
-import nl.cwi.swat.typhonql.client.CommandResult;
-import nl.cwi.swat.typhonql.client.DatabaseInfo;
-import nl.cwi.swat.typhonql.workingset.WorkingSet;
-import nl.cwi.swat.typhonql.workingset.json.WorkingSetJSON;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -30,14 +23,9 @@ import org.springframework.stereotype.Component;
 import com.clms.typhonapi.kafka.QueueConsumer;
 import com.clms.typhonapi.kafka.ConsumerHandler;
 import com.clms.typhonapi.kafka.QueueProducer;
-import com.clms.typhonapi.models.Model;
-import com.clms.typhonapi.models.Service;
-import com.clms.typhonapi.models.ServiceType;
 
 import ac.york.typhon.analytics.commons.datatypes.events.Event;
 import ac.york.typhon.analytics.commons.datatypes.events.PreEvent;
-import nl.cwi.swat.typhonql.client.XMIPolystoreConnection;
-import nl.cwi.swat.typhonql.DBType;
 import org.springframework.web.client.RestTemplate;
 import scala.util.parsing.json.JSONObject;
 
@@ -53,7 +41,6 @@ public class QueryRunner implements ConsumerHandler {
 	private Map<Integer, PreEvent> receivedQueries = new HashMap<Integer, PreEvent>();
 	private String kafkaConnection = "";
 	private boolean isReady;
-	private XMIPolystoreConnection connection;
 	
 	@Autowired
 	private ServiceRegistry serviceRegistry;
@@ -90,26 +77,26 @@ public class QueryRunner implements ConsumerHandler {
 		}
 		List<DatabaseInfo> infos = new ArrayList<DatabaseInfo>();
 		for (Service service: serviceRegistry.getDatabases()){
-			DBType swattype;
 			DatabaseType type = service.getDbType();
 			String dbms;
+			String swattype;
 			if(type==DatabaseType.MongoDb){
-				swattype=DBType.documentdb;
-				dbms = new MongoDB().getName();
+				swattype="documentdb";
+				dbms = "MongoDb";
 			}
 			else if(type==DatabaseType.MysqlDb){
-				swattype=DBType.relationaldb;
-				dbms = new MySQL().getName();
+				swattype="relationaldb";
+				dbms = "MySQL";
 			}
 			else {
-				swattype = DBType.relationaldb;
-				dbms = new MariaDB().getName();
+				swattype = "relationaldb";
+				dbms = "MariaDB";
 			}
 			infos.add(new DatabaseInfo(service.getInternalHost(),service.getInternalPort(),service.getName(),swattype,dbms,service.getUsername(),service.getPassword()));
 		}
 		//TODO: initialize query engine with xmi and dbConnections
 		try {
-			String uri = "http://localhost:7000/initialize";
+			String uri = "http://typhonql-server/initialize";
 			Map<String, Object> vars = new HashMap<String, Object>();
 			vars.put("xmi", mlModel.getContents());
 			vars.put("databaseInfo",infos);
@@ -270,14 +257,6 @@ public class QueryRunner implements ConsumerHandler {
 			}
 	    }
 
-	
-	private WorkingSet callQueryEngineSelect(String query) {
-		return connection.executeQuery(query);
-	}
-	private CommandResult callQueryEngineUpdate(String query) {
-		return connection.executeUpdate(query);
-	}
-	
 	@Override
 	public void onNewMesaage(Event event) {
 		receivedQueries.put(event.getId().hashCode(), (PreEvent)event);
