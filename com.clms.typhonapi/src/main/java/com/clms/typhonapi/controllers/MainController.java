@@ -214,6 +214,12 @@ public class MainController {
         return new AsyncResult<String>("{ \"response\": \"" + queryRunner.run("nemo", query,true) + "\" }");
     }
 
+    @RequestMapping(path = "/api/preparedupdate", method = RequestMethod.POST)
+    @Async
+    public Future<String> executepreparedUpdate(@RequestBody String query,String[] parameters,String[][] values){
+        return new AsyncResult<String>("{ \"response\": \"" + queryRunner.preparedUpdate("nemo", query,parameters,values) + "\" }");
+    }
+
     @RequestMapping(path = "/api/evolve", method = RequestMethod.POST)
     public ResponseEntity Evolve(@RequestBody Map<String,String> json){
         //Run consume the evolution toolset

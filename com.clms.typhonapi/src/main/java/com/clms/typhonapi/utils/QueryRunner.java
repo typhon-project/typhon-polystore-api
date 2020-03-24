@@ -139,7 +139,7 @@ public class QueryRunner implements ConsumerHandler {
 
 	public boolean resetDatabases(){
 		try {
-			String uri = "http://typhonql-server:7000/reset";
+			String uri = "http://typhonql-server/reset";
 
 			RestTemplate restTemplate = new RestTemplate();
 
@@ -207,7 +207,7 @@ public class QueryRunner implements ConsumerHandler {
 			}
 		}
 			if(isUpdate){
-				String uri = "http://typhonql-server:7000/update";
+				String uri = "http://typhonql-server/update";
 				Map<String, Object> vars = new HashMap<String, Object>();
 				vars.put("command", query);
 				RestTemplate restTemplate = new RestTemplate();
@@ -231,7 +231,7 @@ public class QueryRunner implements ConsumerHandler {
 				return result.getBody();
 			}
 			else {
-				String uri = "http://typhonql-server:7000/query?q="+query;
+				String uri = "http://typhonql-server/query?q="+query;
 
 				RestTemplate restTemplate = new RestTemplate();
 
@@ -254,6 +254,76 @@ public class QueryRunner implements ConsumerHandler {
 
 			}
     }
+
+
+	public String preparedUpdate(String user, String query,String[] parameters,String[][] values) {
+		if (!isReady()) {
+			return "Query engine is not initialized";
+		}
+
+		PreEvent event = new PreEvent();;
+		if (isAnalyticsAvailiable()) {
+
+			event.setId(UUID.randomUUID().toString());
+			event.setQuery(query);
+			event.setUser(user);
+			this.preProducer.produce(PRE_TOPIC, event);
+			long startedOn = System.currentTimeMillis();
+			int timeout = 10 * 1000;
+			boolean timedOut = false;
+			int eventHash = event.getId().hashCode();
+			while (true) {
+				if (receivedQueries.containsKey(eventHash)) {
+					event = receivedQueries.get(eventHash);
+					receivedQueries.remove(eventHash);
+					break;
+				}
+
+				if (System.currentTimeMillis() - startedOn > timeout) {
+					timedOut = true;
+					break;
+				}
+				try {
+					Thread.sleep(50);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				if (timedOut) {
+					return "Query timeout";
+				}
+				if (event.isAuthenticated() == false) {
+					return "Not authorized";
+				}
+			}
+		}
+
+			String uri = "http://typhonql-server:7000/preparedupdate";
+			Map<String, Object> vars = new HashMap<String, Object>();
+			vars.put("command", query);
+			vars.put("parameterNames",parameters);
+			vars.put("boundRows",values);
+			RestTemplate restTemplate = new RestTemplate();
+			Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+			System.out.println(gson.toJson(vars));
+			ResponseEntity<String> result = restTemplate.postForEntity(uri, gson.toJson(vars), String.class);
+			//connection = new XMIPolystoreConnection(mlModel.getContents(), infos);
+			System.out.println(result.getBody());
+			if (result.getStatusCode() == HttpStatus.OK) {
+				isReady = true;
+				System.out.println("prepared update query executed successfully");
+
+			} else {
+				System.out.println("error in query");
+				isReady=false;
+
+			}
+			if(isAnalyticsAvailiable()) {
+				sendPostEvent(event,query,result);
+			}
+			return result.getBody();
+		}
+
+
 
 	@Override
 	public void onNewMesaage(Event event) {

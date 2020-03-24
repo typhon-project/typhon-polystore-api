@@ -188,28 +188,7 @@ public class 	ServiceRegistry {
 		Element parametersEl = querySelector(uiEl, ".//parameters");
 		String externalhost = querySelector(parametersEl,"//properties[@name='API_HOST']").getAttribute("value");
 		service.setExternalHost(externalhost);
-		//find port
-		/*	Element portEl = querySelector(containerEl, ".//properties[@name='ports']");
-		if (portEl != null) {
-			String portsValue = "";
-			if (portEl.hasAttribute("value")) {
-				portsValue = portEl.getAttribute("value");
-			} else {
-				Element valueEl = querySelector(portEl, ".//values");
-				if (valueEl != null) {
-					portsValue = valueEl.getTextContent();
-				}
-			}
 
-			if (portsValue != null && portsValue.contains(":")) {
-				int port = Integer.parseInt(portsValue.split(":")[0]);
-				service.setPort(port);
-			}
-		}
-
-		//find hostname
-		Element hostEl = querySelector(containerEl, ".//properties[@name='hostname']");
-		service.setHost(hostEl == null ? "localhost" : hostEl.getAttribute("value")); */
 
 		//new implementation
 		Element portEl = querySelector(containerEl, ".//ports");
@@ -217,25 +196,18 @@ public class 	ServiceRegistry {
 			String portsValue = "";
 
 				Element target = querySelector(portEl, ".//key_values[@name='target']");
-				Element published = querySelector(portEl, ".//key_values[@name='published']");
 				String targetport = target.getAttribute("value");
-				String publishport = published.getAttribute("value");
-				portsValue = publishport +":"+targetport;
+				int internalPort = Integer.parseInt(targetport);
+				Element published = querySelector(portEl, ".//key_values[@name='published']");
+				if(published!=null){
+					String publishport = published.getAttribute("value");
+					int externalPort = Integer.parseInt(publishport);
+					service.setExternalPort(externalPort);
 
-			/*} else {
-				Element valueEl = querySelector(portEl, ".//values");
-				if (valueEl != null) {
-					portsValue = valueEl.getTextContent();
 				}
-			} */
-
-			if (portsValue != null) {
-				int externalPort = Integer.parseInt(portsValue.split(":")[0]);
-				int internalPort = Integer.parseInt(portsValue.split(":")[1]);
-				service.setExternalPort(externalPort);
 				service.setInternalPort(internalPort);
 			}
-		}
+
 		
 		//find hostname
 		Element hostEl = querySelector(containerEl, ".//properties[@name='hostname']");
