@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 import com.clms.typhonapi.models.*;
 import com.clms.typhonapi.storage.ModelStorage;
-import jdk.nashorn.internal.runtime.logging.DebugLogger;
 import org.apache.catalina.Engine;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -187,7 +186,7 @@ public class 	ServiceRegistry {
 		Element uiEl;
 		uiEl = querySelector(doc, "//elements[@name='" + "polystore_ui" +"']");
 		Element parametersEl = querySelector(uiEl, ".//parameters");
-		String externalhost = querySelector(parametersEl,"//key_Values[@name='API_HOST']").getAttribute("value");
+		String externalhost = querySelector(parametersEl,"//properties[@name='API_HOST']").getAttribute("value");
 		service.setExternalHost(externalhost);
 		//find port
 		/*	Element portEl = querySelector(containerEl, ".//properties[@name='ports']");
