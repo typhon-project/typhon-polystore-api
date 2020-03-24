@@ -139,24 +139,24 @@ public class 	ServiceRegistry {
 		}
 		switch (dbType.toLowerCase()) {
 			case "mongo":
-				Element mongoUser = querySelector(parameters, ".//key_Values[@name='MONGO_INITDB_ROOT_USERNAME']");
-				Element mongoPass = querySelector(parameters, ".//key_Values[@name='MONGO_INITDB_ROOT_PASSWORD']");
+				Element mongoUser = querySelector(parameters, ".//properties[@name='MONGO_INITDB_ROOT_USERNAME']");
+				Element mongoPass = querySelector(parameters, ".//properties[@name='MONGO_INITDB_ROOT_PASSWORD']");
 				db.setUsername(mongoUser == null ? "admin" : mongoUser.getAttribute("value"));
 				db.setPassword(mongoPass == null ? "admin" : mongoPass.getAttribute("value"));
 				db.setDbType(DatabaseType.MongoDb);
 				db.setEngineType(EngineType.Document);
 				break;
 			case "mariadb":
-				Element mariaUser = querySelector(parameters, ".//key_Values[@name='MYSQL_ROOT_USERNAME']");
-				Element mariaPass = querySelector(parameters, ".//key_Values[@name='MYSQL_ROOT_PASSWORD']");
+				Element mariaUser = querySelector(parameters, ".//properties[@name='MYSQL_ROOT_USERNAME']");
+				Element mariaPass = querySelector(parameters, ".//properties[@name='MYSQL_ROOT_PASSWORD']");
 				db.setUsername(mariaUser == null ? "root" : mariaUser.getAttribute("value"));
 				db.setPassword(mariaPass == null ? "admin" : mariaPass.getAttribute("value"));
 				db.setDbType(DatabaseType.MariaDb);
 				db.setEngineType(EngineType.Relational);
 				break;
 			case "mysql":
-				Element mysqlUser = querySelector(parameters, ".//key_Values[@name='MYSQL_ROOT_USERNAME']");
-				Element mysqlPass = querySelector(parameters, ".//key_Values[@name='MYSQL_ROOT_PASSWORD']");
+				Element mysqlUser = querySelector(parameters, ".//properties[@name='MYSQL_ROOT_USERNAME']");
+				Element mysqlPass = querySelector(parameters, ".//properties[@name='MYSQL_ROOT_PASSWORD']");
 				db.setUsername(mysqlUser == null ? "root" : mysqlUser.getAttribute("value"));
 				db.setPassword(mysqlPass == null ? "admin" : mysqlPass.getAttribute("value"));
 				db.setDbType(DatabaseType.MysqlDb);
