@@ -96,7 +96,7 @@ public class QueryRunner implements ConsumerHandler {
 		}
 		//TODO: initialize query engine with xmi and dbConnections
 		try {
-			String uri = "http://typhonql-server:7000/initialize";
+			String uri = "http://typhonql-server/initialize";
 			Map<String, Object> vars = new HashMap<String, Object>();
 			vars.put("xmi", mlModel.getContents());
 			vars.put("databaseInfo",infos);
@@ -231,7 +231,7 @@ public class QueryRunner implements ConsumerHandler {
 				return result.getBody();
 			}
 			else {
-				String uri = "http://typhonql-server/query?q="+query;
+				String uri = "http://typhonql-server /query?q="+query;
 
 				RestTemplate restTemplate = new RestTemplate();
 
