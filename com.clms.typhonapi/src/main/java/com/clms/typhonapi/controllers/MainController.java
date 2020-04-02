@@ -10,6 +10,7 @@ import com.clms.typhonapi.utils.QueryRunner;
 import com.clms.typhonapi.utils.ServiceRegistry;
 import com.clms.typhonapi.utils.UserHelper;
 
+import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -204,14 +206,30 @@ public class MainController {
 
     @RequestMapping(path = "/api/query", method = RequestMethod.POST)
     @Async
-    public Future<String> executeQuery(@RequestBody String query){
-    	return new AsyncResult<String>("{ \"response\": \"" + queryRunner.run("nemo", query,false) + "\" }");
+    public Future<ResponseEntity<String>> executeQuery(@RequestBody String query){
+        try {
+            return new AsyncResult<ResponseEntity<String>>(queryRunner.run("nemo", query,false));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            return new AsyncResult<ResponseEntity<String>>(new ResponseEntity<String>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR));
+        }
     }
 
     @RequestMapping(path = "/api/update", method = RequestMethod.POST)
     @Async
-    public Future<String> executeUpdate(@RequestBody String query){
-        return new AsyncResult<String>("{ \"response\": \"" + queryRunner.run("nemo", query,true) + "\" }");
+    public Future<ResponseEntity<String>> executeUpdate(@RequestBody String query){
+        try {
+            return new AsyncResult<ResponseEntity<String>>(queryRunner.run("nemo", query,true));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            return new AsyncResult<ResponseEntity<String>>(new ResponseEntity<String>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR));
+        }
+    }
+
+    @RequestMapping(path = "/api/preparedupdate", method = RequestMethod.POST)
+    @Async
+    public Future<ResponseEntity<String>> executepreparedUpdate(@RequestBody Map<String, ?> json){
+        return new AsyncResult<ResponseEntity<String>>(queryRunner.preparedUpdate("nemo",json));
     }
 
     @RequestMapping(path = "/api/evolve", method = RequestMethod.POST)
