@@ -2,6 +2,7 @@ package com.clms.typhonapi.utils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.net.URI;
 import java.util.*;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Future;
