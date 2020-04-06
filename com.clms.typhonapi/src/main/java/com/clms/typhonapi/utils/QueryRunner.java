@@ -240,9 +240,9 @@ public class QueryRunner implements ConsumerHandler {
 			else {
 				String finalQuery = URLEncoder.encode(query, StandardCharsets.UTF_8.toString());
 
-				String uri = "http://typhonql-server:7000/query?q="+finalQuery;
+				String tempuri = "http://typhonql-server:7000/query?q="+finalQuery;
 				RestTemplate restTemplate = new RestTemplate();
-
+				URI uri = URI.create(tempuri);
 				ResponseEntity<String> result = restTemplate.getForEntity(uri,  String.class);
 				//connection = new XMIPolystoreConnection(mlModel.getContents(), infos);
 				System.out.println(result.getBody());
