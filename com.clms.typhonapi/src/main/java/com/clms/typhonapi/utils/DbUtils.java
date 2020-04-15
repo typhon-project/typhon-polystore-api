@@ -207,7 +207,7 @@ public class DbUtils {
 		}
 
 		try {
-			String connectionString = String.format("jdbc:mysql://%s:%d", db.getInternalHost(), db.getInternalPost());
+			String connectionString = String.format("jdbc:mysql://%s:%d", db.getInternalHost(), db.getInternalPort());
 			conn = DriverManager.getConnection(connectionString, db.getUsername(), db.getPassword());
 			if (!conn.isValid(5000)) {
 				conn = null;
