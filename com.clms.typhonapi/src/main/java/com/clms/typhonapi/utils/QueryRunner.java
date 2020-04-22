@@ -230,7 +230,12 @@ public class QueryRunner implements ConsumerHandler {
 				RestTemplate restTemplate = new RestTemplate();
 				Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 				System.out.println(gson.toJson(vars));
-				ResponseEntity<String> result = restTemplate.postForEntity(uri, gson.toJson(vars), String.class);
+				HttpHeaders headers = new HttpHeaders();
+				headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
+				headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
+				HttpEntity<Map<String,Object>> request =
+						new HttpEntity<>(vars, headers);
+				ResponseEntity<String> result = restTemplate.postForEntity(uri,request,String.class);
 				//connection = new XMIPolystoreConnection(mlModel.getContents(), infos);
 				System.out.println(result.getBody());
 				System.out.println(result.getHeaders().get("ql-wall-time-ms"));
@@ -259,7 +264,12 @@ public class QueryRunner implements ConsumerHandler {
 				RestTemplate restTemplate = new RestTemplate();
 				Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 				System.out.println(gson.toJson(vars));
-				ResponseEntity<String> result = restTemplate.postForEntity(tempuri, gson.toJson(vars), String.class);
+				HttpHeaders headers = new HttpHeaders();
+				headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
+				headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
+				HttpEntity<Map<String,Object>> request =
+						new HttpEntity<>(vars, headers);
+				ResponseEntity<String> result = restTemplate.postForEntity(tempuri,request,String.class);
 				//connection = new XMIPolystoreConnection(mlModel.getContents(), infos);
 				System.out.println(result.getBody());
 				System.out.println(result.getHeaders().get("ql-wall-time-ms"));
@@ -333,7 +343,13 @@ public class QueryRunner implements ConsumerHandler {
 			json.put("databaseInfo",infos);
 			Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 			System.out.println(gson.toJson(json));
-			ResponseEntity<String> result = restTemplate.postForEntity(uri, gson.toJson(json), String.class);
+			HttpHeaders headers = new HttpHeaders();
+			headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
+			headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
+			HttpEntity<Map<String,Object>> request =
+				new HttpEntity<>(json, headers);
+		ResponseEntity<String> result = restTemplate.postForEntity(uri,request,String.class);
+
 			//connection = new XMIPolystoreConnection(mlModel.getContents(), infos);
 			System.out.println(result.getBody());
 			if (result.getStatusCode() == HttpStatus.OK) {
