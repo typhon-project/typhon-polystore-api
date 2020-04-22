@@ -30,7 +30,8 @@ import org.springframework.web.client.RestTemplate;
 
 @Component
 public class QueryRunner implements ConsumerHandler {
-
+	List<DatabaseInfo> infos;
+	Model ml;
 	private QueueProducer preProducer;
 	private QueueProducer postProducer;
 	private static String POST_TOPIC = "POST";
@@ -59,7 +60,7 @@ public class QueryRunner implements ConsumerHandler {
 		if (mlModel == null) {
 			return;
 		}
-		
+		ml = mlModel;
 		if (isAnalyticsAvailiable()) {
 			Service analyticsQueue = serviceRegistry.getService(ServiceType.Queue);
 			if (analyticsQueue != null) {
@@ -72,7 +73,7 @@ public class QueryRunner implements ConsumerHandler {
 				System.out.println("[~~~~~~~WARNING~~~~~~~] No analytics service found in dl...");
 			}
 		}
-		List<DatabaseInfo> infos = new ArrayList<DatabaseInfo>();
+		infos = new ArrayList<DatabaseInfo>();
 		for (Service service: serviceRegistry.getDatabases()){
 			DatabaseType type = service.getDbType();
 			String dbms;
@@ -90,9 +91,10 @@ public class QueryRunner implements ConsumerHandler {
 				dbms = "MariaDB";
 			}
 			infos.add(new DatabaseInfo(service.getInternalHost(),service.getInternalPort(),service.getName(),swattype,dbms,service.getUsername(),service.getPassword()));
+			isReady = true;
 		}
 		//TODO: initialize query engine with xmi and dbConnections
-		try {
+	/*	try {
 			String uri = "http://typhonql-server:7000/initialize";
 			Map<String, Object> vars = new HashMap<String, Object>();
 			vars.put("xmi", mlModel.getContents());
@@ -106,7 +108,7 @@ public class QueryRunner implements ConsumerHandler {
 			//connection = new XMIPolystoreConnection(mlModel.getContents(), infos);
 			System.out.println(result.getBody());
 			if (result.getStatusCode() == HttpStatus.OK) {
-				isReady = true;
+
 				System.out.println("completed initialization");
 			} else {
 				System.out.println("Could not establish connections to the polystore databases, reupload DL model and try again!");
@@ -118,7 +120,7 @@ public class QueryRunner implements ConsumerHandler {
 			e.printStackTrace();
 			System.out.println("Could not establish connections to the polystore databases, reupload DL model and try again!");
 			isReady=false;
-		}
+		} */
 
 	}
 
@@ -144,9 +146,15 @@ public class QueryRunner implements ConsumerHandler {
 			String uri = "http://typhonql-server:7000/reset";
 
 			RestTemplate restTemplate = new RestTemplate();
-
-
-			ResponseEntity<String> result = restTemplate.postForEntity(uri,null,String.class);
+			Map<String, Object> vars = new HashMap<String, Object>();
+			vars.put("xmi", ml.getContents());
+			vars.put("databaseInfo",infos);
+			HttpHeaders headers = new HttpHeaders();
+			headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
+			headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
+			HttpEntity<Map<String,Object>> request =
+					new HttpEntity<>(vars, headers);
+			ResponseEntity<String> result = restTemplate.postForEntity(uri,request,String.class);
 			if(result.getStatusCode()== HttpStatus.OK) {
 				System.out.println(result);
 				//PageRequest request = new PageRequest(0, 1, new Sort(Sort.Direction.DESC, "version"));
@@ -216,6 +224,8 @@ public class QueryRunner implements ConsumerHandler {
 			if(isUpdate){
 				String uri = "http://typhonql-server:7000/update";
 				Map<String, Object> vars = new HashMap<String, Object>();
+				vars.put("xmi", ml.getContents());
+				vars.put("databaseInfo",infos);
 				vars.put("command", query);
 				RestTemplate restTemplate = new RestTemplate();
 				Gson gson = new GsonBuilder().disableHtmlEscaping().create();
@@ -241,10 +251,15 @@ public class QueryRunner implements ConsumerHandler {
 			else {
 				String finalQuery = URLEncoder.encode(query, StandardCharsets.UTF_8.toString());
 
-				String tempuri = "http://typhonql-server:7000/query?q="+finalQuery;
+				String tempuri = "http://typhonql-server:7000/query";
+				Map<String, Object> vars = new HashMap<String, Object>();
+				vars.put("xmi", ml.getContents());
+				vars.put("databaseInfo",infos);
+				vars.put("query", query);
 				RestTemplate restTemplate = new RestTemplate();
-				URI uri = URI.create(tempuri);
-				ResponseEntity<String> result = restTemplate.getForEntity(uri,  String.class);
+				Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+				System.out.println(gson.toJson(vars));
+				ResponseEntity<String> result = restTemplate.postForEntity(tempuri, gson.toJson(vars), String.class);
 				//connection = new XMIPolystoreConnection(mlModel.getContents(), infos);
 				System.out.println(result.getBody());
 				System.out.println(result.getHeaders().get("ql-wall-time-ms"));
@@ -266,7 +281,7 @@ public class QueryRunner implements ConsumerHandler {
     }
 
 
-	public ResponseEntity<String> preparedUpdate(String user, Map<String, ?> json) {
+	public ResponseEntity<String> preparedUpdate(String user, Map<String, Object> json) {
 		ResponseEntity<String> response;
 		if (!isReady()) {
 			response = new ResponseEntity<String>("Query engine is not initialized",HttpStatus.PRECONDITION_FAILED);
@@ -314,6 +329,8 @@ public class QueryRunner implements ConsumerHandler {
 
 			String uri = "http://typhonql-server:7000/preparedUpdate";
 			RestTemplate restTemplate = new RestTemplate();
+			json.put("xmi", ml.getContents());
+			json.put("databaseInfo",infos);
 			Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 			System.out.println(gson.toJson(json));
 			ResponseEntity<String> result = restTemplate.postForEntity(uri, gson.toJson(json), String.class);

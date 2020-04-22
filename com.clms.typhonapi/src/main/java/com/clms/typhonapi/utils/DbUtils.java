@@ -176,12 +176,6 @@ public class DbUtils {
 		System.out.println("Trying to connect to: " + db);
 		
 		try {
-			Class.forName("org.mariadb.jdbc.Driver");
-		} catch (ClassNotFoundException e1) {
-			e1.printStackTrace();
-		}
-		
-		try {
 			String connectionString = String.format("jdbc:mariadb://%s:%d", db.getInternalHost(), db.getInternalPort());
 			conn = DriverManager.getConnection(connectionString, db.getUsername(), db.getPassword());
 			if (!conn.isValid(5000)) {

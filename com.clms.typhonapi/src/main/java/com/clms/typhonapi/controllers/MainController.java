@@ -228,7 +228,7 @@ public class MainController {
 
     @RequestMapping(path = "/api/preparedupdate", method = RequestMethod.POST)
     @Async
-    public Future<ResponseEntity<String>> executepreparedUpdate(@RequestBody Map<String, ?> json){
+    public Future<ResponseEntity<String>> executepreparedUpdate(@RequestBody Map<String, Object> json){
         return new AsyncResult<ResponseEntity<String>>(queryRunner.preparedUpdate("nemo",json));
     }
 
