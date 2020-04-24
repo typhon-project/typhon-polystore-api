@@ -14,8 +14,10 @@ import com.clms.typhonapi.storage.ModelStorage;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 
 
@@ -40,6 +42,8 @@ public class QueryRunner implements ConsumerHandler {
 	private Map<Integer, PreEvent> receivedQueries = new HashMap<Integer, PreEvent>();
 	private String kafkaConnection = "";
 	private boolean isReady;
+	HttpComponentsClientHttpRequestFactory clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory(
+			HttpClientBuilder.create().build());
 	
 	@Autowired
 	private ServiceRegistry serviceRegistry;
@@ -49,6 +53,7 @@ public class QueryRunner implements ConsumerHandler {
 	private ModelStorage repo;
 	
 	public void init(Model mlModel) {
+
 		isReady = false;
 		
 		try {
@@ -101,7 +106,7 @@ public class QueryRunner implements ConsumerHandler {
 			vars.put("databaseInfo",infos);
 
 
-			RestTemplate restTemplate = new RestTemplate();
+			RestTemplate restTemplate = RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);;
 			Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 			System.out.println(gson.toJson(vars));
 			ResponseEntity<String> result = restTemplate.postForEntity(uri, gson.toJson(vars), String.class);
@@ -145,7 +150,7 @@ public class QueryRunner implements ConsumerHandler {
 		try {
 			String uri = "http://typhonql-server:7000/reset";
 
-			RestTemplate restTemplate = new RestTemplate();
+			RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
 			Map<String, Object> vars = new HashMap<String, Object>();
 			vars.put("xmi", ml.getContents());
 			vars.put("databaseInfo",infos);
@@ -227,7 +232,7 @@ public class QueryRunner implements ConsumerHandler {
 				vars.put("xmi", ml.getContents());
 				vars.put("databaseInfo",infos);
 				vars.put("command", query);
-				RestTemplate restTemplate = new RestTemplate();
+				RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
 				Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 				System.out.println(gson.toJson(vars));
 				HttpHeaders headers = new HttpHeaders();
@@ -261,7 +266,7 @@ public class QueryRunner implements ConsumerHandler {
 				vars.put("xmi", ml.getContents());
 				vars.put("databaseInfo",infos);
 				vars.put("query", query);
-				RestTemplate restTemplate = new RestTemplate();
+				RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);;
 				Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 				System.out.println(gson.toJson(vars));
 				HttpHeaders headers = new HttpHeaders();
@@ -337,8 +342,8 @@ public class QueryRunner implements ConsumerHandler {
 			}
 		}
 
-			String uri = "http://typhonql-server:7000/preparedUpdate";
-			RestTemplate restTemplate = new RestTemplate();
+			String uri = "http://:7000/preparedUpdate";
+			RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);;
 			json.put("xmi", ml.getContents());
 			json.put("databaseInfo",infos);
 			Gson gson = new GsonBuilder().disableHtmlEscaping().create();
