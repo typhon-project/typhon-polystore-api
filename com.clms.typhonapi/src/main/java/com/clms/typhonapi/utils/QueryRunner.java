@@ -2,10 +2,8 @@ package com.clms.typhonapi.utils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.net.URI;
 import java.util.*;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.Future;
 
 import ac.york.typhon.analytics.commons.datatypes.events.PostEvent;
 import com.clms.typhonapi.models.*;
@@ -14,6 +12,7 @@ import com.clms.typhonapi.storage.ModelStorage;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import engineering.swat.typhonql.ast.Str;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -190,11 +189,11 @@ public class QueryRunner implements ConsumerHandler {
 
 		PreEvent event = new PreEvent();;
 		if (isAnalyticsAvailiable()) {
-
+			event.setQueryTime(new Date());
 			event.setId(UUID.randomUUID().toString());
 			event.setQuery(query);
 			event.setUser(user);
-			event.setAuthenticated(true);
+		//	event.setAuthenticated(true);
 			preProducer.produce(PRE_TOPIC, event);
 			long startedOn = System.currentTimeMillis();
 			int timeout = 10 * 1000;
@@ -224,74 +223,39 @@ public class QueryRunner implements ConsumerHandler {
 					response = new ResponseEntity<String>("Not authorized on Analytics Queue",HttpStatus.UNAUTHORIZED);
 					return response;
 				}
+				if (event.isAuthenticated()){
+					PostEvent postEvent = new PostEvent();
+					if(event.isInvertedNeeded()){
+						if(isUpdate) {
+							postEvent.setInvertedQueryResultSet(executeUpdate(event.getInvertedQuery()).getBody());
+						}
+						else{
+							postEvent.setInvertedQueryResultSet(executeQuery(event.getInvertedQuery()).getBody());
+						}
+					}
+					postEvent.setPreEvent(event);
+					postEvent.setStartTime(new Date());
+					ResponseEntity<String> result;
+					if(isUpdate) {
+ 						result = executeUpdate(query);
+					}
+					else{
+						result = executeQuery(query);
+					}
+					postEvent.setEndTime(new Date());
+					postEvent.setResultSet(result.getBody());
+					sendPostEvent(postEvent);
+					return result;
+				}
 			}
 		}
 			if(isUpdate){
-				String uri = "http://typhonql-server:7000/update";
-				Map<String, Object> vars = new HashMap<String, Object>();
-				vars.put("xmi", ml.getContents());
-				vars.put("databaseInfo",infos);
-				vars.put("command", query);
-				RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
-				Gson gson = new GsonBuilder().disableHtmlEscaping().create();
-				System.out.println(gson.toJson(vars));
-				HttpHeaders headers = new HttpHeaders();
-				headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
-				headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
-				HttpEntity<Map<String,Object>> request =
-						new HttpEntity<>(vars, headers);
-				ResponseEntity<String> result = restTemplate.postForEntity(uri,request,String.class);
-				//connection = new XMIPolystoreConnection(mlModel.getContents(), infos);
-				System.out.println(result.getBody());
-				System.out.println(result.getHeaders().get("ql-wall-time-ms"));
-				if (result.getStatusCode() == HttpStatus.OK) {
-					isReady = true;
-					System.out.println("update query executed successfully");
-
-				} else {
-					System.out.println("error in query");
-					isReady=false;
-
-				}
-				if(isAnalyticsAvailiable()) {
-					sendPostEvent(event,query,result);
-				}
+				ResponseEntity<String> result = executeUpdate(query);
 				return result;
 			}
 			else {
-				String finalQuery = URLEncoder.encode(query, StandardCharsets.UTF_8.toString());
-
-				String tempuri = "http://typhonql-server:7000/query";
-				Map<String, Object> vars = new HashMap<String, Object>();
-				vars.put("xmi", ml.getContents());
-				vars.put("databaseInfo",infos);
-				vars.put("query", query);
-				RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);;
-				Gson gson = new GsonBuilder().disableHtmlEscaping().create();
-				System.out.println(gson.toJson(vars));
-				HttpHeaders headers = new HttpHeaders();
-				headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
-				headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
-				HttpEntity<Map<String,Object>> request =
-						new HttpEntity<>(vars, headers);
-				ResponseEntity<String> result = restTemplate.postForEntity(tempuri,request,String.class);
-				//connection = new XMIPolystoreConnection(mlModel.getContents(), infos);
-				System.out.println(result.getBody());
-				System.out.println(result.getHeaders().get("ql-wall-time-ms"));
-				if (result.getStatusCode() == HttpStatus.OK) {
-					isReady = true;
-					System.out.println("update query executed successfully");
-
-				} else {
-					System.out.println("error in query");
-					isReady=false;
-
-				}
-				if(isAnalyticsAvailiable()) {
-					sendPostEvent(event,query,result);
-				}
+				ResponseEntity<String> result = executeQuery(query);
 				return result;
-
 			}
     }
 
@@ -305,9 +269,9 @@ public class QueryRunner implements ConsumerHandler {
 
 		PreEvent event = new PreEvent();;
 		if (isAnalyticsAvailiable()) {
-
+			event.setQueryTime(new Date());
 			event.setId(UUID.randomUUID().toString());
-			event.setAuthenticated(true);
+			//event.setAuthenticated(true);
 			event.setQuery((String)json.get("command"));
 			event.setUser(user);
 			this.preProducer.produce(PRE_TOPIC, event);
@@ -339,36 +303,29 @@ public class QueryRunner implements ConsumerHandler {
 					response = new ResponseEntity<String>("Not authorized on Analytics Queue",HttpStatus.UNAUTHORIZED);
 					return response;
 				}
+				if(event.isAuthenticated() == true){
+					PostEvent postEvent = new PostEvent();
+					if(event.isInvertedNeeded()){
+						Map<String,Object> temp;
+						temp=json;
+						temp.put("command",event.getInvertedQuery());
+						postEvent.setInvertedQueryResultSet(executePreparedUpdate(temp).getBody());
+					}
+					postEvent.setPreEvent(event);
+					postEvent.setStartTime(new Date());
+					ResponseEntity<String> result = executePreparedUpdate(json);
+					postEvent.setEndTime(new Date());
+					postEvent.setResultSet(result.getBody());
+					sendPostEvent(postEvent);
+					return result;
+				}
 			}
 		}
 
-			String uri = "http://:7000/preparedUpdate";
-			RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);;
-			json.put("xmi", ml.getContents());
-			json.put("databaseInfo",infos);
-			Gson gson = new GsonBuilder().disableHtmlEscaping().create();
-			System.out.println(gson.toJson(json));
-			HttpHeaders headers = new HttpHeaders();
-			headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
-			headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
-			HttpEntity<Map<String,Object>> request =
-				new HttpEntity<>(json, headers);
-		ResponseEntity<String> result = restTemplate.postForEntity(uri,request,String.class);
+			ResponseEntity<String> result = executePreparedUpdate(json);
 
 			//connection = new XMIPolystoreConnection(mlModel.getContents(), infos);
 			System.out.println(result.getBody());
-			if (result.getStatusCode() == HttpStatus.OK) {
-				isReady = true;
-				System.out.println("prepared update query executed successfully");
-
-			} else {
-				System.out.println("error in query");
-				isReady=false;
-
-			}
-			if(isAnalyticsAvailiable()) {
-				sendPostEvent(event,(String)json.get("command"),result);
-			}
 			return result;
 		}
 
@@ -383,14 +340,95 @@ public class QueryRunner implements ConsumerHandler {
 		Thread subscribeTask = new Thread(new QueueConsumer(kafkaConnection, AUTH_TOPIC, this));
 		subscribeTask.start();
 	}
-
-	private void sendPostEvent(PreEvent event,String query,ResponseEntity<String> result){
-		PostEvent post = new PostEvent();
-		post.setId(UUID.randomUUID().toString());
-		post.setQuery(query);
-		post.setPreEvent(event);
-		post.setSuccess(true);
-		this.postProducer.produce(POST_TOPIC, post);
+	private void sendPostEvent(PostEvent event){
+		this.postProducer.produce(POST_TOPIC,event);
 	}
-	
+
+
+	private ResponseEntity<String> executeQuery(String query) throws UnsupportedEncodingException {
+		String finalQuery = URLEncoder.encode(query, StandardCharsets.UTF_8.toString());
+
+		String tempuri = "http://typhonql-server:7000/query";
+		Map<String, Object> vars = new HashMap<String, Object>();
+		vars.put("xmi", ml.getContents());
+		vars.put("databaseInfo",infos);
+		vars.put("query", query);
+		RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);;
+		Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+		System.out.println(gson.toJson(vars));
+		HttpHeaders headers = new HttpHeaders();
+		headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
+		headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
+		HttpEntity<Map<String,Object>> request =
+				new HttpEntity<>(vars, headers);
+		ResponseEntity<String> result = restTemplate.postForEntity(tempuri,request,String.class);
+		//connection = new XMIPolystoreConnection(mlModel.getContents(), infos);
+		System.out.println(result.getBody());
+		System.out.println(result.getHeaders().get("ql-wall-time-ms"));
+		if (result.getStatusCode() == HttpStatus.OK) {
+			isReady = true;
+			System.out.println("update query executed successfully");
+
+		} else {
+			System.out.println("error in query");
+			isReady=false;
+
+		}
+		return result;
+	}
+
+	private ResponseEntity<String> executeUpdate(String query){
+		String uri = "http://typhonql-server:7000/update";
+		Map<String, Object> vars = new HashMap<String, Object>();
+		vars.put("xmi", ml.getContents());
+		vars.put("databaseInfo",infos);
+		vars.put("command", query);
+		RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
+		Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+		System.out.println(gson.toJson(vars));
+		HttpHeaders headers = new HttpHeaders();
+		headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
+		headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
+		HttpEntity<Map<String,Object>> request =
+				new HttpEntity<>(vars, headers);
+		ResponseEntity<String> result = restTemplate.postForEntity(uri,request,String.class);
+		//connection = new XMIPolystoreConnection(mlModel.getContents(), infos);
+		System.out.println(result.getBody());
+		System.out.println(result.getHeaders().get("ql-wall-time-ms"));
+		if (result.getStatusCode() == HttpStatus.OK) {
+			isReady = true;
+			System.out.println("update query executed successfully");
+
+		} else {
+			System.out.println("error in query");
+			isReady=false;
+
+		}
+		return result;
+	}
+
+	private ResponseEntity<String> executePreparedUpdate(Map<String, Object> json){
+		String uri = "http://:7000/preparedUpdate";
+		RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);;
+		json.put("xmi", ml.getContents());
+		json.put("databaseInfo",infos);
+		Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+		System.out.println(gson.toJson(json));
+		HttpHeaders headers = new HttpHeaders();
+		headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
+		headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
+		HttpEntity<Map<String,Object>> request =
+				new HttpEntity<>(json, headers);
+		ResponseEntity<String> result = restTemplate.postForEntity(uri,request,String.class);
+		if (result.getStatusCode() == HttpStatus.OK) {
+			isReady = true;
+			System.out.println("prepared update query executed successfully");
+
+		} else {
+			System.out.println("error in query");
+			isReady=false;
+
+		}
+		return result;
+	}
 }
