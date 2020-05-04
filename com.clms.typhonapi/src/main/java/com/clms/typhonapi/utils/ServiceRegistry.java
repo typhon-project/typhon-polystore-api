@@ -50,6 +50,11 @@ public class 	ServiceRegistry {
         		.collect(Collectors.toList()));
 	}
 
+	public ArrayList<Service> getServices() {
+		return new ArrayList<>(_services.stream()
+				.collect(Collectors.toList()));
+	}
+
 	public Service getService(ServiceType type) {
 		return _services
 				.stream()
@@ -85,14 +90,20 @@ public class 	ServiceRegistry {
 					if(kafkaEl!=null){
 						Service kafka = new Service();
 						kafka.setServiceType(ServiceType.Queue);
-						kafka.setInternalHost(querySelector(kafkaEl,".//properties[@name='KAFKA_ADVERTISED_HOST_NAME']").getAttribute("value"));
-						Element portsEl = querySelector(kafkaEl,".//properties[@name='KAFKA_LISTENERS']");
-						String ports = portsEl.getAttribute("value");
-						String internalPort = ports.split(",")[0].split(":")[2];
-						String externalPort = ports.split(",")[1].split(":")[2];
-						kafka.setInternalPort(Integer.parseInt(internalPort));
-						kafka.setInternalPort(Integer.parseInt(externalPort));
-						kafka.setExternalHost("localhost");
+						kafka.setExternalHost(querySelector(kafkaEl,".//properties[@name='KAFKA_ADVERTISED_HOST_NAME']").getAttribute("value"));
+						Element portsEl = querySelector(kafkaEl,".//ports");
+						Element target = querySelector(portsEl, ".//key_values[@name='target']");
+						String targetport = target.getAttribute("value");
+						int internalPort = Integer.parseInt(targetport);
+						Element published = querySelector(portsEl, ".//key_values[@name='published']");
+						if(published!=null){
+							String publishport = published.getAttribute("value");
+							int externalPort = Integer.parseInt(publishport);
+							kafka.setExternalPort(externalPort);
+
+						}
+						kafka.setInternalPort(internalPort);
+						kafka.setInternalHost("kafka");
 						_services.add(kafka);
 					}
 				}

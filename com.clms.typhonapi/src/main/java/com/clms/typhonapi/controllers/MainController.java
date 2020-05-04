@@ -196,6 +196,12 @@ public class MainController {
     	dbUtils.updateDbStatus();
         return ResponseEntity.status(200).body(serviceRegistry.getDatabases());
     }
+    //@ApiOperation(value= "Get databases")
+    @RequestMapping(path = "/api/services", method = RequestMethod.GET)
+    public ResponseEntity getServices() {
+       // dbUtils.updateDbStatus();
+        return ResponseEntity.status(200).body(serviceRegistry.getServices());
+    }
 
     @RequestMapping(path = "/api/resetdatabases", method = RequestMethod.GET)
     public ResponseEntity resetDatabases() {
