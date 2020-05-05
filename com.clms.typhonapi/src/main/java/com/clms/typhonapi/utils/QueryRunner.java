@@ -12,7 +12,6 @@ import com.clms.typhonapi.storage.ModelStorage;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import engineering.swat.typhonql.ast.Str;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -70,6 +69,7 @@ public class QueryRunner implements ConsumerHandler {
 			if (analyticsQueue != null) {
 				receivedQueries.clear();
 				kafkaConnection = analyticsQueue.getInternalHost() + ":" + analyticsQueue.getInternalPort();
+				System.out.println("Polystore will try to publish on "+kafkaConnection);
 				preProducer = new QueueProducer(kafkaConnection);
 				postProducer = new QueueProducer(kafkaConnection);
 				subscribeToAuthorization();
@@ -199,10 +199,39 @@ public class QueryRunner implements ConsumerHandler {
 			int timeout = 10 * 1000;
 			boolean timedOut = false;
 			int eventHash = event.getId().hashCode();
+			PreEvent recevent;
 			while (true) {
 				if (receivedQueries.containsKey(eventHash)) {
-					event = receivedQueries.get(eventHash);
+					recevent = receivedQueries.get(eventHash);
 					receivedQueries.remove(eventHash);
+					if (recevent.isAuthenticated() == false) {
+						response = new ResponseEntity<String>("Not authorized on Analytics Queue",HttpStatus.UNAUTHORIZED);
+						return response;
+					}
+					else if(recevent.isAuthenticated()){
+						PostEvent postEvent = new PostEvent();
+						if(event.isInvertedNeeded()){
+							if(isUpdate) {
+								postEvent.setInvertedQueryResultSet(executeUpdate(event.getInvertedQuery()).getBody());
+							}
+							else{
+								postEvent.setInvertedQueryResultSet(executeQuery(event.getInvertedQuery()).getBody());
+							}
+						}
+						postEvent.setPreEvent(event);
+						postEvent.setStartTime(new Date());
+						ResponseEntity<String> result;
+						if(isUpdate) {
+							result = executeUpdate(query);
+						}
+						else{
+							result = executeQuery(query);
+						}
+						postEvent.setEndTime(new Date());
+						postEvent.setResultSet(result.getBody());
+						sendPostEvent(postEvent);
+						return result;
+					}
 					break;
 				}
 
@@ -219,34 +248,7 @@ public class QueryRunner implements ConsumerHandler {
 					response = new ResponseEntity<String>("Analytics Query post timeout",HttpStatus.REQUEST_TIMEOUT);
 					return response;
 				}
-				if (event.isAuthenticated() == false) {
-					response = new ResponseEntity<String>("Not authorized on Analytics Queue",HttpStatus.UNAUTHORIZED);
-					return response;
-				}
-				if (event.isAuthenticated()){
-					PostEvent postEvent = new PostEvent();
-					if(event.isInvertedNeeded()){
-						if(isUpdate) {
-							postEvent.setInvertedQueryResultSet(executeUpdate(event.getInvertedQuery()).getBody());
-						}
-						else{
-							postEvent.setInvertedQueryResultSet(executeQuery(event.getInvertedQuery()).getBody());
-						}
-					}
-					postEvent.setPreEvent(event);
-					postEvent.setStartTime(new Date());
-					ResponseEntity<String> result;
-					if(isUpdate) {
- 						result = executeUpdate(query);
-					}
-					else{
-						result = executeQuery(query);
-					}
-					postEvent.setEndTime(new Date());
-					postEvent.setResultSet(result.getBody());
-					sendPostEvent(postEvent);
-					return result;
-				}
+
 			}
 		}
 			if(isUpdate){
@@ -279,11 +281,31 @@ public class QueryRunner implements ConsumerHandler {
 			int timeout = 10 * 1000;
 			boolean timedOut = false;
 			int eventHash = event.getId().hashCode();
+			PreEvent recevent;
 			while (true) {
 				if (receivedQueries.containsKey(eventHash)) {
-					event = receivedQueries.get(eventHash);
+					recevent = receivedQueries.get(eventHash);
 					receivedQueries.remove(eventHash);
-					break;
+					if (recevent.isAuthenticated() == false) {
+						response = new ResponseEntity<String>("Not authorized on Analytics Queue",HttpStatus.UNAUTHORIZED);
+						return response;
+					}
+					else if(recevent.isAuthenticated() == true){
+						PostEvent postEvent = new PostEvent();
+						if(event.isInvertedNeeded()){
+							Map<String,Object> temp;
+							temp=json;
+							temp.put("command",event.getInvertedQuery());
+							postEvent.setInvertedQueryResultSet(executePreparedUpdate(temp).getBody());
+						}
+						postEvent.setPreEvent(event);
+						postEvent.setStartTime(new Date());
+						ResponseEntity<String> result = executePreparedUpdate(json);
+						postEvent.setEndTime(new Date());
+						postEvent.setResultSet(result.getBody());
+						sendPostEvent(postEvent);
+						return result;
+					}
 				}
 
 				if (System.currentTimeMillis() - startedOn > timeout) {
@@ -299,26 +321,7 @@ public class QueryRunner implements ConsumerHandler {
 					response = new ResponseEntity<String>("Analytics Query post timeout",HttpStatus.REQUEST_TIMEOUT);
 					return response;
 				}
-				if (event.isAuthenticated() == false) {
-					response = new ResponseEntity<String>("Not authorized on Analytics Queue",HttpStatus.UNAUTHORIZED);
-					return response;
-				}
-				if(event.isAuthenticated() == true){
-					PostEvent postEvent = new PostEvent();
-					if(event.isInvertedNeeded()){
-						Map<String,Object> temp;
-						temp=json;
-						temp.put("command",event.getInvertedQuery());
-						postEvent.setInvertedQueryResultSet(executePreparedUpdate(temp).getBody());
-					}
-					postEvent.setPreEvent(event);
-					postEvent.setStartTime(new Date());
-					ResponseEntity<String> result = executePreparedUpdate(json);
-					postEvent.setEndTime(new Date());
-					postEvent.setResultSet(result.getBody());
-					sendPostEvent(postEvent);
-					return result;
-				}
+
 			}
 		}
 
@@ -408,7 +411,7 @@ public class QueryRunner implements ConsumerHandler {
 	}
 
 	private ResponseEntity<String> executePreparedUpdate(Map<String, Object> json){
-		String uri = "http://:7000/preparedUpdate";
+		String uri = "http://:32775/preparedUpdate";
 		RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);;
 		json.put("xmi", ml.getContents());
 		json.put("databaseInfo",infos);
