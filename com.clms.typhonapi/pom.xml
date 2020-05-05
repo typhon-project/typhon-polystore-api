@@ -29,13 +29,7 @@
 		</dependency>
         <dependency>
 		    <groupId>org.springframework.boot</groupId>
-		    <artifactId>spring-boot-starter-security</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>ch.qos.logback</groupId>
-                    <artifactId>logback-classic</artifactId>
-                </exclusion>
-            </exclusions>
+			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
         <dependency>
             <groupId>com.jayway.jsonpath</groupId>
