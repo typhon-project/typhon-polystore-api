@@ -30,6 +30,12 @@
         <dependency>
 		    <groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
+		<exclusions>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+            </exclusions>
 		</dependency>
         <dependency>
             <groupId>com.jayway.jsonpath</groupId>
@@ -88,16 +94,6 @@
 			<artifactId>kafka_2.12</artifactId>
 		 	<version>2.2.1</version>
 			</dependency>
-		 <dependency>
-		      <groupId>org.slf4j</groupId>
-		      <artifactId>slf4j-api</artifactId>
-		      <version>1.7.5</version>
-		  </dependency>
-		  <dependency>
-		      <groupId>org.slf4j</groupId>
-		      <artifactId>slf4j-log4j12</artifactId>
-		      <version>1.7.5</version>
-		  </dependency>
 		  <!-- https://mvnrepository.com/artifact/org.apache.flink/flink-core -->
             <dependency>
                 <groupId>org.apache.flink</groupId>
