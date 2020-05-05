@@ -121,7 +121,6 @@
             <artifactId>jsqlparser</artifactId>
             <version>0.8.0</version>
         </dependency>
-=======
 		 <dependency>
 			<groupId>org.apache.kafka</groupId>
 			<artifactId>kafka_2.12</artifactId>
@@ -146,7 +145,6 @@
                 <artifactId>jsqlparser</artifactId>
                 <version>0.8.0</version>
             </dependency>
->>>>>>> f7651bd4a2de16686f5781e03421ec5d3e789385
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
@@ -209,8 +207,6 @@
             <url>https://repo.spring.io/libs-release</url>
         </repository>
     </repositories>
-
-<<<<<<< HEAD
     <pluginRepositories>
         <pluginRepository>
             <id>spring-releases</id>
@@ -218,7 +214,6 @@
         </pluginRepository>
     </pluginRepositories>
 </project>
-=======
 	<pluginRepositories>
 		<pluginRepository>
 			<id>spring-releases</id>
@@ -226,4 +221,3 @@
 		</pluginRepository>
 	</pluginRepositories>
 </project>
->>>>>>> f7651bd4a2de16686f5781e03421ec5d3e789385
