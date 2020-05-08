@@ -232,33 +232,30 @@ public class QueryRunner implements ConsumerHandler {
 						sendPostEvent(postEvent);
 						return result;
 					}
-					break;
 				}
 
 				if (System.currentTimeMillis() - startedOn > timeout) {
 					timedOut = true;
-					break;
+					response = new ResponseEntity<String>("Auth queue timeout",HttpStatus.REQUEST_TIMEOUT);
+					return response;
 				}
 				try {
 					Thread.sleep(50);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
-				if (timedOut) {
-					response = new ResponseEntity<String>("Analytics Query post timeout",HttpStatus.REQUEST_TIMEOUT);
-					return response;
-				}
-
 			}
 		}
-			if(isUpdate){
-				ResponseEntity<String> result = executeUpdate(query);
-				return result;
+		else {
+			ResponseEntity<String> result;
+			if (isUpdate) {
+				result = executeUpdate(query);
+
+			} else {
+				result = executeQuery(query);
 			}
-			else {
-				ResponseEntity<String> result = executeQuery(query);
-				return result;
-			}
+			return result;
+		}
     }
 
 
@@ -310,7 +307,8 @@ public class QueryRunner implements ConsumerHandler {
 
 				if (System.currentTimeMillis() - startedOn > timeout) {
 					timedOut = true;
-					break;
+					response = new ResponseEntity<String>("Auth queue timeout",HttpStatus.REQUEST_TIMEOUT);
+					return response;
 				}
 				try {
 					Thread.sleep(50);
@@ -324,12 +322,13 @@ public class QueryRunner implements ConsumerHandler {
 
 			}
 		}
-
+		else {
 			ResponseEntity<String> result = executePreparedUpdate(json);
 
 			//connection = new XMIPolystoreConnection(mlModel.getContents(), infos);
 			System.out.println(result.getBody());
 			return result;
+			}
 		}
 
 
@@ -358,7 +357,6 @@ public class QueryRunner implements ConsumerHandler {
 		vars.put("query", query);
 		RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);;
 		Gson gson = new GsonBuilder().disableHtmlEscaping().create();
-		System.out.println(gson.toJson(vars));
 		HttpHeaders headers = new HttpHeaders();
 		headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
 		headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
@@ -411,7 +409,7 @@ public class QueryRunner implements ConsumerHandler {
 	}
 
 	private ResponseEntity<String> executePreparedUpdate(Map<String, Object> json){
-		String uri = "http://:32775/preparedUpdate";
+		String uri = "http://typhonql-server/preparedUpdate";
 		RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);;
 		json.put("xmi", ml.getContents());
 		json.put("databaseInfo",infos);
