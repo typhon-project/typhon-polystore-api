@@ -210,15 +210,15 @@ public class QueryRunner implements ConsumerHandler {
 					}
 					else if(recevent.isAuthenticated()){
 						PostEvent postEvent = new PostEvent();
-						if(event.isInvertedNeeded()){
+						if(recevent.isInvertedNeeded()){
 							if(isUpdate) {
-								postEvent.setInvertedQueryResultSet(executeUpdate(event.getInvertedQuery()).getBody());
+								postEvent.setInvertedQueryResultSet(executeUpdate(recevent.getInvertedQuery()).getBody());
 							}
 							else{
-								postEvent.setInvertedQueryResultSet(executeQuery(event.getInvertedQuery()).getBody());
+								postEvent.setInvertedQueryResultSet(executeQuery(recevent.getInvertedQuery()).getBody());
 							}
 						}
-						postEvent.setPreEvent(event);
+						postEvent.setPreEvent(recevent);
 						postEvent.setStartTime(new Date());
 						ResponseEntity<String> result;
 						if(isUpdate) {
@@ -289,13 +289,13 @@ public class QueryRunner implements ConsumerHandler {
 					}
 					else if(recevent.isAuthenticated() == true){
 						PostEvent postEvent = new PostEvent();
-						if(event.isInvertedNeeded()){
+						if(recevent.isInvertedNeeded()){
 							Map<String,Object> temp;
 							temp=json;
-							temp.put("command",event.getInvertedQuery());
+							temp.put("command",recevent.getInvertedQuery());
 							postEvent.setInvertedQueryResultSet(executePreparedUpdate(temp).getBody());
 						}
-						postEvent.setPreEvent(event);
+						postEvent.setPreEvent(recevent);
 						postEvent.setStartTime(new Date());
 						ResponseEntity<String> result = executePreparedUpdate(json);
 						postEvent.setEndTime(new Date());
