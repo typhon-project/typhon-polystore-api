@@ -27,7 +27,7 @@ public class SwaggerJsonConfiguration {
 
     @Bean
     public SwaggerJson swaggerConfiguration(
-            @Value("src/main/resources/swagger.json") String location,
+            @Value("${project.build.outputDirectory}/swagger.json") String location,
             @Qualifier("webApplicationContext") ResourceLoader loader) throws IOException {
 
         InputStream istream = getResource(location, loader);
