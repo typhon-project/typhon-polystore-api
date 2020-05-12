@@ -1,0 +1,841 @@
+{
+	"swagger": "2.0",
+	"info": {
+		"description": "REST API for Polystore Query & Control",
+		"version": "1.0",
+		"title": "Polystore REST API",
+		"contact": {
+			"name": "Orfeas Panagou",
+			"email": " o.panagou@clmsuk.com"
+		}
+	},
+	"host": "localhost:8080",
+	"basePath": "/",
+	"tags": [{
+		"name": "Polystore API",
+		"description": "Main functions of the polystore API"
+	}],
+	"paths": {
+		"/api/backup": {
+			"post": {
+				"tags": ["Polystore API"],
+				"summary": "Backup databases (currently supports MySQL/MariaDB)",
+				"operationId": "BackupUsingPOST",
+				"consumes": ["application/json"],
+				"produces": ["*/*"],
+				"parameters": [{
+					"in": "body",
+					"name": "json",
+					"description": "json",
+					"required": true,
+					"schema": {
+						"type": "object",
+						"additionalProperties": {
+							"type": "string"
+						}
+					}
+				}],
+				"responses": {
+					"200": {
+						"description": "OK"
+					},
+					"201": {
+						"description": "Created"
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "Not Found"
+					}
+				},
+				"deprecated": false
+			}
+		},
+		"/api/databases": {
+			"get": {
+				"tags": ["Polystore API"],
+				"summary": "Get databases registered by DL in Polystore API",
+				"operationId": "getDatabasesUsingGET",
+				"produces": ["*/*"],
+				"responses": {
+					"200": {
+						"description": "OK"
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "Not Found"
+					}
+				},
+				"deprecated": false
+			}
+		},
+		"/api/down": {
+			"get": {
+				"tags": ["Polystore API"],
+				"summary": "Set API \"DOWN\"",
+				"operationId": "downUsingGET",
+				"produces": ["*/*"],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"type": "boolean"
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "Not Found"
+					}
+				},
+				"deprecated": false
+			}
+		},
+		"/api/download/{fileName}": {
+			"get": {
+				"tags": ["Polystore API"],
+				"summary": "Download backup file created by /backup endpoint",
+				"operationId": "BackupUsingGET",
+				"produces": ["application/octet-stream"],
+				"parameters": [{
+					"name": "fileName",
+					"in": "path",
+					"description": "fileName",
+					"required": true,
+					"type": "string"
+				}],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"type": "string",
+							"format": "byte"
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "Not Found"
+					}
+				},
+				"deprecated": false
+			}
+		},
+		"/api/evolve": {
+			"post": {
+				"tags": ["Polystore API"],
+				"summary": "Evolve",
+				"operationId": "EvolveUsingPOST",
+				"consumes": ["application/json"],
+				"produces": ["*/*"],
+				"parameters": [{
+					"in": "body",
+					"name": "json",
+					"description": "json",
+					"required": true,
+					"schema": {
+						"type": "object",
+						"additionalProperties": {
+							"type": "string"
+						}
+					}
+				}],
+				"responses": {
+					"200": {
+						"description": "OK"
+					},
+					"201": {
+						"description": "Created"
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "Not Found"
+					}
+				},
+				"deprecated": false
+			}
+		},
+		"/api/model/dl": {
+			"post": {
+				"tags": ["Polystore API"],
+				"summary": "set Typhon DL Model",
+				"operationId": "setTyphonDLModelUsingPOST",
+				"consumes": ["application/json"],
+				"produces": ["*/*"],
+				"parameters": [{
+					"in": "body",
+					"name": "name",
+					"description": "name of model",
+					"required": true,
+				}, {
+					"in": "body",
+					"name": "content",
+					"description": "string content of model",
+					"required": true,
+					"schema": {
+						"type": "object",
+						"additionalProperties": {
+							"type": "string"
+						}
+					}
+				}],
+				"responses": {
+					"200": {
+						"description": "OK"
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					}
+				},
+				"deprecated": false
+			}
+		},
+		"/api/model/ml": {
+			"post": {
+				"tags": ["Polystore API"],
+				"summary": "set Typhon Ml Model",
+				"operationId": "setTyphonMlModelUsingPOST",
+				"consumes": ["application/json"],
+				"produces": ["*/*"],
+				"parameters": [{
+					"in": "body",
+					"name": "name",
+					"description": "name of model",
+					"required": true,
+				}, {
+					"in": "body",
+					"name": "content",
+					"description": "string content of model",
+					"required": true,
+					"schema": {
+						"type": "object",
+						"additionalProperties": {
+							"type": "string"
+						}
+					}
+				}],
+				"responses": {
+					"200": {
+						"description": "OK"
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					}
+				},
+				"deprecated": false
+			}
+		},
+		"/api/model/{type}/{version}": {
+			"get": {
+				"tags": ["Polystore API"],
+				"summary": "Get any type & version of previously uploaded models",
+				"operationId": "getTyphonModelUsingGET",
+				"produces": ["application/octet-stream"],
+				"parameters": [{
+					"name": "type",
+					"in": "path",
+					"description": "type of model, ML or DL",
+					"required": true,
+					"type": "string"
+				}, {
+					"name": "version",
+					"in": "path",
+					"description": "version of the requested model",
+					"required": true,
+					"type": "integer",
+					"format": "int32"
+				}],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"type": "string",
+							"format": "byte"
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					}
+				},
+				"deprecated": false
+			}
+		},
+		"/api/models/dl": {
+			"get": {
+				"tags": ["Polystore API"],
+				"summary": "Get latest DL model",
+				"operationId": "getDlModelsUsingGET",
+				"produces": ["*/*"],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/Model"
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "Not Found"
+					}
+				},
+				"deprecated": false
+			}
+		},
+		"/api/models/ml": {
+			"get": {
+				"tags": ["Polystore API"],
+				"summary": "Get latest ML model",
+				"operationId": "getMlModelsUsingGET",
+				"produces": ["*/*"],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/Model"
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "Not Found"
+					}
+				},
+				"deprecated": false
+			}
+		},
+		"/api/preparedupdate": {
+			"post": {
+				"tags": ["Polystore API"],
+				"summary": "execute prepared Update(batch insert)",
+				"operationId": "executepreparedUpdateUsingPOST",
+				"consumes": ["application/json"],
+				"produces": ["*/*"],
+				"parameters": [{
+					"in": "parameter",
+					"name": "boundRows",
+					"description": "values of parameters",
+					"required": true,
+					"schema": {
+						"$ref": "#/definitions/Array[String]"
+					}
+				}, {
+					"in": "parameter",
+					"name": "command",
+					"description": "query",
+					"required": true,
+					"schema": {
+						"$ref": "#/definitions/String"
+					}
+				},
+				{
+					"in": "parameter",
+					"name": "parameterNames",
+					"description": "names of parameters",
+					"required": true,
+					"schema": {
+						"$ref": "#/definitions/Array[String]"
+					}
+				}],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/Future«ResponseEntity«string»»"
+						}
+					},
+					"201": {
+						"description": "Created"
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					}
+				},
+				"deprecated": false
+			}
+		},
+		"/api/query": {
+			"post": {
+				"tags": ["Polystore API"],
+				"summary": "execute Query(select)",
+				"operationId": "executeQueryUsingPOST",
+				"consumes": ["application/json"],
+				"produces": ["*/*"],
+				"parameters": [{
+					"in": "body",
+					"name": "query",
+					"description": "query",
+					"required": true,
+					"schema": {
+						"type": "string"
+					}
+				}],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/Future«ResponseEntity«string»»"
+						}
+					},
+					"201": {
+						"description": "Created"
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "Not Found"
+					}
+				},
+				"deprecated": false
+			}
+		},
+		"/api/resetdatabases": {
+			"get": {
+				"tags": ["Polystore API"],
+				"summary": "reset databases for  the initial setup of Polystore",
+				"operationId": "resetDatabasesUsingGET",
+				"produces": ["*/*"],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/ResponseEntity"
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "Not Found"
+					}
+				},
+				"deprecated": false
+			}
+		},
+		"/api/restore": {
+			"post": {
+				"tags": ["Polystore API"],
+				"summary": "Restore a MariaDB database",
+				"operationId": "RestoreUsingPOST",
+				"consumes": ["application/json"],
+				"produces": ["*/*"],
+				"parameters": [{
+					"in": "body",
+					"name": "json",
+					"description": "json",
+					"required": true,
+					"schema": {
+						"type": "object",
+						"additionalProperties": {
+							"type": "string"
+						}
+					}
+				}],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/ResponseEntity"
+						}
+					},
+					"201": {
+						"description": "Created"
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "Not Found"
+					}
+				},
+				"deprecated": false
+			}
+		},
+		"/api/services": {
+			"get": {
+				"tags": ["Polystore API"],
+				"summary": "Get services registed by DL in the Polystore API",
+				"operationId": "getServicesUsingGET",
+				"produces": ["*/*"],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/ResponseEntity"
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "Not Found"
+					}
+				},
+				"deprecated": false
+			}
+		},
+		"/api/status": {
+			"get": {
+				"tags": ["Polystore API"],
+				"summary": "get current Status",
+				"operationId": "getStatusUsingGET",
+				"produces": ["*/*"],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"type": "boolean"
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "Not Found"
+					}
+				},
+				"deprecated": false
+			}
+		},
+		"/api/up": {
+			"get": {
+				"tags": ["Polystore API"],
+				"summary": "Set Polystore \"UP\"",
+				"operationId": "upUsingGET",
+				"produces": ["*/*"],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"type": "boolean"
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "Not Found"
+					}
+				},
+				"deprecated": false
+			}
+		},
+		"/api/update": {
+			"post": {
+				"tags": ["Polystore API"],
+				"summary": "Endpoint for update queries (insert, delete, update)",
+				"operationId": "executeUpdateUsingPOST",
+				"consumes": ["application/json"],
+				"produces": ["*/*"],
+				"parameters": [{
+					"in": "body",
+					"name": "query",
+					"description": "query",
+					"required": true,
+					"schema": {
+						"type": "string"
+					}
+				}],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/Future«ResponseEntity«string»»"
+						}
+					},
+					"201": {
+						"description": "Created"
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "Not Found"
+					}
+				},
+				"deprecated": false
+			}
+		},
+		"/api/users/authenticate": {
+			"post": {
+				"tags": ["Polystore API"],
+				"summary": "login",
+				"operationId": "loginUsingPOST",
+				"consumes": ["application/json"],
+				"produces": ["*/*"],
+				"parameters": [{
+					"in": "body",
+					"name": "json",
+					"description": "json",
+					"required": true,
+					"schema": {
+						"type": "object",
+						"additionalProperties": {
+							"type": "string"
+						}
+					}
+				}],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"type": "boolean"
+						}
+					},
+					"201": {
+						"description": "Created"
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "Not Found"
+					}
+				},
+				"deprecated": false
+			}
+		},
+		"/user/register": {
+			"post": {
+				"tags": ["Polystore API"],
+				"summary": "Register new user",
+				"operationId": "addUsingPOST",
+				"consumes": ["application/json"],
+				"produces": ["*/*"],
+				"parameters": [{
+					"in": "body",
+					"name": "u",
+					"description": "u",
+					"required": true,
+					"schema": {
+						"$ref": "#/definitions/User"
+					}
+				}],
+				"responses": {
+					"200": {
+						"description": "OK"
+					},
+					"201": {
+						"description": "Created"
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "Not Found"
+					}
+				},
+				"deprecated": false
+			}
+		},
+		"/user/{userName}": {
+			"get": {
+				"tags": ["Polystore API"],
+				"summary": "Get user by username",
+				"operationId": "getUsingGET",
+				"produces": ["*/*"],
+				"parameters": [{
+					"name": "userName",
+					"in": "path",
+					"description": "userName",
+					"required": true,
+					"type": "string"
+				}],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/ResponseEntity"
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "Not Found"
+					}
+				},
+				"deprecated": false
+			},
+			"post": {
+				"tags": ["Polystore API"],
+				"summary": "Update user by username",
+				"operationId": "updateUsingPOST",
+				"consumes": ["application/json"],
+				"produces": ["*/*"],
+				"parameters": [{
+					"in": "body",
+					"name": "u",
+					"description": "u",
+					"required": true,
+					"schema": {
+						"$ref": "#/definitions/User"
+					}
+				}, {
+					"name": "userName",
+					"in": "path",
+					"description": "userName",
+					"required": true,
+					"type": "string"
+				}],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/ResponseEntity"
+						}
+					},
+					"201": {
+						"description": "Created"
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "Not Found"
+					}
+				},
+				"deprecated": false
+			},
+			"delete": {
+				"tags": ["Polystore API"],
+				"summary": "delete",
+				"operationId": "deleteUsingDELETE",
+				"produces": ["*/*"],
+				"parameters": [{
+					"name": "userName",
+					"in": "path",
+					"description": "userName",
+					"required": true,
+					"type": "string"
+				}],
+				"responses": {
+					"200": {
+						"description": "OK"
+					},
+					"204": {
+						"description": "No Content"
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					}
+				},
+				"deprecated": false
+			}
+		},
+		"/users": {
+			"get": {
+				"tags": ["Polystore API"],
+				"summary": "List all users",
+				"operationId": "allUsingGET",
+				"produces": ["*/*"],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"type": "array",
+							"items": {
+								"type": "object"
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "Not Found"
+					}
+				},
+				"deprecated": false
+			}
+		}
+	}
+}

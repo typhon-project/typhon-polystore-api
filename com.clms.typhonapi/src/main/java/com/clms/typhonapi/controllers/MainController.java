@@ -10,8 +10,12 @@ import com.clms.typhonapi.utils.QueryRunner;
 import com.clms.typhonapi.utils.ServiceRegistry;
 import com.clms.typhonapi.utils.UserHelper;
 
+import com.google.common.base.Predicates;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -30,14 +34,20 @@ import java.util.concurrent.Future;
 
 import javax.annotation.PostConstruct;
 
-//import io.swagger.annotations.Api;
-//import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import springfox.documentation.builders.PathSelectors;
+import springfox.documentation.builders.RequestHandlerSelectors;
+import springfox.documentation.service.ApiInfo;
+import springfox.documentation.service.Contact;
+import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @RestController
 @CrossOrigin(origins = "*", maxAge = 3600)
-//@Api(value="Polystore Services")
+@Api(value="Polystore Services")
 public class MainController {
-
 
 	private static boolean status = true;
 	
@@ -59,7 +69,7 @@ public class MainController {
     public MainController() {
 
     }
-    
+
     @PostConstruct
     public void init() {
     	userHelper.createInitialUser();
@@ -71,19 +81,20 @@ public class MainController {
             System.out.println(e.getMessage());
         }
     }
-    
+
+
     @RequestMapping(path = "/api/users/authenticate", method = RequestMethod.POST)
     public boolean login(@RequestBody Map<String,String> json) {
     	User user = userHelper.get(json.get("username"), json.get("password"));
     	return user != null;
     }
     
-    @RequestMapping("/api/status")
+    @RequestMapping(value = "/api/status",method = RequestMethod.GET)
     public boolean getStatus() {
     	return status;
     }
     
-    @RequestMapping("/api/down")
+    @RequestMapping(value = "/api/down", method = RequestMethod.GET)
     public boolean down() {
     	try {
 			Thread.sleep(4000);
@@ -100,7 +111,7 @@ public class MainController {
     	return status;
     }
     
-    @RequestMapping("/api/up")
+    @RequestMapping(value = "/api/up", method = RequestMethod.GET)
     public boolean up() {
     	queryRunner.init(modelHelper.getMlModel());
 		status = true;
@@ -108,20 +119,20 @@ public class MainController {
     	return status;
     }
     
-    //@ApiOperation(value = "Register new user")
+    @ApiOperation(value = "Register new user")
     @RequestMapping(path = "/user/register", method = RequestMethod.POST)
     public void add(@RequestBody User u) {
         userRepository.save(u);
     }
 
-    //@ApiOperation(value= "List all users",response = List.class)
+    @ApiOperation(value= "List all users",response = List.class)
     @RequestMapping(path = "/users", method = RequestMethod.GET)
     public List<User> all() {
     	return userRepository.findAll();
 
     }
 
-    //@ApiOperation(value= "Get user by username")
+    @ApiOperation(value= "Get user by username")
     @RequestMapping(path = "/user/{userName}", method = RequestMethod.GET)
     public ResponseEntity get(@PathVariable String userName) {
         Optional<User> user = userRepository.findById(userName);
@@ -133,7 +144,7 @@ public class MainController {
         }
     }
     
-    //@ApiOperation(value="Update user by username")
+    @ApiOperation(value="Update user by username")
     @RequestMapping(path = "/user/{userName}", method = RequestMethod.POST)
     public ResponseEntity update(@PathVariable String userName, @RequestBody User u) {
     	User user = userRepository.findById(userName).get();
@@ -163,22 +174,31 @@ public class MainController {
     	return modelHelper.getMlModels();
     }
 
+
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "name", value = "name of model", required = true, dataType = "String", paramType = "body"),
+            @ApiImplicitParam(name = "contents", value = "contents of model", required = true, dataType = "String", paramType = "body")
+    })
     @RequestMapping(path = "/api/model/dl", method = RequestMethod.POST)
-    public void setTyphoneDLModel(@RequestBody Map<String, String> json) throws Exception {
+    public void setTyphonDLModel(@RequestBody Map<String, String> json) throws Exception {
     	boolean flagReconnect=modelHelper.addDlModel(json.get("name"), json.get("contents"));
     	serviceRegistry.load(modelHelper.getDlModel());
     	if(flagReconnect){
     	    queryRunner.init(modelHelper.getMlModel());
         }
     }
-    
+
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "name", value = "name of model", required = true, dataType = "String", paramType = "body"),
+            @ApiImplicitParam(name = "contents", value = "contents of model", required = true, dataType = "String", paramType = "body")
+    })
     @RequestMapping(path = "/api/model/ml", method = RequestMethod.POST)
-    public void setTyphoneMlModel(@RequestBody Map<String, String> json) throws Exception {
+    public void setTyphonMlModel(@RequestBody Map<String, String> json) throws Exception {
     	modelHelper.addMlModel(json.get("name"), json.get("contents"));
     	evolutionHelper.evolve(modelHelper.getMlModel());
     }
     
-    @RequestMapping(path = "/api/model/{type}/{version}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @RequestMapping(path = "/api/model/{type}/{version}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE, method = RequestMethod.GET   )
     public @ResponseBody ResponseEntity<byte[]> getTyphonModel(@PathVariable String type, @PathVariable int version) {
     	HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("Content-disposition", "attachment; filename=model.xmi");
@@ -190,13 +210,13 @@ public class MainController {
           .body((m == null ? "" : m.getContents()).getBytes());
     }
 
-    //@ApiOperation(value= "Get databases")
+    @ApiOperation(value= "Get databases",httpMethod = "GET")
     @RequestMapping(path = "/api/databases", method = RequestMethod.GET)
     public ResponseEntity getDatabases() {
     	dbUtils.updateDbStatus();
         return ResponseEntity.status(200).body(serviceRegistry.getDatabases());
     }
-    //@ApiOperation(value= "Get databases")
+    @ApiOperation(value= "Get databases")
     @RequestMapping(path = "/api/services", method = RequestMethod.GET)
     public ResponseEntity getServices() {
        // dbUtils.updateDbStatus();
@@ -232,6 +252,11 @@ public class MainController {
         }
     }
 
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "command", value = "query", required = true, dataType = "String", paramType = "parameter"),
+            @ApiImplicitParam(name = "parameterNames", value = "names of parameters", required = true, dataType = "Array[String]", paramType = "parameter"),
+            @ApiImplicitParam(name = "boundRows", value = "values of parameters", required = true, dataType = "Array[String]", paramType = "parameter")
+    })
     @RequestMapping(path = "/api/preparedupdate", method = RequestMethod.POST)
     @Async
     public Future<ResponseEntity<String>> executepreparedUpdate(@RequestBody Map<String, Object> json){
