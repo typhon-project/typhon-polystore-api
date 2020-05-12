@@ -155,7 +155,7 @@
                         <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
                     </container>
                     <from>
-                        <image>adoptopenjdk:8-jdk-hotspot</image>
+                        <image>docker.io/clms/polystore-base</image>
                     </from>
                     <to>
                         <image>docker.io/clms/typhon-polystore-api</image>
