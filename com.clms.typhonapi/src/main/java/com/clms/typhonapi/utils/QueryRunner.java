@@ -10,8 +10,6 @@ import com.clms.typhonapi.models.*;
 
 import com.clms.typhonapi.storage.ModelStorage;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -99,7 +97,7 @@ public class QueryRunner implements ConsumerHandler {
 		}
 		//TODO: initialize query engine with xmi and dbConnections
 	/*	try {
-			String uri = "http://typhonql-server:7000/initialize";
+			String uri = "http://localhost:7000/initialize";
 			Map<String, Object> vars = new HashMap<String, Object>();
 			vars.put("xmi", mlModel.getContents());
 			vars.put("databaseInfo",infos);
@@ -147,7 +145,7 @@ public class QueryRunner implements ConsumerHandler {
 
 	public boolean resetDatabases(){
 		try {
-			String uri = "http://typhonql-server:7000/reset";
+			String uri = "http://localhost:7000/reset";
 
 			RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
 			Map<String, Object> vars = new HashMap<String, Object>();
@@ -350,13 +348,12 @@ public class QueryRunner implements ConsumerHandler {
 	private ResponseEntity<String> executeQuery(String query) throws UnsupportedEncodingException {
 		String finalQuery = URLEncoder.encode(query, StandardCharsets.UTF_8.toString());
 
-		String tempuri = "http://typhonql-server:7000/query";
+		String tempuri = "http://localhost:7000/query";
 		Map<String, Object> vars = new HashMap<String, Object>();
 		vars.put("xmi", ml.getContents());
 		vars.put("databaseInfo",infos);
 		vars.put("query", query);
 		RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);;
-		Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 		HttpHeaders headers = new HttpHeaders();
 		headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
 		headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
@@ -379,14 +376,12 @@ public class QueryRunner implements ConsumerHandler {
 	}
 
 	private ResponseEntity<String> executeUpdate(String query){
-		String uri = "http://typhonql-server:7000/update";
+		String uri = "http://localhost:7000/update";
 		Map<String, Object> vars = new HashMap<String, Object>();
 		vars.put("xmi", ml.getContents());
 		vars.put("databaseInfo",infos);
 		vars.put("command", query);
 		RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
-		Gson gson = new GsonBuilder().disableHtmlEscaping().create();
-		System.out.println(gson.toJson(vars));
 		HttpHeaders headers = new HttpHeaders();
 		headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
 		headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
@@ -409,12 +404,10 @@ public class QueryRunner implements ConsumerHandler {
 	}
 
 	private ResponseEntity<String> executePreparedUpdate(Map<String, Object> json){
-		String uri = "http://typhonql-server/preparedUpdate";
+		String uri = "http://localhost/preparedUpdate";
 		RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);;
 		json.put("xmi", ml.getContents());
 		json.put("databaseInfo",infos);
-		Gson gson = new GsonBuilder().disableHtmlEscaping().create();
-		System.out.println(gson.toJson(json));
 		HttpHeaders headers = new HttpHeaders();
 		headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
 		headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
