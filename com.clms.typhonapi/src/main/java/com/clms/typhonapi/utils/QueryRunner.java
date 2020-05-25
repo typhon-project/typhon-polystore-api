@@ -97,7 +97,7 @@ public class QueryRunner implements ConsumerHandler {
 		}
 		//TODO: initialize query engine with xmi and dbConnections
 	/*	try {
-			String uri = "http://localhost:7000/initialize";
+			String uri = "http://typhonql-server:7000/initialize";
 			Map<String, Object> vars = new HashMap<String, Object>();
 			vars.put("xmi", mlModel.getContents());
 			vars.put("databaseInfo",infos);
@@ -145,7 +145,7 @@ public class QueryRunner implements ConsumerHandler {
 
 	public boolean resetDatabases(){
 		try {
-			String uri = "http://localhost:7000/reset";
+			String uri = "http://typhonql-server:7000/reset";
 
 			RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
 			Map<String, Object> vars = new HashMap<String, Object>();
@@ -348,7 +348,7 @@ public class QueryRunner implements ConsumerHandler {
 	private ResponseEntity<String> executeQuery(String query) throws UnsupportedEncodingException {
 		String finalQuery = URLEncoder.encode(query, StandardCharsets.UTF_8.toString());
 
-		String tempuri = "http://localhost:7000/query";
+		String tempuri = "http://typhonql-server:7000/query";
 		Map<String, Object> vars = new HashMap<String, Object>();
 		vars.put("xmi", ml.getContents());
 		vars.put("databaseInfo",infos);
@@ -376,7 +376,7 @@ public class QueryRunner implements ConsumerHandler {
 	}
 
 	private ResponseEntity<String> executeUpdate(String query){
-		String uri = "http://localhost:7000/update";
+		String uri = "http://typhonql-server:7000/update";
 		Map<String, Object> vars = new HashMap<String, Object>();
 		vars.put("xmi", ml.getContents());
 		vars.put("databaseInfo",infos);
