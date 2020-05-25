@@ -22,7 +22,7 @@ import javax.xml.xpath.XPathFactory;
 import java.io.*;
 
 @Component
-public class 	ServiceRegistry {
+public class ServiceRegistry {
 
 	private ArrayList<Service> _services;
 	@Autowired
@@ -187,6 +187,12 @@ public class 	ServiceRegistry {
 				db.setDbType(DatabaseType.MysqlDb);
 				db.setEngineType(EngineType.Relational);
 				break;
+			case "neo4j":
+				db.setDbType(DatabaseType.neo4j);
+				db.setEngineType(EngineType.Graph);
+			case "cassandra":
+				db.setDbType(DatabaseType.cassandra);
+				db.setEngineType(EngineType.Relational);
 			default:
 				System.out.println("Database not supported: "+dbType);
 				break;
