@@ -205,12 +205,8 @@ public class ServiceRegistry {
 	
 	private void fillContainerInfo(Document doc, Service service) {
 		Element containerEl;
-		if(service.getName().equals("polystore_db")){
-			containerEl = querySelector(doc, "//containers[@name='" + "polystore-mongo" + "']");
-		}
-		else {
-			containerEl = querySelector(doc, "//containers[@name='" + service.getName() + "']");
-		}
+		containerEl = querySelector(doc, "//containers[@name='" + service.getName() + "']");
+		
 		if (containerEl == null) {
 			return;
 		}
