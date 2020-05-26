@@ -123,7 +123,7 @@ public class ServiceRegistry {
 		        
 		        if (service != null) {
 		        	service.setStatus(ServiceStatus.OFFLINE);
-					fillContainerInfo(doc, service);
+					fillContainerInfo(doc, service,i);
 					System.out.println("Parsed: " + service);
 		        	_services.add(service);
 		        }
@@ -203,11 +203,13 @@ public class ServiceRegistry {
 		return db;
 	}
 	
-	private void fillContainerInfo(Document doc, Service service) {
+	private void fillContainerInfo(Document doc, Service service,int i) {
 		Element containerEl;
 		containerEl = querySelector(doc, "//containers[@name='" + service.getName() + "']");
-		
+
 		if (containerEl == null) {
+			containerEl = querySelector(doc, "//containers//deploys[@reference=\"//@elements."+i+"\"]/..");
+			if(containerEl==null)
 			return;
 		}
 		Element uiEl;
@@ -238,7 +240,7 @@ public class ServiceRegistry {
 		
 		//find hostname
 		Element hostEl = querySelector(containerEl, ".//properties[@name='hostname']");
-		service.setInternalHost(hostEl == null ? service.getName() : hostEl.getAttribute("value"));
+		service.setInternalHost(hostEl == null ? containerEl.getAttribute("name") : hostEl.getAttribute("value"));
 
 		
 	}
