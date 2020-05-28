@@ -115,7 +115,6 @@ public class DbUtils {
 		for (Service db : dbs) {
 			Object con = null;
 			System.out.println("DB: " + db);
-			
 			switch (db.getDbType()) {
 			 case MariaDb:
 				 con = getMariaDBConnection(db);
@@ -125,6 +124,10 @@ public class DbUtils {
 				 break;
 			 case MysqlDb:
 				 con = getMysqlDBConnection(db);
+				 break;
+			 case cassandra:
+			 	 break;
+			 case neo4j:
 				 break;
 			 default:
 				 throw new Exception("Unhandled database type: " + db.getDbType());

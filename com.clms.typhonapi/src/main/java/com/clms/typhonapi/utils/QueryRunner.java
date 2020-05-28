@@ -53,7 +53,7 @@ public class QueryRunner implements ConsumerHandler {
 		isReady = false;
 		
 		try {
-			dbHelper.updateDbConnections();
+			//dbHelper.updateDbConnections();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -29,7 +29,7 @@ public class ServiceRegistry {
 	private DbUtils dbHelper;
 	@Autowired
 	private ModelStorage repo;
-
+	private NodeList list;
 	public ServiceRegistry() {
 		_services = new ArrayList<>();
 	}
@@ -76,6 +76,7 @@ public class ServiceRegistry {
 			Document doc = builder.parse(input);
 						
 			NodeList nList = doc.getElementsByTagName("elements");
+			list =nList;
 			for (int i = 0; i < nList.getLength(); i++) {
 				Node nNode = nList.item(i);
 				if (nNode.getNodeType() != Node.ELEMENT_NODE) {
@@ -85,7 +86,9 @@ public class ServiceRegistry {
 				Service service = null;
 				
 		        Element db = (Element) nNode;
-		        if(db.getAttribute("xsi:type").equals("typhonDL:Software") && db.getAttribute("name").equals("zookeeper")){
+				String name = db.getAttribute("name");
+		        String type = db.getAttribute("xsi:type");
+ 		        if(db.getAttribute("xsi:type").equals("typhonDL:Software") && db.getAttribute("name").equals("zookeeper")){
 					Element kafkaEl = querySelector(doc, ".//containers[@name='kafka']");
 					if(kafkaEl!=null){
 						Service kafka = new Service();
@@ -117,8 +120,8 @@ public class ServiceRegistry {
 					System.out.println(db.getAttribute("xsi:type"));
 					continue;
 		        }
-		        if (db != null) {
-		        	service = parseDbElement(db,nList);
+		        if (db.getAttribute("xsi:type").equals("typhonDL:DB") && db != null) {
+		        	service = parseDbElement(db,list);
 		        }
 		        
 		        if (service != null) {
@@ -139,21 +142,21 @@ public class ServiceRegistry {
 		}
 
 		try {
-			dbHelper.updateDbConnections();
+			//dbHelper.updateDbConnections();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 	}
 	
-	private Service parseDbElement(Element eElement,NodeList nList) {
+	private Service parseDbElement(Element eElement,NodeList list) {
 		Service db = new Service();
 		db.setServiceType(ServiceType.Database);
 		Element dbElement = eElement;
 		String typeReference = dbElement.getAttribute("type");
-		int typeElement = Integer.parseInt(typeReference.substring(typeReference.length()-1,typeReference.length()));
+		int typeElement = Integer.parseInt(typeReference.split("\\.")[1]);
 		//int refDbType = Integer.parseInt(typeReference.substring(typeReference.length()-1,typeReference.length()))+1;
-		Element dbTypeElement = (Element) nList.item(typeElement);//"(.//elements[@type='typhonDL:DBType'])["+Integer.toString(typeElement)+"]");
+		Element dbTypeElement = (Element) list.item(typeElement);//"(.//elements[@type='typhonDL:DBType'])["+Integer.toString(typeElement)+"]");
 		Element parameters = querySelector(dbElement, "./parameters[@type='typhonDL:Key_KeyValueList']");
 		String dbType="";
 		if(dbTypeElement!=null) {
@@ -188,11 +191,16 @@ public class ServiceRegistry {
 				db.setEngineType(EngineType.Relational);
 				break;
 			case "neo4j":
+				Element neoauth = querySelector(parameters, ".//properties[@name='NEO4J_AUTH']");
+				db.setUsername(neoauth == null ? "neo4j" : neoauth.getAttribute("value").split("/")[0]);
+				db.setPassword(neoauth == null ? "password" : neoauth.getAttribute("value").split("/")[1]);
 				db.setDbType(DatabaseType.neo4j);
 				db.setEngineType(EngineType.Graph);
+				break;
 			case "cassandra":
 				db.setDbType(DatabaseType.cassandra);
-				db.setEngineType(EngineType.Relational);
+				db.setEngineType(EngineType.KeyValue);
+				break;
 			default:
 				System.out.println("Database not supported: "+dbType);
 				break;
@@ -205,13 +213,13 @@ public class ServiceRegistry {
 	
 	private void fillContainerInfo(Document doc, Service service,int i) {
 		Element containerEl;
-		containerEl = querySelector(doc, "//containers[@name='" + service.getName() + "']");
+		//containerEl = querySelector(doc, "//containers[@name='" + service.getName() + "']");
 
-		if (containerEl == null) {
+
 			containerEl = querySelector(doc, "//containers//deploys[@reference=\"//@elements."+i+"\"]/..");
 			if(containerEl==null)
 			return;
-		}
+
 		Element uiEl;
 		uiEl = querySelector(doc, "//elements[@name='" + "polystore_ui" +"']");
 		Element parametersEl = querySelector(uiEl, ".//parameters");
