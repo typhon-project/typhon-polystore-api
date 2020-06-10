@@ -22,6 +22,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
@@ -36,6 +37,7 @@ import javax.annotation.PostConstruct;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.web.servlet.ModelAndView;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.service.ApiInfo;
@@ -334,6 +336,40 @@ public class MainController {
             }
         }
 
+    }
+
+    //create a new instance of an entity of ML
+    @RequestMapping(
+            path = "/crud/{entity}",
+            method = RequestMethod.POST
+            )
+    public ResponseEntity cEntity(@PathVariable String entity, @RequestBody Map<String, Object> jsonBody) {
+        return queryRunner.postEntity(entity, jsonBody);
+    }
+
+    //read, update and delete an instance of an entity of ML
+    @RequestMapping(
+            path = "/crud/{entity}/{id}",
+            method = RequestMethod.GET
+            )
+    public ResponseEntity rEntity(@PathVariable String entity, @PathVariable String id, @RequestBody Map<String, Object> jsonBody) {
+        return queryRunner.getEntity(entity, id, jsonBody);
+    }
+
+    @RequestMapping(
+            path = "/crud/{entity}/{id}",
+            method = RequestMethod.PATCH
+    )
+    public ResponseEntity uEntity(@PathVariable String entity, @PathVariable String id, @RequestBody Map<String, Object> jsonBody) {
+        return queryRunner.patchEntity(entity, id, jsonBody);
+    }
+
+    @RequestMapping(
+            path = "/crud/{entity}/{id}",
+            method = RequestMethod.DELETE
+    )
+    public ResponseEntity dEntity(@PathVariable String entity, @PathVariable String id, @RequestBody Map<String, Object> jsonBody) {
+        return queryRunner.deleteEntity(entity, id, jsonBody);
     }
 
 }

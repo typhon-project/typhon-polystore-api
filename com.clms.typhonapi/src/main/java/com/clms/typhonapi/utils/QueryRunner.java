@@ -97,7 +97,7 @@ public class QueryRunner implements ConsumerHandler {
 		}
 		//TODO: initialize query engine with xmi and dbConnections
 	/*	try {
-			String uri = "http://typhonql-server:7000/initialize";
+			String uri = "http://localhost:7000/initialize";
 			Map<String, Object> vars = new HashMap<String, Object>();
 			vars.put("xmi", mlModel.getContents());
 			vars.put("databaseInfo",infos);
@@ -145,7 +145,7 @@ public class QueryRunner implements ConsumerHandler {
 
 	public boolean resetDatabases(){
 		try {
-			String uri = "http://typhonql-server:7000/reset";
+			String uri = "http://localhost:7000/reset";
 
 			RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
 			Map<String, Object> vars = new HashMap<String, Object>();
@@ -326,8 +326,8 @@ public class QueryRunner implements ConsumerHandler {
 			//connection = new XMIPolystoreConnection(mlModel.getContents(), infos);
 			System.out.println(result.getBody());
 			return result;
-			}
 		}
+	}
 
 
 
@@ -348,7 +348,7 @@ public class QueryRunner implements ConsumerHandler {
 	private ResponseEntity<String> executeQuery(String query) throws UnsupportedEncodingException {
 		String finalQuery = URLEncoder.encode(query, StandardCharsets.UTF_8.toString());
 
-		String tempuri = "http://typhonql-server:7000/query";
+		String tempuri = "http://localhost:7000/query";
 		Map<String, Object> vars = new HashMap<String, Object>();
 		vars.put("xmi", ml.getContents());
 		vars.put("databaseInfo",infos);
@@ -376,7 +376,7 @@ public class QueryRunner implements ConsumerHandler {
 	}
 
 	private ResponseEntity<String> executeUpdate(String query){
-		String uri = "http://typhonql-server:7000/update";
+		String uri = "http://localhost:7000/update";
 		Map<String, Object> vars = new HashMap<String, Object>();
 		vars.put("xmi", ml.getContents());
 		vars.put("databaseInfo",infos);
@@ -405,23 +405,133 @@ public class QueryRunner implements ConsumerHandler {
 
 	private ResponseEntity<String> executePreparedUpdate(Map<String, Object> json){
 		String uri = "http://localhost/preparedUpdate";
-		RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);;
+		RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
 		json.put("xmi", ml.getContents());
 		json.put("databaseInfo",infos);
 		HttpHeaders headers = new HttpHeaders();
 		headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
 		headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
-		HttpEntity<Map<String,Object>> request =
-				new HttpEntity<>(json, headers);
+		HttpEntity<Map<String,Object>> request = new HttpEntity<>(json, headers);
 		ResponseEntity<String> result = restTemplate.postForEntity(uri,request,String.class);
+
 		if (result.getStatusCode() == HttpStatus.OK) {
 			isReady = true;
 			System.out.println("prepared update query executed successfully");
-
-		} else {
+		}
+		else {
 			System.out.println("error in query");
 			isReady=false;
+		}
+		return result;
+	}
 
+
+
+	//To POST a new Entity
+	public ResponseEntity<String> postEntity (String entity, Map<String, Object> jsonBody){
+		String uri = " http://typhonql-server/";
+		String targetURI = uri.concat(entity);
+
+		RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
+
+		List<String> qlRestArgsValue = new ArrayList<>();
+		qlRestArgsValue.add(ml.getContents());
+		qlRestArgsValue.add(infos.toString());
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
+		headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
+		headers.addAll("QL-RestArguments", qlRestArgsValue);
+
+		HttpEntity<Map<String,Object>> request = new HttpEntity<>(jsonBody, headers);
+		ResponseEntity<String> result = restTemplate.postForEntity(targetURI,request,String.class);
+
+		if (result.getStatusCode() == HttpStatus.OK) {
+			System.out.println("POST request was executed successfully");
+		}
+		else {
+			System.out.println("Error in request");
+		}
+		return result;
+	}
+
+	//To GET an existing Entity
+	public ResponseEntity<String> getEntity (String entity, String id, Map<String, Object> jsonBody){
+		String uri = " http://typhonql-server/";
+		String tempURI = uri.concat(entity);
+		String targetURI = tempURI + "/" + id;
+
+		RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
+		List<String> qlRestArgsValue = new ArrayList<>();
+		qlRestArgsValue.add(ml.getContents());
+		qlRestArgsValue.add(infos.toString());
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
+		headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
+		headers.addAll("QL-RestArguments", qlRestArgsValue);
+		HttpEntity<Map<String,Object>> request = new HttpEntity<>(jsonBody, headers);
+		ResponseEntity<String> result = restTemplate.getForEntity(targetURI,String.class);
+
+		if (result.getStatusCode() == HttpStatus.OK) {
+			System.out.println("GET request was executed successfully");
+		}
+		else {
+			System.out.println("Error in request");
+		}
+		return result;
+	}
+
+	//To PATCH an existing Entity
+	public ResponseEntity<String> patchEntity (String entity, String id, Map<String, Object> jsonBody){
+		String uri = " http://typhonql-server/";
+		String tempURI = uri.concat(entity);
+		String targetURI = tempURI + "/" + id;
+
+		RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
+		List<String> qlRestArgsValue = new ArrayList<>();
+		qlRestArgsValue.add(ml.getContents());
+		qlRestArgsValue.add(infos.toString());
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
+		headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
+		headers.addAll("QL-RestArguments", qlRestArgsValue);
+		HttpEntity<Map<String,Object>> request = new HttpEntity<>(jsonBody, headers);
+		ResponseEntity<String> result = restTemplate.exchange(targetURI,HttpMethod.PATCH,request,String.class);
+
+		if (result.getStatusCode() == HttpStatus.OK) {
+			System.out.println("PATCH request was executed successfully");
+		}
+		else {
+			System.out.println("Error in request");
+		}
+		return result;
+	}
+
+	//To DELETE an existing Entity
+	public ResponseEntity<String> deleteEntity (String entity, String id, Map<String, Object> jsonBody){
+		String uri = " http://typhonql-server/";
+		String tempURI = uri.concat(entity);
+		String targetURI = tempURI + "/" + id;
+
+		RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
+		List<String> qlRestArgsValue = new ArrayList<>();
+		qlRestArgsValue.add(ml.getContents());
+		qlRestArgsValue.add(infos.toString());
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
+		headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
+		headers.addAll("QL-RestArguments", qlRestArgsValue);
+		HttpEntity<Map<String,Object>> request = new HttpEntity<>(jsonBody, headers);
+		ResponseEntity<String> result = restTemplate.exchange(targetURI,HttpMethod.DELETE,request,String.class);
+
+		if (result.getStatusCode() == HttpStatus.OK) {
+			System.out.println("DELETE request was executed successfully");
+		}
+		else {
+			System.out.println("Error in request");
 		}
 		return result;
 	}
