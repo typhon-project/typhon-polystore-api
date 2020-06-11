@@ -352,8 +352,8 @@ public class MainController {
             path = "/crud/{entity}/{id}",
             method = RequestMethod.GET
             )
-    public ResponseEntity rEntity(@PathVariable String entity, @PathVariable String id, @RequestBody Map<String, Object> jsonBody) {
-        return queryRunner.getEntity(entity, id, jsonBody);
+    public ResponseEntity rEntity(@PathVariable String entity, @PathVariable String id) {
+        return queryRunner.getEntity(entity, id);
     }
 
     @RequestMapping(
@@ -368,8 +368,8 @@ public class MainController {
             path = "/crud/{entity}/{id}",
             method = RequestMethod.DELETE
     )
-    public ResponseEntity dEntity(@PathVariable String entity, @PathVariable String id, @RequestBody Map<String, Object> jsonBody) {
-        return queryRunner.deleteEntity(entity, id, jsonBody);
+    public ResponseEntity dEntity(@PathVariable String entity, @PathVariable String id) {
+        return queryRunner.deleteEntity(entity, id);
     }
 
 }

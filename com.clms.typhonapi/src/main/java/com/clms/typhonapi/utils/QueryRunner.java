@@ -10,7 +10,9 @@ import com.clms.typhonapi.models.*;
 
 import com.clms.typhonapi.storage.ModelStorage;
 
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.util.JSONPObject;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -429,9 +431,9 @@ public class QueryRunner implements ConsumerHandler {
 
 	//To POST a new Entity
 	public ResponseEntity<String> postEntity (String entity, Map<String, Object> jsonBody){
-		String uri = " http://typhonql-server/";
-		String targetURI = uri.concat(entity);
-
+//		String uri = "http://typhonql-server/";
+//		String targetURI = uri.concat(entity);
+		String targetURI = "http://localhost:7000/" + entity;
 		RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
 
 		List<String> qlRestArgsValue = new ArrayList<>();
@@ -456,10 +458,11 @@ public class QueryRunner implements ConsumerHandler {
 	}
 
 	//To GET an existing Entity
-	public ResponseEntity<String> getEntity (String entity, String id, Map<String, Object> jsonBody){
-		String uri = " http://typhonql-server/";
-		String tempURI = uri.concat(entity);
-		String targetURI = tempURI + "/" + id;
+	public ResponseEntity<String> getEntity (String entity, String id){
+//		String uri = "http://typhonql-server/";
+//		String tempURI = uri.concat(entity);
+//		String targetURI = tempURI + "/" + id;
+		String targetURI = "http://localhost:7000/" + entity + "/" + id;
 
 		RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
 		List<String> qlRestArgsValue = new ArrayList<>();
@@ -470,7 +473,7 @@ public class QueryRunner implements ConsumerHandler {
 		headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
 		headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
 		headers.addAll("QL-RestArguments", qlRestArgsValue);
-		HttpEntity<Map<String,Object>> request = new HttpEntity<>(jsonBody, headers);
+		HttpEntity<Map<String,Object>> request = new HttpEntity<>(headers);
 		ResponseEntity<String> result = restTemplate.getForEntity(targetURI,String.class);
 
 		if (result.getStatusCode() == HttpStatus.OK) {
@@ -484,9 +487,10 @@ public class QueryRunner implements ConsumerHandler {
 
 	//To PATCH an existing Entity
 	public ResponseEntity<String> patchEntity (String entity, String id, Map<String, Object> jsonBody){
-		String uri = " http://typhonql-server/";
-		String tempURI = uri.concat(entity);
-		String targetURI = tempURI + "/" + id;
+//		String uri = "http://typhonql-server/";
+//		String tempURI = uri.concat(entity);
+//		String targetURI = tempURI + "/" + id;
+		String targetURI = "http://localhost:7000/" + entity + "/" + id;
 
 		RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
 		List<String> qlRestArgsValue = new ArrayList<>();
@@ -510,10 +514,11 @@ public class QueryRunner implements ConsumerHandler {
 	}
 
 	//To DELETE an existing Entity
-	public ResponseEntity<String> deleteEntity (String entity, String id, Map<String, Object> jsonBody){
-		String uri = " http://typhonql-server/";
-		String tempURI = uri.concat(entity);
-		String targetURI = tempURI + "/" + id;
+	public ResponseEntity<String> deleteEntity (String entity, String id){
+//		String uri = "http://typhonql-server/";
+//		String tempURI = uri.concat(entity);
+//		String targetURI = tempURI + "/" + id;
+		String targetURI = "http://localhost:7000/" + entity + "/" + id;
 
 		RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
 		List<String> qlRestArgsValue = new ArrayList<>();
@@ -524,7 +529,7 @@ public class QueryRunner implements ConsumerHandler {
 		headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
 		headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
 		headers.addAll("QL-RestArguments", qlRestArgsValue);
-		HttpEntity<Map<String,Object>> request = new HttpEntity<>(jsonBody, headers);
+		HttpEntity<Map<String,Object>> request = new HttpEntity<>(headers);
 		ResponseEntity<String> result = restTemplate.exchange(targetURI,HttpMethod.DELETE,request,String.class);
 
 		if (result.getStatusCode() == HttpStatus.OK) {
