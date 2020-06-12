@@ -13,7 +13,6 @@ import com.clms.typhonapi.storage.ModelStorage;
 import com.google.gson.Gson;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.util.JSONPObject;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -148,7 +147,7 @@ public class QueryRunner implements ConsumerHandler {
 
 	public boolean resetDatabases(){
 		try {
-			String uri = "http://localhost:7000/reset";
+			String uri = "http://typhonql-server:7000/reset";
 
 			RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
 			Map<String, Object> vars = new HashMap<String, Object>();
@@ -351,7 +350,7 @@ public class QueryRunner implements ConsumerHandler {
 	private ResponseEntity<String> executeQuery(String query) throws UnsupportedEncodingException {
 		String finalQuery = URLEncoder.encode(query, StandardCharsets.UTF_8.toString());
 
-		String tempuri = "http://localhost:7000/query";
+		String tempuri = "http://typhonql-server:7000/query";
 		Map<String, Object> vars = new HashMap<String, Object>();
 		vars.put("xmi", ml.getContents());
 		vars.put("databaseInfo",infos);
@@ -379,7 +378,7 @@ public class QueryRunner implements ConsumerHandler {
 	}
 
 	private ResponseEntity<String> executeUpdate(String query){
-		String uri = "http://localhost:7000/update";
+		String uri = "http://typhonql-server:7000/update";
 		Map<String, Object> vars = new HashMap<String, Object>();
 		vars.put("xmi", ml.getContents());
 		vars.put("databaseInfo",infos);
@@ -407,7 +406,7 @@ public class QueryRunner implements ConsumerHandler {
 	}
 
 	private ResponseEntity<String> executePreparedUpdate(Map<String, Object> json){
-		String uri = "http://localhost/preparedUpdate";
+		String uri = "http://typhonql-server:7000/preparedUpdate";
 		RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
 		json.put("xmi", ml.getContents());
 		json.put("databaseInfo",infos);
@@ -432,7 +431,7 @@ public class QueryRunner implements ConsumerHandler {
 
 	//To POST a new Entity
 	public ResponseEntity<String> postEntity (String entity, Map<String, Object> jsonBody){
-		String uri = "http://typhonql-server/crud/" + entity;
+		String uri = "http://typhonql-server:7000/crud/" + entity;
 
 		Map<String, Object> vars = new HashMap<String, Object>();
 		vars.put("xmi", ml.getContents());
@@ -460,7 +459,7 @@ public class QueryRunner implements ConsumerHandler {
 
 	//To GET an existing Entity
 	public ResponseEntity<String> getEntity (String entity, String id){
-		String uri = "http://typhonql-server/crud/" + entity + "/" + id;
+		String uri = "http://typhonql-server:7000/crud/" + entity + "/" + id;
 
 		Map<String, Object> vars = new HashMap<String, Object>();
 		vars.put("xmi", ml.getContents());
@@ -488,7 +487,7 @@ public class QueryRunner implements ConsumerHandler {
 
 	//To PATCH an existing Entity
 	public ResponseEntity<String> patchEntity (String entity, String id, Map<String, Object> jsonBody){
-		String uri = "http://typhonql-server/crud/" + entity + "/" + id;
+		String uri = "http://typhonql-server:7000/crud/" + entity + "/" + id;
 
 		Map<String, Object> vars = new HashMap<String, Object>();
 		vars.put("xmi", ml.getContents());
@@ -515,7 +514,7 @@ public class QueryRunner implements ConsumerHandler {
 
 	//To DELETE an existing Entity
 	public ResponseEntity<String> deleteEntity (String entity, String id){
-		String uri = "http://typhonql-server/crud/" + entity + "/" + id;
+		String uri = "http://typhonql-server:7000/crud/" + entity + "/" + id;
 
 		Map<String, Object> vars = new HashMap<String, Object>();
 		vars.put("xmi", ml.getContents());
