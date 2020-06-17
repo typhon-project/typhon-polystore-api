@@ -89,6 +89,10 @@ public class QueryRunner implements ConsumerHandler {
 				swattype="relationaldb";
 				dbms = "MySQL";
 			}
+			else if (type ==DatabaseType.cassandra) {
+				swattype = "KeyValue";
+				dbms = "cassandra";
+			}
 			else {
 				swattype = "relationaldb";
 				dbms = "MariaDB";
