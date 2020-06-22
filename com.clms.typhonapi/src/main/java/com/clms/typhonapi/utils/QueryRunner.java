@@ -93,6 +93,10 @@ public class QueryRunner implements ConsumerHandler {
 				swattype = "KeyValue";
 				dbms = "cassandra";
 			}
+			else if (type ==DatabaseType.neo4j) {
+				swattype = "Graph";
+				dbms = "neo4j";
+			}
 			else {
 				swattype = "relationaldb";
 				dbms = "MariaDB";
@@ -102,7 +106,7 @@ public class QueryRunner implements ConsumerHandler {
 		}
 		//TODO: initialize query engine with xmi and dbConnections
 	/*	try {
-			String uri = "http://localhost:7000/initialize";
+			String uri = "http://typhonql-server:7000/initialize";
 			Map<String, Object> vars = new HashMap<String, Object>();
 			vars.put("xmi", mlModel.getContents());
 			vars.put("databaseInfo",infos);

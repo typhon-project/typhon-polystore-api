@@ -188,7 +188,7 @@
 					"in": "body",
 					"name": "name",
 					"description": "name of model",
-					"required": true,
+					"required": true
 				}, {
 					"in": "body",
 					"name": "content",
@@ -226,7 +226,7 @@
 					"in": "body",
 					"name": "name",
 					"description": "name of model",
-					"required": true,
+					"required": true
 				}, {
 					"in": "body",
 					"name": "content",
@@ -357,29 +357,12 @@
 				"consumes": ["application/json"],
 				"produces": ["*/*"],
 				"parameters": [{
-					"in": "parameter",
-					"name": "boundRows",
-					"description": "values of parameters",
+					"in": "body",
+					"name": "query",
+					"description": "command in the format of {\"command\":\"insert Entity{Entity_Parameter:??Entity_Parameter}\",\"parameterNames\":[\"Entity_Parameter\"],\"boundRows\":[[\"Parameter_Value\"]]}",
 					"required": true,
 					"schema": {
-						"$ref": "#/definitions/Array[String]"
-					}
-				}, {
-					"in": "parameter",
-					"name": "command",
-					"description": "query",
-					"required": true,
-					"schema": {
-						"$ref": "#/definitions/String"
-					}
-				},
-				{
-					"in": "parameter",
-					"name": "parameterNames",
-					"description": "names of parameters",
-					"required": true,
-					"schema": {
-						"$ref": "#/definitions/Array[String]"
+						"type": "string"
 					}
 				}],
 				"responses": {
