@@ -11,6 +11,24 @@ public class Service {
     private ServiceStatus status;
     private String internalHost;
     private String externalHost;
+    private int internalPort;
+    private int externalPort;
+    private String username;
+    private String password;
+    private DatabaseType dbType;
+    private ServiceType serviceType;
+    private EngineType engineType;
+    private Boolean isExternal;
+
+    public Boolean getExternal() {
+        return isExternal;
+    }
+
+    public void setExternal(Boolean external) {
+        isExternal = external;
+    }
+
+
 
     public String getInternalHost() {
         return internalHost;
@@ -44,13 +62,7 @@ public class Service {
         this.externalPort = externalPort;
     }
 
-    private int internalPort;
-    private int externalPort;
-    private String username;
-    private String password;
-    private DatabaseType dbType;
-    private ServiceType serviceType;
-    private EngineType engineType;
+
     
     public Service() {
     	

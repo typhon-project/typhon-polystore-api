@@ -89,15 +89,15 @@ public class ServiceRegistry {
 				String name = db.getAttribute("name");
 		        String type = db.getAttribute("xsi:type");
  		        if(db.getAttribute("xsi:type").equals("typhonDL:Software") && db.getAttribute("name").equals("zookeeper")){
-					Element kafkaEl = querySelector(doc, ".//containers[@name='kafka']");
+					Element kafkaEl = querySelector(doc, ".//elements[@name='kafka']");
 					if(kafkaEl!=null){
 						Service kafka = new Service();
 						kafka.setName("kafka");
 						kafka.setServiceType(ServiceType.Queue);
-						kafka.setExternalHost(querySelector(kafkaEl,".//properties[@name='KAFKA_ADVERTISED_HOST_NAME']").getAttribute("value"));
+						kafka.setExternalHost(querySelector(kafkaEl,".//parameters[@name='KAFKA_ADVERTISED_HOST_NAME']").getAttribute("value"));
 						//Element portsEl = querySelector(kafkaEl,".//ports");
 						//Element target = querySelector(portsEl, ".//key_values[@name='target']");
-						Element portsEl = querySelector(kafkaEl,".//properties[@name='KAFKA_LISTENERS']");
+						Element portsEl = querySelector(kafkaEl,".//parameters[@name='KAFKA_LISTENERS']");
 						String ports = portsEl.getAttribute("value");
 						String internalPort = ports.split(",")[1].split(":")[2];
 						String externalPort = ports.split(",")[0].split(":")[2];
@@ -114,17 +114,36 @@ public class ServiceRegistry {
 					//	kafka.setInternalPort(internalPort);
 						kafka.setInternalHost("kafka");
 						_services.add(kafka);
+						continue;
 					}
 				}
-		        if(!db.getAttribute("xsi:type").equals("typhonDL:DB")){
-					System.out.println(db.getAttribute("xsi:type"));
+		        if(db.getAttribute("xsi:type").equals("typhonDL:Software") && !db.getAttribute("name").equals("zookeeper") && !db.getAttribute("name").equals("kafka") && !db.getAttribute("name").equals("authAll")){
+					service = new Service();
+					service.setName(db.getAttribute("name"));
+					service.setServiceType(ServiceType.Software);
+					service.setStatus(ServiceStatus.ONLINE);
+					fillContainerInfo(doc, service,i);
+					_services.add(service);
 					continue;
 		        }
 		        if (db.getAttribute("xsi:type").equals("typhonDL:DB") && db != null) {
 		        	service = parseDbElement(db,list);
-		        }
-		        
-		        if (service != null) {
+
+				if(db.getAttribute("external")!=null && !db.getAttribute("external").isEmpty()){
+					service.setExternal(true);
+					Element uri = (Element) db.getElementsByTagName("uri").item(0);
+					String url = uri.getAttribute("value");
+					String host = url.split(":")[1].replace("/","");
+					String port = url.split(":")[2];
+					service.setInternalHost(host);
+					service.setExternalHost(host);
+					service.setInternalPort(Integer.parseInt(port));
+					service.setExternalPort(Integer.parseInt(port));
+				}
+				else{
+					service.setExternal(false);
+				}}
+		        if (service != null && !service.getExternal() && service.getServiceType()!=ServiceType.Software) {
 		        	service.setStatus(ServiceStatus.OFFLINE);
 					fillContainerInfo(doc, service,i);
 					System.out.println("Parsed: " + service);
@@ -157,7 +176,6 @@ public class ServiceRegistry {
 		int typeElement = Integer.parseInt(typeReference.split("\\.")[1]);
 		//int refDbType = Integer.parseInt(typeReference.substring(typeReference.length()-1,typeReference.length()))+1;
 		Element dbTypeElement = (Element) list.item(typeElement);//"(.//elements[@type='typhonDL:DBType'])["+Integer.toString(typeElement)+"]");
-		Element parameters = querySelector(dbElement, "./parameters[@type='typhonDL:Key_KeyValueList']");
 		String dbType="";
 		if(dbTypeElement!=null) {
 			dbType = dbTypeElement.getAttribute("name");
@@ -165,35 +183,31 @@ public class ServiceRegistry {
 				dbType = dbTypeElement.getAttribute("name").toLowerCase();
 			}
 		}
+
+		NodeList creds = dbElement.getElementsByTagName("credentials");
+		if(creds!=null && creds.getLength()!=0){
+			Element credsElement = (Element) creds.item(0);
+			db.setUsername(credsElement.getAttribute("username"));
+			db.setPassword(credsElement.getAttribute("password"));
+		}
+		else{
+			db.setUsername("admin");
+			db.setPassword("password");
+		}
 		switch (dbType.toLowerCase()) {
 			case "mongo":
-				Element mongoUser = querySelector(parameters, ".//properties[@name='MONGO_INITDB_ROOT_USERNAME']");
-				Element mongoPass = querySelector(parameters, ".//properties[@name='MONGO_INITDB_ROOT_PASSWORD']");
-				db.setUsername(mongoUser == null ? "admin" : mongoUser.getAttribute("value"));
-				db.setPassword(mongoPass == null ? "admin" : mongoPass.getAttribute("value"));
 				db.setDbType(DatabaseType.MongoDb);
 				db.setEngineType(EngineType.Document);
 				break;
 			case "mariadb":
-				Element mariaUser = querySelector(parameters, ".//properties[@name='MYSQL_ROOT_USERNAME']");
-				Element mariaPass = querySelector(parameters, ".//properties[@name='MYSQL_ROOT_PASSWORD']");
-				db.setUsername(mariaUser == null ? "root" : mariaUser.getAttribute("value"));
-				db.setPassword(mariaPass == null ? "admin" : mariaPass.getAttribute("value"));
 				db.setDbType(DatabaseType.MariaDb);
 				db.setEngineType(EngineType.Relational);
 				break;
 			case "mysql":
-				Element mysqlUser = querySelector(parameters, ".//properties[@name='MYSQL_ROOT_USERNAME']");
-				Element mysqlPass = querySelector(parameters, ".//properties[@name='MYSQL_ROOT_PASSWORD']");
-				db.setUsername(mysqlUser == null ? "root" : mysqlUser.getAttribute("value"));
-				db.setPassword(mysqlPass == null ? "admin" : mysqlPass.getAttribute("value"));
 				db.setDbType(DatabaseType.MysqlDb);
 				db.setEngineType(EngineType.Relational);
 				break;
 			case "neo4j":
-				Element neoauth = querySelector(parameters, ".//properties[@name='NEO4J_AUTH']");
-				db.setUsername(neoauth == null ? "neo4j" : neoauth.getAttribute("value").split("/")[0]);
-				db.setPassword(neoauth == null ? "password" : neoauth.getAttribute("value").split("/")[1]);
 				db.setDbType(DatabaseType.neo4j);
 				db.setEngineType(EngineType.Graph);
 				break;
@@ -216,8 +230,8 @@ public class ServiceRegistry {
 		//containerEl = querySelector(doc, "//containers[@name='" + service.getName() + "']");
 
 
-			containerEl = querySelector(doc, "//containers//deploys[@reference=\"//@elements."+i+"\"]/..");
-			if(containerEl==null)
+		containerEl = querySelector(doc, "//containers//deploys[@reference=\"//@elements."+i+"\"]/..");
+		if(containerEl==null)
 			return;
 
 		Element uiEl;
@@ -228,10 +242,19 @@ public class ServiceRegistry {
 
 
 		//new implementation
+
+		Element uri = (Element) containerEl.getElementsByTagName("uri").item(0);
+		String url = uri.getAttribute("value");
+		String host = url.split(":")[0].replace("/","");
+		String port = url.split(":")[1];
+		service.setInternalHost(host);
+		service.setExternalHost(host);
+		service.setInternalPort(Integer.parseInt(port));
+		service.setExternalPort(Integer.parseInt(port));
 		Element portEl = querySelector(containerEl, ".//ports");
 		if (portEl != null) {
 			String portsValue = "";
-
+			service.setExternalHost(externalhost);
 				Element target = querySelector(portEl, ".//key_values[@name='target']");
 				String targetport = target.getAttribute("value");
 				int internalPort = Integer.parseInt(targetport);
@@ -245,12 +268,8 @@ public class ServiceRegistry {
 				service.setInternalPort(internalPort);
 			}
 
-		
-		//find hostname
-		Element hostEl = querySelector(containerEl, ".//properties[@name='hostname']");
-		service.setInternalHost(hostEl == null ? containerEl.getAttribute("name") : hostEl.getAttribute("value"));
 
-		
+
 	}
 
 	private Element querySelector(Node node, String query) {
