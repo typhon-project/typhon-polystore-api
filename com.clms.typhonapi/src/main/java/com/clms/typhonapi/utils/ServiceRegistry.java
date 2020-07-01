@@ -89,7 +89,7 @@ public class ServiceRegistry {
 				String name = db.getAttribute("name");
 		        String type = db.getAttribute("xsi:type");
  		        if(db.getAttribute("xsi:type").equals("typhonDL:Software") && db.getAttribute("name").equals("zookeeper")){
-					Element kafkaEl = querySelector(doc, ".//elements[@name='kafka']");
+					Element kafkaEl = querySelector(doc, ".//elements[@name='Kafka']");
 					if(kafkaEl!=null){
 						Service kafka = new Service();
 						kafka.setName("kafka");
@@ -117,7 +117,7 @@ public class ServiceRegistry {
 						continue;
 					}
 				}
-		        if(db.getAttribute("xsi:type").equals("typhonDL:Software") && !db.getAttribute("name").equals("zookeeper") && !db.getAttribute("name").equals("kafka") && !db.getAttribute("name").equals("authAll")){
+		        if(db.getAttribute("xsi:type").equals("typhonDL:Software") && !db.getAttribute("name").equals("zookeeper") && !db.getAttribute("name").equals("Kafka") && !db.getAttribute("name").equals("authAll")){
 					service = new Service();
 					service.setName(db.getAttribute("name"));
 					service.setServiceType(ServiceType.Software);
