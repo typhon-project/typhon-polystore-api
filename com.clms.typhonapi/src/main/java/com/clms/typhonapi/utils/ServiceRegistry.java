@@ -244,6 +244,10 @@ public class ServiceRegistry {
 		//new implementation
 
 		Element uri = (Element) containerEl.getElementsByTagName("uri").item(0);
+		if(uri==null){
+			service.setExternal(false);
+			return;
+		}
 		String url = uri.getAttribute("value");
 		String host = url.split(":")[0].replace("/","");
 		String port = url.split(":")[1];
