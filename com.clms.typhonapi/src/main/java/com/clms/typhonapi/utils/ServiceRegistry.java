@@ -228,19 +228,15 @@ public class ServiceRegistry {
 	private void fillContainerInfo(Document doc, Service service,int i) {
 		Element containerEl;
 		//containerEl = querySelector(doc, "//containers[@name='" + service.getName() + "']");
-
-
+		
 		containerEl = querySelector(doc, "//containers//deploys[@reference=\"//@elements."+i+"\"]/..");
 		if(containerEl==null)
 			return;
-
-		Element uiEl;
-		uiEl = querySelector(doc, "//elements[@name='" + "polystore_ui" +"']");
-		Element parametersEl = querySelector(uiEl, ".//parameters");
-		String externalhost = querySelector(parametersEl,"//properties[@name='API_HOST']").getAttribute("value");
-		service.setExternalHost(externalhost);
-
-
+			Element uiEl;
+			uiEl = querySelector(doc, "//elements[@name='" + "polystore_ui" + "']");
+			Element parametersEl = querySelector(uiEl, ".//parameters");
+			String externalhost = querySelector(parametersEl, "//parameters[@name='API_HOST']").getAttribute("value");
+			service.setExternalHost(externalhost);
 		//new implementation
 
 		Element uri = (Element) containerEl.getElementsByTagName("uri").item(0);
