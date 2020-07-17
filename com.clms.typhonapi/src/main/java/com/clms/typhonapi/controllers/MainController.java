@@ -166,12 +166,12 @@ public class MainController {
 
     }
     
-    @RequestMapping(path = "/api/models/dl", method = RequestMethod.GET)
+    @RequestMapping(path = "/api/model/dl", method = RequestMethod.GET)
     public ArrayList<Model> getDlModels() {
     	return modelHelper.getDlModels();
     }
     
-    @RequestMapping(path = "/api/models/ml", method = RequestMethod.GET)
+    @RequestMapping(path = "/api/model/ml", method = RequestMethod.GET)
     public ArrayList<Model> getMlModels() {
     	return modelHelper.getMlModels();
     }
