@@ -247,6 +247,10 @@ public class MainController {
     @Async
     public Future<ResponseEntity<String>> executeUpdate(@RequestBody String query){
         try {
+            //should discern if there is a blob in my query (Maybe I need to convert String query to Map<String,Object> query
+            //if (query.Contains("blob") ---> Execute give query tp queryRunner.run() as json
+            //else ---> Execute query as it is now
+            System.out.println("We reached executeUpdate in MainController...");
             return new AsyncResult<ResponseEntity<String>>(queryRunner.run("nemo", query,true));
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
