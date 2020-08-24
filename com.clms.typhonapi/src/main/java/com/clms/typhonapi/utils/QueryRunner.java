@@ -195,8 +195,8 @@ public class QueryRunner implements ConsumerHandler {
         if (isAnalyticsAvailiable()) {
             event.setQueryTime(new Date());
             event.setId(UUID.randomUUID().toString());
-            event.setQuery(query.toString());
-            //event.setUser(user);
+            event.setQuery(query);
+            event.setDbUser(user);
             //	event.setAuthenticated(true);
             preProducer.produce(PRE_TOPIC, event);
             long startedOn = System.currentTimeMillis();
@@ -208,9 +208,11 @@ public class QueryRunner implements ConsumerHandler {
             while (true) {
                 if (receivedQueries.containsKey(eventHash)) {
                     PreEvent recevent = receivedQueries.get(eventHash);
+                    System.out.println("This is the recevent: " + recevent.toString());
                     receivedQueries.remove(eventHash);
                     if (recevent.isAuthenticated() == false) {
                         response = new ResponseEntity<String>("Not authorized on Analytics Queue", HttpStatus.UNAUTHORIZED);
+                        System.out.println("The recevent isn't authenticated...");
                         return response;
                     } else if (recevent.isAuthenticated()) {
                         PostEvent postEvent = new PostEvent();
@@ -289,7 +291,7 @@ public class QueryRunner implements ConsumerHandler {
             event.setId(UUID.randomUUID().toString());
             //event.setAuthenticated(true);
             event.setQuery((String) json.get("command"));
-            //event.setUser(user);
+            event.setDbUser(user);
             this.preProducer.produce(PRE_TOPIC, event);
             long startedOn = System.currentTimeMillis();
             int timeout = 10 * 1000;
