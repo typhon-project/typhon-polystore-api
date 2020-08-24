@@ -45,7 +45,7 @@ pipeline {
 						withCredentials([usernamePassword(credentialsId: 'jib-creds', usernameVariable: 'REGISTRY_USERNAME', passwordVariable: 'REGISTRY_PASSWORD')]) {
 						// withCredentials([usernamePassword(credentialsId: 'Nemo_account', usernameVariable: 'REGISTRY_USERNAME', passwordVariable: 'REGISTRY_PASSWORD')]) {
 							// sh 'mvn -U -B -gs $MAVEN_SETTINGS clean compile jib:build  -Djib.to.tags="dev"'
-							sh 'mvn -U -gs $MAVEN_SETTINGS -f com.clms.typhonapi clean install jib:build -Djib.to.tags="dev"'
+							sh 'mvn -U -gs $MAVEN_SETTINGS -f com.clms.typhonapi clean install jib:build -Djib.to.image="docker.io/clms/typhon-polystore-api:dev"'
 					}
 				}
 			}
