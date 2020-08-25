@@ -218,14 +218,15 @@ public class QueryRunner implements ConsumerHandler {
                         PostEvent postEvent = new PostEvent();
                         try {
                             if (recevent.isInvertedNeeded()) {
-                                if (!recevent.getInvertedQuery().isEmpty()) {
+                                if (recevent.getInvertedQuery().isEmpty() || recevent.getInvertedQuery() == null) {
+                                    System.out.println("Inverted Query was either empty or null...");
+                                }
+                                else {
                                     if (isUpdate) {
                                         postEvent.setInvertedQueryResultSet(executeUpdate(recevent.getInvertedQuery()).getBody());
                                     } else {
                                         postEvent.setInvertedQueryResultSet(executeQuery(recevent.getInvertedQuery()).getBody());
                                     }
-                                } else {
-                                    System.out.println("Inverted Query was either null or wrong...");
                                 }
                             }
                         } catch (Exception e) {
@@ -249,6 +250,7 @@ public class QueryRunner implements ConsumerHandler {
                         }
 
                         sendPostEvent(postEvent);
+                        System.out.println("This is the PostEvent: " + postEvent.toString());
                         return result;
                     }
                 }
@@ -285,7 +287,7 @@ public class QueryRunner implements ConsumerHandler {
         }
 
         PreEvent event = new PreEvent();
-        ;
+
         if (isAnalyticsAvailiable()) {
             event.setQueryTime(new Date());
             event.setId(UUID.randomUUID().toString());
@@ -297,37 +299,44 @@ public class QueryRunner implements ConsumerHandler {
             int timeout = 10 * 1000;
             boolean timedOut = false;
             int eventHash = event.getId().hashCode();
+            System.out.println("This is the PreEvent: " + event.toString());
             PreEvent recevent;
             while (true) {
                 if (receivedQueries.containsKey(eventHash)) {
                     recevent = receivedQueries.get(eventHash);
+                    System.out.println("This is the recevent: " + recevent.toString());
                     receivedQueries.remove(eventHash);
                     if (recevent.isAuthenticated() == false) {
                         response = new ResponseEntity<String>("Not authorized on Analytics Queue", HttpStatus.UNAUTHORIZED);
+                        System.out.println("The recevent isn't authenticated...");
                         return response;
                     } else if (recevent.isAuthenticated() == true) {
                         PostEvent postEvent = new PostEvent();
                         try {
                             if (recevent.isInvertedNeeded()) {
-                                if (!recevent.getInvertedQuery().isEmpty()) {
+                                if (recevent.getInvertedQuery().isEmpty() || recevent.getInvertedQuery() == null) {
+                                    System.out.println("Inverted Query was either empty or null...");
+                                }
+                                else {
                                     Map<String, Object> temp;
                                     temp = json;
                                     temp.put("command", recevent.getInvertedQuery());
                                     postEvent.setInvertedQueryResultSet(executePreparedUpdate(temp).getBody());
-                                } else {
-                                    System.out.println("Inverted Query was either null or wrong...");
                                 }
                             }
                         } catch (Exception e) {
                             System.out.println(e);
                         }
-
+                        System.out.println("This is the PreEvent': " + recevent.toString());
                         postEvent.setPreEvent(recevent);
                         postEvent.setStartTime(new Date());
                         ResponseEntity<String> result = executePreparedUpdate(json);
                         postEvent.setEndTime(new Date());
-                        postEvent.setResultSet(result.getBody());
+                        if (event.isResultSetNeeded()) {
+                            postEvent.setResultSet(result.getBody());
+                        }
                         sendPostEvent(postEvent);
+                        System.out.println("This is the PostEvent: " + postEvent.toString());
                         return result;
                     }
                 }
