@@ -197,7 +197,12 @@ public class QueryRunner implements ConsumerHandler {
             event.setId(UUID.randomUUID().toString());
             event.setQuery(query);
             event.setDbUser(user);
-            //	event.setAuthenticated(true);
+            //debugging purposes
+            event.setInvertedNeeded(true);
+            event.setResultSetNeeded(true);
+            event.setInvertedQuery("from OBLG_GNL o select o");
+
+
             preProducer.produce(PRE_TOPIC, event);
             long startedOn = System.currentTimeMillis();
             int timeout = 10 * 1000;
@@ -230,6 +235,7 @@ public class QueryRunner implements ConsumerHandler {
                                         invertedQueryResponse = executeQuery(recevent.getInvertedQuery());
                                     }
                                     invertedQueryResponseBody = invertedQueryResponse.getBody();
+                                    System.out.println("The response status of the inverted query is : " + invertedQueryResponse.getStatusCode() + invertedQueryResponse.getStatusCodeValue());
                                     System.out.println("The response of the inverted query is : " + invertedQueryResponse);
                                     System.out.println("The response body of the inverted query is : " + invertedQueryResponseBody);
                                     postEvent.setInvertedQueryResultSet(invertedQueryResponseBody);
@@ -252,6 +258,8 @@ public class QueryRunner implements ConsumerHandler {
                         postEvent.setEndTime(new Date());
                         //check bool ResultSetNeeded to decide if we add the result set.
                         if (recevent.isResultSetNeeded()) {
+                            System.out.println("The result is : " + result + " " + result.getStatusCode() + " " + result.getStatusCodeValue());
+                            System.out.println("The result body is : " + result.getBody());
                             postEvent.setResultSet(result.getBody());
                         }
 
