@@ -10,19 +10,15 @@ import com.clms.typhonapi.utils.QueryRunner;
 import com.clms.typhonapi.utils.ServiceRegistry;
 import com.clms.typhonapi.utils.UserHelper;
 
-import com.google.common.base.Predicates;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
-import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
@@ -37,14 +33,6 @@ import javax.annotation.PostConstruct;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.web.servlet.ModelAndView;
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.service.ApiInfo;
-import springfox.documentation.service.Contact;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spring.web.plugins.Docket;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @RestController
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -236,7 +224,10 @@ public class MainController {
     @Async
     public Future<ResponseEntity<String>> executeQuery(@RequestBody String query){
         try {
-            return new AsyncResult<ResponseEntity<String>>(queryRunner.run("nemo", query,false));
+            Map<String,Object> justTheQuery = new HashMap<>();
+            justTheQuery.put("query", query);
+            System.out.println("The query from Map is: " + justTheQuery.get("query"));
+            return new AsyncResult<ResponseEntity<String>>(queryRunner.run("nemo", justTheQuery,false));
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
             return new AsyncResult<ResponseEntity<String>>(new ResponseEntity<String>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR));
@@ -247,13 +238,82 @@ public class MainController {
     @Async
     public Future<ResponseEntity<String>> executeUpdate(@RequestBody String query){
         try {
+            System.out.println("The query as string you input is: " + query);
             //should discern if there is a blob in my query (Maybe I need to convert String query to Map<String,Object> query
             //if (query.Contains("blob") ---> Execute give query tp queryRunner.run() as json
             //else ---> Execute query as it is now
-            System.out.println("We reached executeUpdate in MainController...");
-            return new AsyncResult<ResponseEntity<String>>(queryRunner.run("nemo", query,true));
+            if (query.contains("query") && query.contains("blobs")) {
+                String[] splittedQuery = query.split(",");
+                int beginQuery;
+                int endQuery;
+                String querySection = "";
+                int beginBlob;
+                int endBlob;
+                String blobSection = "";
+                for (int i = 0; i < splittedQuery.length; i++){
+                    if(i == 0){
+                        if(splittedQuery[0].contains("update")){
+                            beginQuery = splittedQuery[0].indexOf("update");
+                            endQuery = splittedQuery[0].length()-1;
+                            querySection = splittedQuery[0].substring(beginQuery, endQuery);
+                        }
+                        else if(splittedQuery[0].contains("insert")){
+                            beginQuery = splittedQuery[0].indexOf("insert");
+                            endQuery = splittedQuery[0].length()-1;
+                            querySection = splittedQuery[0].substring(beginQuery, endQuery);
+
+                        }
+                        else{
+                            System.out.println("Something were wrong with splitting query section...");
+                            return null;
+                        }
+                    }
+                    else if(i == 1){
+
+                        if(splittedQuery.length == 2){
+                            beginBlob = splittedQuery[1].indexOf("{");
+                            endBlob = splittedQuery[1].indexOf("}");
+                            blobSection = splittedQuery[1].substring(beginBlob, endBlob);
+                            if (!blobSection.endsWith("}")){
+                                blobSection = blobSection.concat("}");
+                            }
+                        }
+                        else if (splittedQuery.length > 2){
+                            beginBlob = splittedQuery[1].indexOf("{");
+                            blobSection = splittedQuery[1].substring(beginBlob);
+                            blobSection = blobSection.concat(",");
+                        }
+                    }
+                    else{
+                        if(i == splittedQuery.length -1){
+                            endBlob = splittedQuery[i].indexOf("}");
+                            splittedQuery[i] = splittedQuery[i].substring(0,endBlob);
+                            blobSection = blobSection.concat(splittedQuery[i]);
+                            if (!blobSection.endsWith("}")){
+                                blobSection = blobSection.concat("}");
+                            }
+
+                        }
+                        else{
+                            splittedQuery[i] = splittedQuery[i].concat(",");
+                            blobSection = blobSection.concat(splittedQuery[i]);
+                        }
+                    }
+                }
+                Map<String,Object> queryWithBlob = new HashMap<>();
+                queryWithBlob.put("query", querySection);
+                queryWithBlob.put("blobs", blobSection);
+                System.out.println("The query section from Map is: " + queryWithBlob.get("query"));
+                System.out.println("The blob section from Map is: "+ queryWithBlob.get("blobs"));
+                return new AsyncResult<ResponseEntity<String>>(queryRunner.run("nemo", queryWithBlob, true));
+            }
+            else{
+                Map<String,Object> justTheQuery = new HashMap<>();
+                justTheQuery.put("query", query);
+                System.out.println("The query from Map is: " + justTheQuery.get("query"));
+                return new AsyncResult<ResponseEntity<String>>(queryRunner.run("nemo", justTheQuery,true));
+            }
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
             return new AsyncResult<ResponseEntity<String>>(new ResponseEntity<String>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR));
         }
     }

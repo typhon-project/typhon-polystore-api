@@ -182,7 +182,7 @@ public class QueryRunner implements ConsumerHandler {
 
     }
 
-    public ResponseEntity<String> run(String user, String query, boolean isUpdate) throws UnsupportedEncodingException {
+    public ResponseEntity<String> run(String user, Map<String,Object> query, boolean isUpdate) throws UnsupportedEncodingException {
         ResponseEntity<String> response;
         if (!isReady()) {
             response = new ResponseEntity<String>("Query engine is not initialized", HttpStatus.PRECONDITION_FAILED);
@@ -195,12 +195,12 @@ public class QueryRunner implements ConsumerHandler {
         if (isAnalyticsAvailiable()) {
             event.setQueryTime(new Date());
             event.setId(UUID.randomUUID().toString());
-            event.setQuery(query);
+            event.setQuery(String.valueOf(query.get("query")));
             event.setDbUser(user);
             //debugging purposes
             event.setInvertedNeeded(true);
             event.setResultSetNeeded(true);
-            event.setInvertedQuery("from OBLG_GNL o select o");
+            event.setInvertedQuery("from OBLG_GNL o select o.OBLG_ID");
 
 
             preProducer.produce(PRE_TOPIC, event);
@@ -229,10 +229,13 @@ public class QueryRunner implements ConsumerHandler {
                                 else {
                                     ResponseEntity<String> invertedQueryResponse;
                                     String invertedQueryResponseBody;
+                                    Map<String,Object> justTheQuery = new HashMap<>();
+                                    justTheQuery.put("query", recevent.getInvertedQuery());
+                                    System.out.println("The invertedQuery is: " + justTheQuery.get("query"));
                                     if (isUpdate) {
-                                        invertedQueryResponse = executeUpdate(recevent.getInvertedQuery());
+                                        invertedQueryResponse = executeUpdate(justTheQuery);
                                     } else {
-                                        invertedQueryResponse = executeQuery(recevent.getInvertedQuery());
+                                        invertedQueryResponse = executeQuery(justTheQuery);
                                     }
                                     invertedQueryResponseBody = invertedQueryResponse.getBody();
                                     System.out.println("The response status of the inverted query is : " + invertedQueryResponse.getStatusCode() + invertedQueryResponse.getStatusCodeValue());
@@ -395,15 +398,15 @@ public class QueryRunner implements ConsumerHandler {
         this.postProducer.produce(POST_TOPIC, event);
     }
 
-    private ResponseEntity<String> executeQuery(String query) throws UnsupportedEncodingException {
-        String finalQuery = URLEncoder.encode(query, StandardCharsets.UTF_8.toString());
+    private ResponseEntity<String> executeQuery(Map<String,Object> query) throws UnsupportedEncodingException {
+        String finalQuery = URLEncoder.encode((String) query.get("query"), StandardCharsets.UTF_8.toString());
 
         String tempuri = "http://typhonql-server:7000/query";
         //String tempuri = "http://localhost:7000/query";
         Map<String, Object> vars = new HashMap<String, Object>();
         vars.put("xmi", ml.getContents());
         vars.put("databaseInfo", infos);
-        vars.put("query", query);
+        vars.put("query", query.get("query"));
 
         RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
         HttpHeaders headers = new HttpHeaders();
@@ -427,13 +430,17 @@ public class QueryRunner implements ConsumerHandler {
         return result;
     }
 
-    private ResponseEntity<String> executeUpdate(String query) {
+    private ResponseEntity<String> executeUpdate(Map<String,Object> query) {
         String uri = "http://typhonql-server:7000/update";
         //String uri = "http://localhost:7000/update";
         Map<String, Object> vars = new HashMap<String, Object>();
         vars.put("xmi", ml.getContents());
         vars.put("databaseInfo", infos);
-        vars.put("command", query);
+        vars.put("command", query.get("query"));
+
+        if (query.containsKey("blobs")){
+            vars.put("blobs", query.get("blobs"));
+        }
 
         RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
         HttpHeaders headers = new HttpHeaders();
