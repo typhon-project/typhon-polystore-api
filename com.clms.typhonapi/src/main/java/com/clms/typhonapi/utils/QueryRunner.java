@@ -198,9 +198,9 @@ public class QueryRunner implements ConsumerHandler {
             event.setQuery(String.valueOf(query.get("query")));
             event.setDbUser(user);
             //debugging purposes
-            event.setInvertedNeeded(true);
-            event.setResultSetNeeded(true);
-            event.setInvertedQuery("from OBLG_GNL o select o.OBLG_ID");
+            //event.setInvertedNeeded(true);
+            //event.setResultSetNeeded(true);
+            //event.setInvertedQuery("from OBLG_GNL o select o.OBLG_ID");
 
 
             preProducer.produce(PRE_TOPIC, event);
