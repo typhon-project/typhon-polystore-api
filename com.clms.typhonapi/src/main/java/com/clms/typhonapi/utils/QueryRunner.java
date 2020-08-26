@@ -222,11 +222,17 @@ public class QueryRunner implements ConsumerHandler {
                                     System.out.println("Inverted Query was either empty or null...");
                                 }
                                 else {
+                                    ResponseEntity<String> invertedQueryResponse;
+                                    String invertedQueryResponseBody;
                                     if (isUpdate) {
-                                        postEvent.setInvertedQueryResultSet(executeUpdate(recevent.getInvertedQuery()).getBody());
+                                        invertedQueryResponse = executeUpdate(recevent.getInvertedQuery());
                                     } else {
-                                        postEvent.setInvertedQueryResultSet(executeQuery(recevent.getInvertedQuery()).getBody());
+                                        invertedQueryResponse = executeQuery(recevent.getInvertedQuery());
                                     }
+                                    invertedQueryResponseBody = invertedQueryResponse.getBody();
+                                    System.out.println("The response of the inverted query is : " + invertedQueryResponse);
+                                    System.out.println("The response body of the inverted query is : " + invertedQueryResponseBody);
+                                    postEvent.setInvertedQueryResultSet(invertedQueryResponseBody);
                                 }
                             }
                         } catch (Exception e) {
@@ -245,7 +251,7 @@ public class QueryRunner implements ConsumerHandler {
                         }
                         postEvent.setEndTime(new Date());
                         //check bool ResultSetNeeded to decide if we add the result set.
-                        if (event.isResultSetNeeded()) {
+                        if (recevent.isResultSetNeeded()) {
                             postEvent.setResultSet(result.getBody());
                         }
 
