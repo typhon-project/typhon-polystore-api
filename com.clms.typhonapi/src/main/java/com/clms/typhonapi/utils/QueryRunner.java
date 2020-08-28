@@ -258,9 +258,9 @@ public class QueryRunner implements ConsumerHandler {
                         postEvent.setStartTime(new Date());
                         ResponseEntity<String> result;
                         if (isUpdate) {
-                            result = executeUpdate(query);
+                            result = executeUpdate(recevent.getQuery());
                         } else {
-                            result = executeQuery(query);
+                            result = executeQuery(recevent.getQuery());
                         }
                         postEvent.setEndTime(new Date());
                         //check bool ResultSetNeeded to decide if we add the result set.
