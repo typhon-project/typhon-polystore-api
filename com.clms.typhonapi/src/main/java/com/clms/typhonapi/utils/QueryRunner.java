@@ -1,11 +1,13 @@
 package com.clms.typhonapi.utils;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.*;
 import java.nio.charset.StandardCharsets;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -154,11 +156,18 @@ public class QueryRunner implements ConsumerHandler {
 
             RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
             Map<String, Object> vars = new HashMap<String, Object>();
-            vars.put("xmi", ml.getContents());
-            vars.put("databaseInfo", infos);
+            //vars.put("xmi", ml.getContents());
+            //vars.put("databaseInfo", infos);
+
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
             headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
+            // Newly added headers
+            headers.add("QL-XMI", ml.getContents());
+
+            String dbInfo = new Gson().toJson(infos);
+            headers.add("QL-DatabaseInfo", dbInfo);
+
             HttpEntity<Map<String, Object>> request =
                     new HttpEntity<>(vars, headers);
             ResponseEntity<String> result = restTemplate.postForEntity(uri, request, String.class);
@@ -182,20 +191,19 @@ public class QueryRunner implements ConsumerHandler {
 
     }
 
-    public ResponseEntity<String> run(String user, Map<String,Object> query, boolean isUpdate) throws UnsupportedEncodingException {
+    public ResponseEntity<String> run(String user, String query, boolean isUpdate) throws UnsupportedEncodingException {
         ResponseEntity<String> response;
         if (!isReady()) {
             response = new ResponseEntity<String>("Query engine is not initialized", HttpStatus.PRECONDITION_FAILED);
             return response;
         }
-        System.out.println("Log 1 of run in QueryRunner...");
         PreEvent event = new PreEvent();
         System.out.println("Analytics available: " + isAnalyticsAvailiable());
 
         if (isAnalyticsAvailiable()) {
             event.setQueryTime(new Date());
             event.setId(UUID.randomUUID().toString());
-            event.setQuery(String.valueOf(query.get("query")));
+            event.setQuery(query);
             event.setDbUser(user);
             //debugging purposes
             //event.setInvertedNeeded(true);
@@ -229,14 +237,10 @@ public class QueryRunner implements ConsumerHandler {
                                 else {
                                     ResponseEntity<String> invertedQueryResponse;
                                     String invertedQueryResponseBody;
-                                    Map<String,Object> justTheQuery = new HashMap<>();
-                                    justTheQuery.put("query", recevent.getInvertedQuery());
-                                    System.out.println("The invertedQuery is: " + justTheQuery.get("query"));
-                                    if (isUpdate) {
-                                        invertedQueryResponse = executeUpdate(justTheQuery);
-                                    } else {
-                                        invertedQueryResponse = executeQuery(justTheQuery);
-                                    }
+                                    System.out.println("The invertedQuery is: " + recevent.getInvertedQuery());
+
+                                    invertedQueryResponse = executeQuery(recevent.getInvertedQuery());
+
                                     invertedQueryResponseBody = invertedQueryResponse.getBody();
                                     System.out.println("The response status of the inverted query is : " + invertedQueryResponse.getStatusCode() + invertedQueryResponse.getStatusCodeValue());
                                     System.out.println("The response of the inverted query is : " + invertedQueryResponse);
@@ -335,10 +339,21 @@ public class QueryRunner implements ConsumerHandler {
                                     System.out.println("Inverted Query was either empty or null...");
                                 }
                                 else {
-                                    Map<String, Object> temp;
-                                    temp = json;
-                                    temp.put("command", recevent.getInvertedQuery());
-                                    postEvent.setInvertedQueryResultSet(executePreparedUpdate(temp).getBody());
+                                    //Map<String, Object> temp;
+                                    //temp = json;
+                                    //temp.put("command", recevent.getInvertedQuery());
+                                    //postEvent.setInvertedQueryResultSet(executePreparedUpdate(temp).getBody());
+                                    ResponseEntity<String> invertedQueryResponse;
+                                    String invertedQueryResponseBody;
+                                    System.out.println("The invertedQuery is: " + recevent.getInvertedQuery());
+
+                                    invertedQueryResponse = executeQuery(recevent.getInvertedQuery());
+
+                                    invertedQueryResponseBody = invertedQueryResponse.getBody();
+                                    System.out.println("The response status of the inverted query is : " + invertedQueryResponse.getStatusCode() + invertedQueryResponse.getStatusCodeValue());
+                                    System.out.println("The response of the inverted query is : " + invertedQueryResponse);
+                                    System.out.println("The response body of the inverted query is : " + invertedQueryResponseBody);
+                                    postEvent.setInvertedQueryResultSet(invertedQueryResponseBody);
                                 }
                             }
                         } catch (Exception e) {
@@ -398,22 +413,29 @@ public class QueryRunner implements ConsumerHandler {
         this.postProducer.produce(POST_TOPIC, event);
     }
 
-    private ResponseEntity<String> executeQuery(Map<String,Object> query) throws UnsupportedEncodingException {
-        String finalQuery = URLEncoder.encode((String) query.get("query"), StandardCharsets.UTF_8.toString());
+    private ResponseEntity<String> executeQuery(String query) throws UnsupportedEncodingException {
+        String finalQuery = URLEncoder.encode(query, StandardCharsets.UTF_8.toString());
 
         String tempuri = "http://typhonql-server:7000/query";
         //String tempuri = "http://localhost:7000/query";
         Map<String, Object> vars = new HashMap<String, Object>();
-        vars.put("xmi", ml.getContents());
-        vars.put("databaseInfo", infos);
-        vars.put("query", query.get("query"));
+        //vars.put("xmi", ml.getContents());
+        //vars.put("databaseInfo", infos);
+        vars.put("query", query);
 
         RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
         headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
-        HttpEntity<Map<String, Object>> request =
-                new HttpEntity<>(vars, headers);
+        // Newly added headers
+        headers.add("QL-XMI", ml.getContents());
+
+        String dbInfo = new Gson().toJson(infos);
+        headers.add("QL-DatabaseInfo", dbInfo);
+
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(vars, headers);
+
         ResponseEntity<String> result = restTemplate.postForEntity(tempuri, request, String.class);
         //connection = new XMIPolystoreConnection(mlModel.getContents(), infos);
         System.out.println(result.getBody());
@@ -430,24 +452,34 @@ public class QueryRunner implements ConsumerHandler {
         return result;
     }
 
-    private ResponseEntity<String> executeUpdate(Map<String,Object> query) {
+    private ResponseEntity<String> executeUpdate(String query) {
         String uri = "http://typhonql-server:7000/update";
         //String uri = "http://localhost:7000/update";
         Map<String, Object> vars = new HashMap<String, Object>();
-        vars.put("xmi", ml.getContents());
-        vars.put("databaseInfo", infos);
-        vars.put("command", query.get("query"));
-
-        if (query.containsKey("blobs")){
-            vars.put("blobs", query.get("blobs"));
+        //vars.put("xmi", ml.getContents());
+        //vars.put("databaseInfo", infos);
+        if (query.contains("query") && query.contains("blobs")){
+            try {
+                vars = new ObjectMapper().readValue(query, HashMap.class);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        else{
+            vars.put("command", query);
         }
 
         RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
         headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
-        HttpEntity<Map<String, Object>> request =
-                new HttpEntity<>(vars, headers);
+        // Newly added headers
+        headers.add("QL-XMI", ml.getContents());
+
+        String dbInfo = new Gson().toJson(infos);
+        headers.add("QL-DatabaseInfo", dbInfo);
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(vars, headers);
         ResponseEntity<String> result = restTemplate.postForEntity(uri, request, String.class);
         //connection = new XMIPolystoreConnection(mlModel.getContents(), infos);
         System.out.println(result.getBody());
@@ -469,11 +501,17 @@ public class QueryRunner implements ConsumerHandler {
         String uri = "http://typhonql-server:7000/preparedUpdate";
         //String uri = "http://localhost:7000/preparedUpdate";
         RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
-        json.put("xmi", ml.getContents());
-        json.put("databaseInfo", infos);
+        //json.put("xmi", ml.getContents());
+        //json.put("databaseInfo", infos);
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
         headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
+        // Newly added headers
+        headers.add("QL-XMI", ml.getContents());
+
+        String dbInfo = new Gson().toJson(infos);
+        headers.add("QL-DatabaseInfo", dbInfo);
+
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(json, headers);
         ResponseEntity<String> result = restTemplate.postForEntity(uri, request, String.class);
 
@@ -491,18 +529,23 @@ public class QueryRunner implements ConsumerHandler {
     //To POST a new Entity
     public ResponseEntity<String> postEntity(String entity, Map<String, Object> jsonBody) {
         String uri = "http://typhonql-server:7000/crud/" + entity;
-
-        Map<String, Object> vars = new HashMap<String, Object>();
-        vars.put("xmi", ml.getContents());
-        vars.put("databaseInfo", infos);
-        Gson gson = new Gson();
-        String qlRestArgsValue = gson.toJson(vars);
+        //String uri = "http://localhost:7000/crud/" + entity;
+        //Map<String, Object> vars = new HashMap<String, Object>();
+        //vars.put("xmi", ml.getContents());
+        //vars.put("databaseInfo", infos);
+        //Gson gson = new Gson();
+        //String qlRestArgsValue = gson.toJson(vars);
 
         RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
         headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
-        headers.add("QL-RestArguments", qlRestArgsValue);
+        //headers.add("QL-RestArguments", qlRestArgsValue);
+        // Newly added headers
+        headers.add("QL-XMI", ml.getContents());
+
+        String dbInfo = new Gson().toJson(infos);
+        headers.add("QL-DatabaseInfo", dbInfo);
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(jsonBody, headers);
         ResponseEntity<String> result = restTemplate.postForEntity(uri, request, String.class);
@@ -518,19 +561,24 @@ public class QueryRunner implements ConsumerHandler {
     //To GET an existing Entity
     public ResponseEntity<String> getEntity(String entity, String id) {
         String uri = "http://typhonql-server:7000/crud/" + entity + "/" + id;
-
-        Map<String, Object> vars = new HashMap<String, Object>();
-        vars.put("xmi", ml.getContents());
-        vars.put("databaseInfo", infos);
-        Gson gson = new Gson();
-        String qlRestArgsValue = gson.toJson(vars);
-//		System.out.println("The headerSomething is: " + headersSomething);
+        //String uri = "http://localhost:7000/crud/" + entity + "/" + id;
+        //Map<String, Object> vars = new HashMap<String, Object>();
+        //vars.put("xmi", ml.getContents());
+        //vars.put("databaseInfo", infos);
+        //Gson gson = new Gson();
+        //String qlRestArgsValue = gson.toJson(vars);
         RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
 
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
         headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
-        headers.add("QL-RestArguments", qlRestArgsValue);
+        //headers.add("QL-RestArguments", qlRestArgsValue);
+        // Newly added headers
+        headers.add("QL-XMI", ml.getContents());
+
+        String dbInfo = new Gson().toJson(infos);
+        headers.add("QL-DatabaseInfo", dbInfo);
+
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(headers);
         ResponseEntity<String> result = restTemplate.exchange(uri, HttpMethod.GET, request, String.class);
 
@@ -545,18 +593,25 @@ public class QueryRunner implements ConsumerHandler {
     //To PATCH an existing Entity
     public ResponseEntity<String> patchEntity(String entity, String id, Map<String, Object> jsonBody) {
         String uri = "http://typhonql-server:7000/crud/" + entity + "/" + id;
+        //String uri = "http://localhost:7000/crud/" + entity + "/" + id;
 
-        Map<String, Object> vars = new HashMap<String, Object>();
-        vars.put("xmi", ml.getContents());
-        vars.put("databaseInfo", infos);
-        Gson gson = new Gson();
-        String qlRestArgsValue = gson.toJson(vars);
+        //Map<String, Object> vars = new HashMap<String, Object>();
+        //vars.put("xmi", ml.getContents());
+        //vars.put("databaseInfo", infos);
+        //Gson gson = new Gson();
+        //String qlRestArgsValue = gson.toJson(vars);
 
         RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
         headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
-        headers.add("QL-RestArguments", qlRestArgsValue);
+        //headers.add("QL-RestArguments", qlRestArgsValue);
+        // Newly added headers
+        headers.add("QL-XMI", ml.getContents());
+
+        String dbInfo = new Gson().toJson(infos);
+        headers.add("QL-DatabaseInfo", dbInfo);
+
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(jsonBody, headers);
         ResponseEntity<String> result = restTemplate.exchange(uri, HttpMethod.PATCH, request, String.class);
 
@@ -571,18 +626,25 @@ public class QueryRunner implements ConsumerHandler {
     //To DELETE an existing Entity
     public ResponseEntity<String> deleteEntity(String entity, String id) {
         String uri = "http://typhonql-server:7000/crud/" + entity + "/" + id;
+        //String uri = "http://localhost:7000/crud/" + entity + "/" + id;
 
-        Map<String, Object> vars = new HashMap<String, Object>();
-        vars.put("xmi", ml.getContents());
-        vars.put("databaseInfo", infos);
-        Gson gson = new Gson();
-        String qlRestArgsValue = gson.toJson(vars);
+        //Map<String, Object> vars = new HashMap<String, Object>();
+        //vars.put("xmi", ml.getContents());
+        //vars.put("databaseInfo", infos);
+        //Gson gson = new Gson();
+        //String qlRestArgsValue = gson.toJson(vars);
 
         RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
         headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
-        headers.add("QL-RestArguments", qlRestArgsValue);
+        //headers.add("QL-RestArguments", qlRestArgsValue);
+        // Newly added headers
+        headers.add("QL-XMI", ml.getContents());
+
+        String dbInfo = new Gson().toJson(infos);
+        headers.add("QL-DatabaseInfo", dbInfo);
+
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(headers);
         ResponseEntity<String> result = restTemplate.exchange(uri, HttpMethod.DELETE, request, String.class);
 

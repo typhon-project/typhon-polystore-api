@@ -224,10 +224,7 @@ public class MainController {
     @Async
     public Future<ResponseEntity<String>> executeQuery(@RequestBody String query){
         try {
-            Map<String,Object> justTheQuery = new HashMap<>();
-            justTheQuery.put("query", query);
-            System.out.println("The query from Map is: " + justTheQuery.get("query"));
-            return new AsyncResult<ResponseEntity<String>>(queryRunner.run("nemo", justTheQuery,false));
+            return new AsyncResult<ResponseEntity<String>>(queryRunner.run("nemo", query,false));
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
             return new AsyncResult<ResponseEntity<String>>(new ResponseEntity<String>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR));
@@ -238,81 +235,7 @@ public class MainController {
     @Async
     public Future<ResponseEntity<String>> executeUpdate(@RequestBody String query){
         try {
-            System.out.println("The query as string you input is: " + query);
-            //should discern if there is a blob in my query (Maybe I need to convert String query to Map<String,Object> query
-            //if (query.Contains("blob") ---> Execute give query tp queryRunner.run() as json
-            //else ---> Execute query as it is now
-            if (query.contains("query") && query.contains("blobs")) {
-                String[] splittedQuery = query.split(",");
-                int beginQuery;
-                int endQuery;
-                String querySection = "";
-                int beginBlob;
-                int endBlob;
-                String blobSection = "";
-                for (int i = 0; i < splittedQuery.length; i++){
-                    if(i == 0){
-                        if(splittedQuery[0].contains("update")){
-                            beginQuery = splittedQuery[0].indexOf("update");
-                            endQuery = splittedQuery[0].length()-1;
-                            querySection = splittedQuery[0].substring(beginQuery, endQuery);
-                        }
-                        else if(splittedQuery[0].contains("insert")){
-                            beginQuery = splittedQuery[0].indexOf("insert");
-                            endQuery = splittedQuery[0].length()-1;
-                            querySection = splittedQuery[0].substring(beginQuery, endQuery);
-
-                        }
-                        else{
-                            System.out.println("Something were wrong with splitting query section...");
-                            return null;
-                        }
-                    }
-                    else if(i == 1){
-
-                        if(splittedQuery.length == 2){
-                            beginBlob = splittedQuery[1].indexOf("{");
-                            endBlob = splittedQuery[1].indexOf("}");
-                            blobSection = splittedQuery[1].substring(beginBlob, endBlob);
-                            if (!blobSection.endsWith("}")){
-                                blobSection = blobSection.concat("}");
-                            }
-                        }
-                        else if (splittedQuery.length > 2){
-                            beginBlob = splittedQuery[1].indexOf("{");
-                            blobSection = splittedQuery[1].substring(beginBlob);
-                            blobSection = blobSection.concat(",");
-                        }
-                    }
-                    else{
-                        if(i == splittedQuery.length -1){
-                            endBlob = splittedQuery[i].indexOf("}");
-                            splittedQuery[i] = splittedQuery[i].substring(0,endBlob);
-                            blobSection = blobSection.concat(splittedQuery[i]);
-                            if (!blobSection.endsWith("}")){
-                                blobSection = blobSection.concat("}");
-                            }
-
-                        }
-                        else{
-                            splittedQuery[i] = splittedQuery[i].concat(",");
-                            blobSection = blobSection.concat(splittedQuery[i]);
-                        }
-                    }
-                }
-                Map<String,Object> queryWithBlob = new HashMap<>();
-                queryWithBlob.put("query", querySection);
-                queryWithBlob.put("blobs", blobSection);
-                System.out.println("The query section from Map is: " + queryWithBlob.get("query"));
-                System.out.println("The blob section from Map is: "+ queryWithBlob.get("blobs"));
-                return new AsyncResult<ResponseEntity<String>>(queryRunner.run("nemo", queryWithBlob, true));
-            }
-            else{
-                Map<String,Object> justTheQuery = new HashMap<>();
-                justTheQuery.put("query", query);
-                System.out.println("The query from Map is: " + justTheQuery.get("query"));
-                return new AsyncResult<ResponseEntity<String>>(queryRunner.run("nemo", justTheQuery,true));
-            }
+            return new AsyncResult<ResponseEntity<String>>(queryRunner.run("nemo", query,true));
         } catch (UnsupportedEncodingException e) {
             return new AsyncResult<ResponseEntity<String>>(new ResponseEntity<String>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR));
         }
@@ -330,7 +253,7 @@ public class MainController {
     }
 
     @RequestMapping(path = "/api/evolve", method = RequestMethod.POST)
-    public ResponseEntity Evolve(@RequestBody Map<String,String> json){
+    public ResponseEntity Evolve(@RequestBody String json){
         //Run consume the evolution toolset
         ResponseEntity response=ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(null);
         return response;
