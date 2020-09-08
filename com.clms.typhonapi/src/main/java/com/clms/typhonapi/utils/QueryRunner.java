@@ -2,10 +2,12 @@ package com.clms.typhonapi.utils;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.*;
 import java.nio.charset.StandardCharsets;
-
+import org.json.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
@@ -16,17 +18,19 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-
 import com.clms.typhonapi.kafka.QueueConsumer;
 import com.clms.typhonapi.kafka.ConsumerHandler;
 import com.clms.typhonapi.kafka.QueueProducer;
 import com.clms.typhonapi.models.*;
 import com.clms.typhonapi.storage.ModelStorage;
 
-
 import ac.york.typhon.analytics.commons.datatypes.events.Event;
 import ac.york.typhon.analytics.commons.datatypes.events.PreEvent;
 import ac.york.typhon.analytics.commons.datatypes.events.PostEvent;
+
+import javax.servlet.http.HttpServletRequest;
+
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Component
 public class QueryRunner implements ConsumerHandler {
@@ -94,6 +98,13 @@ public class QueryRunner implements ConsumerHandler {
             } else if (type == DatabaseType.neo4j) {
                 swattype = "Graph";
                 dbms = "neo4j";
+            /*
+            } else if (type == DatabaseType.NLAE) {
+                swattype = "nlae";
+                dbms = "nlae";
+                service.setUsername("");
+                service.setPassword("");
+             */
             } else {
                 swattype = "relationaldb";
                 dbms = "MariaDB";
@@ -191,7 +202,7 @@ public class QueryRunner implements ConsumerHandler {
 
     }
 
-    public ResponseEntity<String> run(String user, String query, boolean isUpdate) throws UnsupportedEncodingException {
+    public ResponseEntity<String> run(String user, HttpEntity<String> httpEntity, boolean isUpdate) throws UnsupportedEncodingException, URISyntaxException {
         ResponseEntity<String> response;
         if (!isReady()) {
             response = new ResponseEntity<String>("Query engine is not initialized", HttpStatus.PRECONDITION_FAILED);
@@ -203,7 +214,7 @@ public class QueryRunner implements ConsumerHandler {
         if (isAnalyticsAvailiable()) {
             event.setQueryTime(new Date());
             event.setId(UUID.randomUUID().toString());
-            event.setQuery(query);
+            event.setQuery(httpEntity.getBody());
             event.setDbUser(user);
             //debugging purposes
             //event.setInvertedNeeded(true);
@@ -256,9 +267,10 @@ public class QueryRunner implements ConsumerHandler {
 
                         postEvent.setPreEvent(recevent);
                         postEvent.setStartTime(new Date());
-                        ResponseEntity<String> result;
+                        ResponseEntity<String> result = null;
                         if (isUpdate) {
-                            result = executeUpdate(recevent.getQuery());
+                                result = executeUpdate(recevent.getQuery());
+
                         } else {
                             result = executeQuery(recevent.getQuery());
                         }
@@ -290,10 +302,10 @@ public class QueryRunner implements ConsumerHandler {
         } else {
             ResponseEntity<String> result;
             if (isUpdate) {
-                result = executeUpdate(query);
+                result = executeUpdate(httpEntity.getBody());
 
             } else {
-                result = executeQuery(query);
+                result = executeQuery(httpEntity.getBody());
             }
             return result;
         }
@@ -414,87 +426,121 @@ public class QueryRunner implements ConsumerHandler {
     }
 
     private ResponseEntity<String> executeQuery(String query) throws UnsupportedEncodingException {
-        String finalQuery = URLEncoder.encode(query, StandardCharsets.UTF_8.toString());
-
-        String tempuri = "http://typhonql-server:7000/query";
-        //String tempuri = "http://localhost:7000/query";
-        Map<String, Object> vars = new HashMap<String, Object>();
-        //vars.put("xmi", ml.getContents());
-        //vars.put("databaseInfo", infos);
-        vars.put("query", query);
+        String uri = "http://typhonql-server:7000/query";
+        //String uri = "http://localhost:7000/query";
 
         RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
         HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.ACCEPT, "application/json");
+        headers.add(HttpHeaders.CONTENT_TYPE, "application/json");
         headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
         headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
         // Newly added headers
         headers.add("QL-XMI", ml.getContents());
-
         String dbInfo = new Gson().toJson(infos);
         headers.add("QL-DatabaseInfo", dbInfo);
 
+        if(query.trim().charAt(0) == '{'){
+            HttpEntity<String> requestOne = new HttpEntity<>(query, headers);
+            System.out.println("Created the new HttpEntity and about to do the request... ");
+            System.out.println("The request's body is: " + requestOne.getBody());
+            System.out.println("The request's headers are: " + requestOne.getHeaders());
+            ResponseEntity<String> result = restTemplate.postForEntity(uri, requestOne, String.class);
 
-        HttpEntity<Map<String, Object>> request = new HttpEntity<>(vars, headers);
+            System.out.println(result.getBody());
+            System.out.println(result.getHeaders().get("ql-wall-time-ms"));
 
-        ResponseEntity<String> result = restTemplate.postForEntity(tempuri, request, String.class);
-        //connection = new XMIPolystoreConnection(mlModel.getContents(), infos);
-        System.out.println(result.getBody());
-        System.out.println(result.getHeaders().get("ql-wall-time-ms"));
-        if (result.getStatusCode() == HttpStatus.OK) {
-            isReady = true;
-            System.out.println("update query executed successfully");
+            if (result.getStatusCode() == HttpStatus.OK) {
+                isReady = true;
+                System.out.println("update query executed successfully");
 
-        } else {
-            System.out.println("error in query");
-            isReady = false;
-
+            } else {
+                System.out.println("error in query");
+                isReady = false;
+            }
+            return result;
         }
-        return result;
+        else {
+            System.out.println("Yes, you placed an invalid JSON query...");
+            Map<String, Object> mappedQuery = new HashMap<>();
+            mappedQuery.put("query",query);
+            HttpEntity<Map<String, Object>> requestOther = new HttpEntity<>(mappedQuery, headers);
+
+            ResponseEntity<String> result = restTemplate.postForEntity(uri, requestOther, String.class);
+            System.out.println(result.getBody());
+            System.out.println(result.getHeaders().get("ql-wall-time-ms"));
+
+            if (result.getStatusCode() == HttpStatus.OK) {
+                isReady = true;
+                System.out.println("update query executed successfully");
+
+            } else {
+                System.out.println("error in query");
+                isReady = false;
+
+            }
+            return result;
+        }
     }
 
-    private ResponseEntity<String> executeUpdate(String query) {
+    private ResponseEntity<String> executeUpdate(String query) throws URISyntaxException {
         String uri = "http://typhonql-server:7000/update";
         //String uri = "http://localhost:7000/update";
-        Map<String, Object> vars = new HashMap<String, Object>();
-        //vars.put("xmi", ml.getContents());
-        //vars.put("databaseInfo", infos);
-        if (query.contains("query") && query.contains("blobs")){
-            try {
-                vars = new ObjectMapper().readValue(query, HashMap.class);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        else{
-            vars.put("command", query);
-        }
+        System.out.println("The body inside the endpoint: " + query);
 
         RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
         HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.ACCEPT, "application/json");
+        headers.add(HttpHeaders.CONTENT_TYPE, "application/json");
         headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
         headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
         // Newly added headers
         headers.add("QL-XMI", ml.getContents());
-
         String dbInfo = new Gson().toJson(infos);
         headers.add("QL-DatabaseInfo", dbInfo);
+        System.out.println("Inserted the headers successfully... ");
 
-        HttpEntity<Map<String, Object>> request = new HttpEntity<>(vars, headers);
-        ResponseEntity<String> result = restTemplate.postForEntity(uri, request, String.class);
-        //connection = new XMIPolystoreConnection(mlModel.getContents(), infos);
-        System.out.println(result.getBody());
-        System.out.println(result.getHeaders().get("ql-wall-time-ms"));
+        if(query.trim().charAt(0) == '{'){
+            HttpEntity<String> requestOne = new HttpEntity<>(query, headers);
+            System.out.println("Created the new HttpEntity and about to do the request... ");
+            System.out.println("The request's body is: " + requestOne.getBody());
+            System.out.println("The request's headers are: " + requestOne.getHeaders());
+            ResponseEntity<String> result = restTemplate.postForEntity(uri, requestOne, String.class);
 
-        if (result.getStatusCode() == HttpStatus.OK) {
-            isReady = true;
-            System.out.println("update query executed successfully");
+            System.out.println(result.getBody());
+            System.out.println(result.getHeaders().get("ql-wall-time-ms"));
 
-        } else {
-            System.out.println("error in query");
-            isReady = false;
+            if (result.getStatusCode() == HttpStatus.OK) {
+                isReady = true;
+                System.out.println("update query executed successfully");
 
+            } else {
+                System.out.println("error in query");
+                isReady = false;
+            }
+            return result;
         }
-        return result;
+        else{
+            System.out.println("Yes, you placed an invalid JSON query...");
+            Map<String, Object> mappedQuery = new HashMap<>();
+            mappedQuery.put("query",query);
+            HttpEntity<Map<String, Object>> requestOther = new HttpEntity<>(mappedQuery, headers);
+
+            ResponseEntity<String> result = restTemplate.postForEntity(uri, requestOther, String.class);
+            System.out.println(result.getBody());
+            System.out.println(result.getHeaders().get("ql-wall-time-ms"));
+
+            if (result.getStatusCode() == HttpStatus.OK) {
+                isReady = true;
+                System.out.println("update query executed successfully");
+
+            } else {
+                System.out.println("error in query");
+                isReady = false;
+
+            }
+            return result;
+        }
     }
 
     private ResponseEntity<String> executePreparedUpdate(Map<String, Object> json) {
