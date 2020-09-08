@@ -474,11 +474,9 @@ public class QueryRunner implements ConsumerHandler {
             if (result.getStatusCode() == HttpStatus.OK) {
                 isReady = true;
                 System.out.println("update query executed successfully");
-
             } else {
                 System.out.println("error in query");
                 isReady = false;
-
             }
             return result;
         }
