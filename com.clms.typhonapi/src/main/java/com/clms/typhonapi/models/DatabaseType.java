@@ -5,5 +5,6 @@ public enum DatabaseType {
 	MariaDb,
 	MysqlDb,
 	cassandra,
-	neo4j
+	neo4j,
+	NLAE
 }

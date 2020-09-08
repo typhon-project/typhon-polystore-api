@@ -82,10 +82,11 @@ public class QueryRunner implements ConsumerHandler {
             }
         }
         infos = new ArrayList<DatabaseInfo>();
+        String dbms;
+        String swattype;
         for (Service service : serviceRegistry.getDatabases()) {
             DatabaseType type = service.getDbType();
-            String dbms;
-            String swattype;
+
             if (type == DatabaseType.MongoDb) {
                 swattype = "documentdb";
                 dbms = "MongoDb";
@@ -98,13 +99,11 @@ public class QueryRunner implements ConsumerHandler {
             } else if (type == DatabaseType.neo4j) {
                 swattype = "Graph";
                 dbms = "neo4j";
-            /*
             } else if (type == DatabaseType.NLAE) {
                 swattype = "nlae";
                 dbms = "nlae";
                 service.setUsername("");
                 service.setPassword("");
-             */
             } else {
                 swattype = "relationaldb";
                 dbms = "MariaDB";
@@ -112,6 +111,8 @@ public class QueryRunner implements ConsumerHandler {
             infos.add(new DatabaseInfo(service.getInternalHost(), service.getInternalPort(), service.getName(), swattype, dbms, service.getUsername(), service.getPassword()));
             isReady = true;
         }
+
+
         //TODO: initialize query engine with xmi and dbConnections
 	/*	try {
 			String uri = "http://typhonql-server:7000/initialize";
@@ -162,8 +163,8 @@ public class QueryRunner implements ConsumerHandler {
 
     public boolean resetDatabases() {
         try {
-            String uri = "http://typhonql-server:7000/reset";
-            //String uri = "http://localhost:7000/reset";
+            //String uri = "http://typhonql-server:7000/reset";
+            String uri = "http://localhost:7000/reset";
 
             RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
             Map<String, Object> vars = new HashMap<String, Object>();
@@ -426,8 +427,8 @@ public class QueryRunner implements ConsumerHandler {
     }
 
     private ResponseEntity<String> executeQuery(String query) throws UnsupportedEncodingException {
-        String uri = "http://typhonql-server:7000/query";
-        //String uri = "http://localhost:7000/query";
+        //String uri = "http://typhonql-server:7000/query";
+        String uri = "http://localhost:7000/query";
 
         RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
         HttpHeaders headers = new HttpHeaders();
@@ -484,8 +485,8 @@ public class QueryRunner implements ConsumerHandler {
     }
 
     private ResponseEntity<String> executeUpdate(String query) throws URISyntaxException {
-        String uri = "http://typhonql-server:7000/update";
-        //String uri = "http://localhost:7000/update";
+        //String uri = "http://typhonql-server:7000/update";
+        String uri = "http://localhost:7000/update";
         System.out.println("The body inside the endpoint: " + query);
 
         RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
