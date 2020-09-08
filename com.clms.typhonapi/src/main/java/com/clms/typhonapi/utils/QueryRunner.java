@@ -163,8 +163,8 @@ public class QueryRunner implements ConsumerHandler {
 
     public boolean resetDatabases() {
         try {
-            //String uri = "http://typhonql-server:7000/reset";
-            String uri = "http://localhost:7000/reset";
+            String uri = "http://typhonql-server:7000/reset";
+            //String uri = "http://localhost:7000/reset";
 
             RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
             Map<String, Object> vars = new HashMap<String, Object>();
@@ -427,8 +427,8 @@ public class QueryRunner implements ConsumerHandler {
     }
 
     private ResponseEntity<String> executeQuery(String query) throws UnsupportedEncodingException {
-        //String uri = "http://typhonql-server:7000/query";
-        String uri = "http://localhost:7000/query";
+        String uri = "http://typhonql-server:7000/query";
+        //String uri = "http://localhost:7000/query";
 
         RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
         HttpHeaders headers = new HttpHeaders();
@@ -485,8 +485,8 @@ public class QueryRunner implements ConsumerHandler {
     }
 
     private ResponseEntity<String> executeUpdate(String query) throws URISyntaxException {
-        //String uri = "http://typhonql-server:7000/update";
-        String uri = "http://localhost:7000/update";
+        String uri = "http://typhonql-server:7000/update";
+        //String uri = "http://localhost:7000/update";
         System.out.println("The body inside the endpoint: " + query);
 
         RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
