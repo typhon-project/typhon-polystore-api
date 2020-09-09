@@ -1,6 +1,6 @@
-[![Build Status](http://typhon.clmsuk.com:8080/buildStatus/icon?job=TyphonPolystoreAPI/job/master/)](http://typhon.clmsuk.com:8080/job/TyphonPolystoreAPI/job/master/)
+[![Build Status](http://typhon.clmsuk.com:8080/buildStatus/icon?job=TyphonPolystoreAPI%2Fmaster)](http://typhon.clmsuk.com:8080/job/TyphonPolystoreAPI/job/master/)
 
-# Typhon Polystore API [![License](https://img.shields.io/badge/License-EPL%202.0-red.svg)](https://opensource.org/licenses/EPL-2.0)
+# Typhon Polystore API  [![License](https://img.shields.io/badge/License-EPL%202.0-red.svg)](https://opensource.org/licenses/EPL-2.0)
 
 The Polystore API component is responsible both for providing to external systems a variety of
 endpoints serving the platform’s core functionalities and for orchestrating the other components
