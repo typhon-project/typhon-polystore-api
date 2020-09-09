@@ -113,20 +113,20 @@ public class MainController {
     }
     
     @ApiOperation(value = "Register new user")
-    @RequestMapping(path = "/user/register", method = RequestMethod.POST)
+    @RequestMapping(path = "/api/user/register", method = RequestMethod.POST)
     public void add(@RequestBody User u) {
         userRepository.save(u);
     }
 
     @ApiOperation(value= "List all users",response = List.class)
-    @RequestMapping(path = "/users", method = RequestMethod.GET)
+    @RequestMapping(path = "/api/users", method = RequestMethod.GET)
     public List<User> all() {
     	return userRepository.findAll();
 
     }
 
     @ApiOperation(value= "Get user by username")
-    @RequestMapping(path = "/user/{userName}", method = RequestMethod.GET)
+    @RequestMapping(path = "/api/user/{userName}", method = RequestMethod.GET)
     public ResponseEntity get(@PathVariable String userName) {
         Optional<User> user = userRepository.findById(userName);
         if(user.get()!=null){
@@ -138,7 +138,7 @@ public class MainController {
     }
     
     @ApiOperation(value="Update user by username")
-    @RequestMapping(path = "/user/{userName}", method = RequestMethod.POST)
+    @RequestMapping(path = "/api/user/{userName}", method = RequestMethod.POST)
     public ResponseEntity update(@PathVariable String userName, @RequestBody User u) {
     	User user = userRepository.findById(userName).get();
         if(user != null){
@@ -152,7 +152,7 @@ public class MainController {
         }
     }
 
-    @RequestMapping(path = "/user/{userName}", method = RequestMethod.DELETE)
+    @RequestMapping(path = "/api/user/{userName}", method = RequestMethod.DELETE)
     public void delete(@PathVariable String userName) {
 
     }
@@ -239,8 +239,6 @@ public class MainController {
     @ResponseBody
     @Async
     public Future<ResponseEntity<String>> executeUpdate(HttpEntity<String> httpEntity){
-        System.out.println("The body inside the endpoint: " + httpEntity.getBody());
-        System.out.println("The headers inside the endpoint: " + httpEntity.getHeaders());
         try {
             return new AsyncResult<ResponseEntity<String>>(queryRunner.run("nemo", httpEntity, true));
         } catch (UnsupportedEncodingException | URISyntaxException e) {

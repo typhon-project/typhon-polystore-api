@@ -154,7 +154,6 @@ public class QueryRunner implements ConsumerHandler {
 
     public boolean isAnalyticsAvailiable() {
         if (serviceRegistry.getService(ServiceType.Queue) == null) {
-            System.out.println(ServiceType.Analytics + " are turned off...");
             return false;
         } else {
             return true;
@@ -163,13 +162,11 @@ public class QueryRunner implements ConsumerHandler {
 
     public boolean resetDatabases() {
         try {
-            String uri = "http://typhonql-server:7000/reset";
-            //String uri = "http://localhost:7000/reset";
+            //String uri = "http://typhonql-server:7000/reset";
+            String uri = "http://localhost:7000/reset";
 
             RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
             Map<String, Object> vars = new HashMap<String, Object>();
-            //vars.put("xmi", ml.getContents());
-            //vars.put("databaseInfo", infos);
 
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
@@ -210,7 +207,6 @@ public class QueryRunner implements ConsumerHandler {
             return response;
         }
         PreEvent event = new PreEvent();
-        System.out.println("Analytics available: " + isAnalyticsAvailiable());
 
         if (isAnalyticsAvailiable()) {
             event.setQueryTime(new Date());
@@ -228,16 +224,16 @@ public class QueryRunner implements ConsumerHandler {
             int timeout = 10 * 1000;
             boolean timedOut = false;
             int eventHash = event.getId().hashCode();
-            System.out.println("This is the PreEvent: " + event.toString());
+            //System.out.println("This is the PreEvent: " + event.toString());
             //PreEvent recevent;
             while (true) {
                 if (receivedQueries.containsKey(eventHash)) {
                     PreEvent recevent = receivedQueries.get(eventHash);
-                    System.out.println("This is the recevent: " + recevent.toString());
+                    //System.out.println("This is the recevent: " + recevent.toString());
                     receivedQueries.remove(eventHash);
                     if (recevent.isAuthenticated() == false) {
                         response = new ResponseEntity<String>("Not authorized on Analytics Queue", HttpStatus.UNAUTHORIZED);
-                        System.out.println("The recevent isn't authenticated...");
+                        System.out.println("The PreEvent' isn't authenticated...");
                         return response;
                     } else if (recevent.isAuthenticated()) {
                         PostEvent postEvent = new PostEvent();
@@ -249,14 +245,13 @@ public class QueryRunner implements ConsumerHandler {
                                 else {
                                     ResponseEntity<String> invertedQueryResponse;
                                     String invertedQueryResponseBody;
-                                    System.out.println("The invertedQuery is: " + recevent.getInvertedQuery());
-
+                                    //System.out.println("The invertedQuery is: " + recevent.getInvertedQuery());
                                     invertedQueryResponse = executeQuery(recevent.getInvertedQuery());
 
                                     invertedQueryResponseBody = invertedQueryResponse.getBody();
-                                    System.out.println("The response status of the inverted query is : " + invertedQueryResponse.getStatusCode() + invertedQueryResponse.getStatusCodeValue());
-                                    System.out.println("The response of the inverted query is : " + invertedQueryResponse);
-                                    System.out.println("The response body of the inverted query is : " + invertedQueryResponseBody);
+                                    //System.out.println("The response status of the inverted query is : " + invertedQueryResponse.getStatusCode() + invertedQueryResponse.getStatusCodeValue());
+                                    //System.out.println("The response of the inverted query is : " + invertedQueryResponse);
+                                    //System.out.println("The response body of the inverted query is : " + invertedQueryResponseBody);
                                     postEvent.setInvertedQueryResultSet(invertedQueryResponseBody);
                                 }
                             }
@@ -264,7 +259,7 @@ public class QueryRunner implements ConsumerHandler {
                             System.out.println(e);
                         }
 
-                        System.out.println("This is the PreEvent': " + recevent.toString());
+                        //System.out.println("This is the PreEvent': " + recevent.toString());
 
                         postEvent.setPreEvent(recevent);
                         postEvent.setStartTime(new Date());
@@ -278,13 +273,13 @@ public class QueryRunner implements ConsumerHandler {
                         postEvent.setEndTime(new Date());
                         //check bool ResultSetNeeded to decide if we add the result set.
                         if (recevent.isResultSetNeeded()) {
-                            System.out.println("The result is : " + result + " " + result.getStatusCode() + " " + result.getStatusCodeValue());
-                            System.out.println("The result body is : " + result.getBody());
+                            //System.out.println("The result is : " + result + " " + result.getStatusCode() + " " + result.getStatusCodeValue());
+                            //System.out.println("The result body is : " + result.getBody());
                             postEvent.setResultSet(result.getBody());
                         }
 
                         sendPostEvent(postEvent);
-                        System.out.println("This is the PostEvent: " + postEvent.toString());
+                        //System.out.println("This is the PostEvent: " + postEvent.toString());
                         return result;
                     }
                 }
@@ -333,16 +328,16 @@ public class QueryRunner implements ConsumerHandler {
             int timeout = 10 * 1000;
             boolean timedOut = false;
             int eventHash = event.getId().hashCode();
-            System.out.println("This is the PreEvent: " + event.toString());
+            //System.out.println("This is the PreEvent: " + event.toString());
             PreEvent recevent;
             while (true) {
                 if (receivedQueries.containsKey(eventHash)) {
                     recevent = receivedQueries.get(eventHash);
-                    System.out.println("This is the recevent: " + recevent.toString());
+                    //System.out.println("This is the recevent: " + recevent.toString());
                     receivedQueries.remove(eventHash);
                     if (recevent.isAuthenticated() == false) {
                         response = new ResponseEntity<String>("Not authorized on Analytics Queue", HttpStatus.UNAUTHORIZED);
-                        System.out.println("The recevent isn't authenticated...");
+                        System.out.println("The PreEvent' isn't authenticated...");
                         return response;
                     } else if (recevent.isAuthenticated() == true) {
                         PostEvent postEvent = new PostEvent();
@@ -358,21 +353,20 @@ public class QueryRunner implements ConsumerHandler {
                                     //postEvent.setInvertedQueryResultSet(executePreparedUpdate(temp).getBody());
                                     ResponseEntity<String> invertedQueryResponse;
                                     String invertedQueryResponseBody;
-                                    System.out.println("The invertedQuery is: " + recevent.getInvertedQuery());
-
+                                    //System.out.println("The invertedQuery is: " + recevent.getInvertedQuery());
                                     invertedQueryResponse = executeQuery(recevent.getInvertedQuery());
 
                                     invertedQueryResponseBody = invertedQueryResponse.getBody();
-                                    System.out.println("The response status of the inverted query is : " + invertedQueryResponse.getStatusCode() + invertedQueryResponse.getStatusCodeValue());
-                                    System.out.println("The response of the inverted query is : " + invertedQueryResponse);
-                                    System.out.println("The response body of the inverted query is : " + invertedQueryResponseBody);
+                                    //System.out.println("The response status of the inverted query is : " + invertedQueryResponse.getStatusCode() + invertedQueryResponse.getStatusCodeValue());
+                                    //System.out.println("The response of the inverted query is : " + invertedQueryResponse);
+                                    //System.out.println("The response body of the inverted query is : " + invertedQueryResponseBody);
                                     postEvent.setInvertedQueryResultSet(invertedQueryResponseBody);
                                 }
                             }
                         } catch (Exception e) {
                             System.out.println(e);
                         }
-                        System.out.println("This is the PreEvent': " + recevent.toString());
+                        //System.out.println("This is the PreEvent': " + recevent.toString());
                         postEvent.setPreEvent(recevent);
                         postEvent.setStartTime(new Date());
                         ResponseEntity<String> result = executePreparedUpdate(json);
@@ -381,7 +375,7 @@ public class QueryRunner implements ConsumerHandler {
                             postEvent.setResultSet(result.getBody());
                         }
                         sendPostEvent(postEvent);
-                        System.out.println("This is the PostEvent: " + postEvent.toString());
+                        //System.out.println("This is the PostEvent: " + postEvent.toString());
                         return result;
                     }
                 }
@@ -427,8 +421,8 @@ public class QueryRunner implements ConsumerHandler {
     }
 
     private ResponseEntity<String> executeQuery(String query) throws UnsupportedEncodingException {
-        String uri = "http://typhonql-server:7000/query";
-        //String uri = "http://localhost:7000/query";
+        //String uri = "http://typhonql-server:7000/query";
+        String uri = "http://localhost:7000/query";
 
         RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
         HttpHeaders headers = new HttpHeaders();
@@ -443,9 +437,9 @@ public class QueryRunner implements ConsumerHandler {
 
         if(query.trim().charAt(0) == '{'){
             HttpEntity<String> requestOne = new HttpEntity<>(query, headers);
-            System.out.println("Created the new HttpEntity and about to do the request... ");
-            System.out.println("The request's body is: " + requestOne.getBody());
-            System.out.println("The request's headers are: " + requestOne.getHeaders());
+            //System.out.println("Created the new HttpEntity and about to do the request... ");
+            //System.out.println("The request's body is: " + requestOne.getBody());
+            //System.out.println("The request's headers are: " + requestOne.getHeaders());
             ResponseEntity<String> result = restTemplate.postForEntity(uri, requestOne, String.class);
 
             System.out.println(result.getBody());
@@ -462,7 +456,7 @@ public class QueryRunner implements ConsumerHandler {
             return result;
         }
         else {
-            System.out.println("Yes, you placed an invalid JSON query...");
+            //System.out.println("Yes, you placed an invalid JSON query...");
             Map<String, Object> mappedQuery = new HashMap<>();
             mappedQuery.put("query",query);
             HttpEntity<Map<String, Object>> requestOther = new HttpEntity<>(mappedQuery, headers);
@@ -483,9 +477,8 @@ public class QueryRunner implements ConsumerHandler {
     }
 
     private ResponseEntity<String> executeUpdate(String query) throws URISyntaxException {
-        String uri = "http://typhonql-server:7000/update";
-        //String uri = "http://localhost:7000/update";
-        System.out.println("The body inside the endpoint: " + query);
+        //String uri = "http://typhonql-server:7000/update";
+        String uri = "http://localhost:7000/update";
 
         RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
         HttpHeaders headers = new HttpHeaders();
@@ -497,13 +490,12 @@ public class QueryRunner implements ConsumerHandler {
         headers.add("QL-XMI", ml.getContents());
         String dbInfo = new Gson().toJson(infos);
         headers.add("QL-DatabaseInfo", dbInfo);
-        System.out.println("Inserted the headers successfully... ");
 
         if(query.trim().charAt(0) == '{'){
             HttpEntity<String> requestOne = new HttpEntity<>(query, headers);
-            System.out.println("Created the new HttpEntity and about to do the request... ");
-            System.out.println("The request's body is: " + requestOne.getBody());
-            System.out.println("The request's headers are: " + requestOne.getHeaders());
+            //System.out.println("Created the new HttpEntity and about to do the request... ");
+            //System.out.println("The request's body is: " + requestOne.getBody());
+            //System.out.println("The request's headers are: " + requestOne.getHeaders());
             ResponseEntity<String> result = restTemplate.postForEntity(uri, requestOne, String.class);
 
             System.out.println(result.getBody());
@@ -520,7 +512,7 @@ public class QueryRunner implements ConsumerHandler {
             return result;
         }
         else{
-            System.out.println("Yes, you placed an invalid JSON query...");
+            //System.out.println("Yes, you placed an invalid JSON query...");
             Map<String, Object> mappedQuery = new HashMap<>();
             mappedQuery.put("query",query);
             HttpEntity<Map<String, Object>> requestOther = new HttpEntity<>(mappedQuery, headers);
@@ -543,11 +535,10 @@ public class QueryRunner implements ConsumerHandler {
     }
 
     private ResponseEntity<String> executePreparedUpdate(Map<String, Object> json) {
-        String uri = "http://typhonql-server:7000/preparedUpdate";
-        //String uri = "http://localhost:7000/preparedUpdate";
+        //String uri = "http://typhonql-server:7000/preparedUpdate";
+        String uri = "http://localhost:7000/preparedUpdate";
         RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
-        //json.put("xmi", ml.getContents());
-        //json.put("databaseInfo", infos);
+
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
         headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
