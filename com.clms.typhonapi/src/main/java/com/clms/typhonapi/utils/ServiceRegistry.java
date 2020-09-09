@@ -86,8 +86,6 @@ public class ServiceRegistry {
 				Service service = null;
 				
 		        Element db = (Element) nNode;
-				String name = db.getAttribute("name");
-		        String type = db.getAttribute("xsi:type");
  		        if(db.getAttribute("xsi:type").equals("typhonDL:Software") && db.getAttribute("name").equals("zookeeper")){
 					Element kafkaEl = querySelector(doc, ".//elements[@name='Kafka']");
 					if(kafkaEl!=null){
@@ -117,7 +115,7 @@ public class ServiceRegistry {
 						continue;
 					}
 				}
-		        if(db.getAttribute("xsi:type").equals("typhonDL:Software") && !db.getAttribute("name").equals("zookeeper") && !db.getAttribute("name").equals("Kafka") && !db.getAttribute("name").equals("authAll")){
+		        if(db.getAttribute("xsi:type").equals("typhonDL:Software") && !db.getAttribute("name").equals("zookeeper") && !db.getAttribute("name").equals("Kafka") && !db.getAttribute("name").equals("authAll") && !db.getAttribute("name").equals("nlae")){
 					service = new Service();
 					service.setName(db.getAttribute("name"));
 					service.setServiceType(ServiceType.Software);
@@ -126,23 +124,60 @@ public class ServiceRegistry {
 					_services.add(service);
 					continue;
 		        }
+
+		        if (db.getAttribute("xsi:type").equals("typhonDL:Software") && db.getAttribute("name").equals("nlae")) {
+					service = new Service();
+					service.setName(db.getAttribute("name"));
+					service.setServiceType(ServiceType.Database);
+					service.setDbType(DatabaseType.NLAE);
+
+					if(db.getAttribute("external")!=null && !db.getAttribute("external").isEmpty()){
+						service.setStatus(ServiceStatus.ONLINE);
+						service.setExternal(true);
+						Element uri = (Element) db.getElementsByTagName("uri").item(0);
+						String url = uri.getAttribute("value");
+						String host;
+						String port;
+						String[] urlParts = url.split(":");
+
+						if (urlParts[0] == "localhost"){
+							host = urlParts[0];
+							port = urlParts[1];
+						} else {
+							host = urlParts[1].replace("/","");
+							port = urlParts[2];
+						}
+
+						service.setInternalHost(host);
+						service.setExternalHost(host);
+						service.setInternalPort(Integer.parseInt(port));
+						service.setExternalPort(Integer.parseInt(port));
+					} else {
+						service.setExternal(false);
+						fillContainerInfo(doc, service,i);
+						_services.add(service);
+						continue;
+					}
+				}
+
 		        if (db.getAttribute("xsi:type").equals("typhonDL:DB") && db != null) {
 		        	service = parseDbElement(db,list);
 
-				if(db.getAttribute("external")!=null && !db.getAttribute("external").isEmpty()){
-					service.setExternal(true);
-					Element uri = (Element) db.getElementsByTagName("uri").item(0);
-					String url = uri.getAttribute("value");
-					String host = url.split(":")[1].replace("/","");
-					String port = url.split(":")[2];
-					service.setInternalHost(host);
-					service.setExternalHost(host);
-					service.setInternalPort(Integer.parseInt(port));
-					service.setExternalPort(Integer.parseInt(port));
-				}
-				else{
-					service.setExternal(false);
-				}}
+					if(db.getAttribute("external")!=null && !db.getAttribute("external").isEmpty()){
+						service.setExternal(true);
+						Element uri = (Element) db.getElementsByTagName("uri").item(0);
+						String url = uri.getAttribute("value");
+						String host = url.split(":")[1].replace("/","");
+						String port = url.split(":")[2];
+						service.setInternalHost(host);
+						service.setExternalHost(host);
+						service.setInternalPort(Integer.parseInt(port));
+						service.setExternalPort(Integer.parseInt(port));
+					}
+					else{
+						service.setExternal(false);
+					}
+		        }
 		        if (service != null && !service.getExternal() && service.getServiceType()!=ServiceType.Software) {
 		        	service.setStatus(ServiceStatus.OFFLINE);
 					fillContainerInfo(doc, service,i);
@@ -255,21 +290,18 @@ public class ServiceRegistry {
 		if (portEl != null) {
 			String portsValue = "";
 			service.setExternalHost(externalhost);
-				Element target = querySelector(portEl, ".//key_values[@name='target']");
-				String targetport = target.getAttribute("value");
-				int internalPort = Integer.parseInt(targetport);
-				Element published = querySelector(portEl, ".//key_values[@name='published']");
-				if(published!=null){
-					String publishport = published.getAttribute("value");
-					int externalPort = Integer.parseInt(publishport);
-					service.setExternalPort(externalPort);
+			Element target = querySelector(portEl, ".//key_values[@name='target']");
+			String targetport = target.getAttribute("value");
+			int internalPort = Integer.parseInt(targetport);
+			Element published = querySelector(portEl, ".//key_values[@name='published']");
+			if(published!=null){
+				String publishport = published.getAttribute("value");
+				int externalPort = Integer.parseInt(publishport);
+				service.setExternalPort(externalPort);
 
-				}
-				service.setInternalPort(internalPort);
 			}
-
-
-
+			service.setInternalPort(internalPort);
+		}
 	}
 
 	private Element querySelector(Node node, String query) {

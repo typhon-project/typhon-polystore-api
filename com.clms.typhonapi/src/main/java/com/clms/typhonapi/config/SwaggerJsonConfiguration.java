@@ -25,6 +25,8 @@ import org.springframework.core.io.ResourceLoader;
 @Configuration
 public class SwaggerJsonConfiguration {
 
+
+    //@Value("com.clms.typhonapi/src/main/resources/swagger.json") String location,
     @Bean
     public SwaggerJson swaggerConfiguration(
             @Value("app/resources/swagger.json") String location,
@@ -55,7 +57,7 @@ public class SwaggerJsonConfiguration {
     /**
      * Looks for a resource at different locations in order of preference.
      *
-     * @param location location of the resourcve
+     * @param location location of the resource
      * @param loader   the resource loader
      * @return input stream of the resource, null if not found
      */

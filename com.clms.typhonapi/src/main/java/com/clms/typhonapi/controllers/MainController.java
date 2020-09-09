@@ -10,41 +10,32 @@ import com.clms.typhonapi.utils.QueryRunner;
 import com.clms.typhonapi.utils.ServiceRegistry;
 import com.clms.typhonapi.utils.UserHelper;
 
-import com.google.common.base.Predicates;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
-import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.Future;
 
 import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.web.servlet.ModelAndView;
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.service.ApiInfo;
-import springfox.documentation.service.Contact;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spring.web.plugins.Docket;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.multipart.MultipartRequest;
+
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -122,20 +113,20 @@ public class MainController {
     }
     
     @ApiOperation(value = "Register new user")
-    @RequestMapping(path = "/user/register", method = RequestMethod.POST)
+    @RequestMapping(path = "/api/user/register", method = RequestMethod.POST)
     public void add(@RequestBody User u) {
         userRepository.save(u);
     }
 
     @ApiOperation(value= "List all users",response = List.class)
-    @RequestMapping(path = "/users", method = RequestMethod.GET)
+    @RequestMapping(path = "/api/users", method = RequestMethod.GET)
     public List<User> all() {
     	return userRepository.findAll();
 
     }
 
     @ApiOperation(value= "Get user by username")
-    @RequestMapping(path = "/user/{userName}", method = RequestMethod.GET)
+    @RequestMapping(path = "/api/user/{userName}", method = RequestMethod.GET)
     public ResponseEntity get(@PathVariable String userName) {
         Optional<User> user = userRepository.findById(userName);
         if(user.get()!=null){
@@ -147,7 +138,7 @@ public class MainController {
     }
     
     @ApiOperation(value="Update user by username")
-    @RequestMapping(path = "/user/{userName}", method = RequestMethod.POST)
+    @RequestMapping(path = "/api/user/{userName}", method = RequestMethod.POST)
     public ResponseEntity update(@PathVariable String userName, @RequestBody User u) {
     	User user = userRepository.findById(userName).get();
         if(user != null){
@@ -161,7 +152,7 @@ public class MainController {
         }
     }
 
-    @RequestMapping(path = "/user/{userName}", method = RequestMethod.DELETE)
+    @RequestMapping(path = "/api/user/{userName}", method = RequestMethod.DELETE)
     public void delete(@PathVariable String userName) {
 
     }
@@ -232,25 +223,26 @@ public class MainController {
     }
 
 
-    @RequestMapping(path = "/api/query", method = RequestMethod.POST)
+    @RequestMapping(path = "/api/query", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+    @ResponseBody
     @Async
-    public Future<ResponseEntity<String>> executeQuery(@RequestBody String query){
+    public Future<ResponseEntity<String>> executeQuery(HttpEntity<String> httpEntity){
         try {
-            return new AsyncResult<ResponseEntity<String>>(queryRunner.run("nemo", query,false));
-        } catch (UnsupportedEncodingException e) {
+            return new AsyncResult<ResponseEntity<String>>(queryRunner.run("nemo", httpEntity,false));
+        } catch (UnsupportedEncodingException | URISyntaxException e) {
             e.printStackTrace();
             return new AsyncResult<ResponseEntity<String>>(new ResponseEntity<String>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR));
         }
     }
 
-    @RequestMapping(path = "/api/update", method = RequestMethod.POST)
+    @RequestMapping(path = "/api/update", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+    @ResponseBody
     @Async
-    public Future<ResponseEntity<String>> executeUpdate(@RequestBody String query){
+    public Future<ResponseEntity<String>> executeUpdate(HttpEntity<String> httpEntity){
         try {
-            return new AsyncResult<ResponseEntity<String>>(queryRunner.run("nemo", query,true));
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-            return new AsyncResult<ResponseEntity<String>>(new ResponseEntity<String>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR));
+            return new AsyncResult<ResponseEntity<String>>(queryRunner.run("nemo", httpEntity, true));
+        } catch (UnsupportedEncodingException | URISyntaxException e) {
+            return new AsyncResult<ResponseEntity<String>>(new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR));
         }
     }
 
@@ -266,7 +258,7 @@ public class MainController {
     }
 
     @RequestMapping(path = "/api/evolve", method = RequestMethod.POST)
-    public ResponseEntity Evolve(@RequestBody Map<String,String> json){
+    public ResponseEntity Evolve(@RequestBody String json){
         //Run consume the evolution toolset
         ResponseEntity response=ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(null);
         return response;
