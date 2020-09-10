@@ -17,19 +17,15 @@ import org.springframework.core.io.ResourceLoader;
 /**
  * {@code SwaggerJsonConfiguration} is responsible for reading the swagger.json
  * file for classpath or file sytstem.
- * <p/>
- *
- * @author Indra Basak
- * @since 11/23/17
  */
 @Configuration
 public class SwaggerJsonConfiguration {
 
 
-    //@Value("com.clms.typhonapi/src/main/resources/swagger.json") String location,
+    //@Value("app/resources/swagger.json") String location,
     @Bean
     public SwaggerJson swaggerConfiguration(
-            @Value("app/resources/swagger.json") String location,
+            @Value("com.clms.typhonapi/src/main/resources/swagger.json") String location,
             @Qualifier("webApplicationContext") ResourceLoader loader) throws IOException {
 
         InputStream istream = getResource(location, loader);

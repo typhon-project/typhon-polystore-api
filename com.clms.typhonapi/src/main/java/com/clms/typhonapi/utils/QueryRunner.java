@@ -160,42 +160,6 @@ public class QueryRunner implements ConsumerHandler {
         }
     }
 
-    public boolean resetDatabases() {
-        try {
-            String uri = "http://typhonql-server:7000/reset";
-            //String uri = "http://localhost:7000/reset";
-
-            RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
-            Map<String, Object> vars = new HashMap<String, Object>();
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
-            headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
-            // Newly added headers
-            headers.add("QL-XMI", ml.getContents());
-
-            String dbInfo = new Gson().toJson(infos);
-            headers.add("QL-DatabaseInfo", dbInfo);
-
-            HttpEntity<Map<String, Object>> request =
-                    new HttpEntity<>(vars, headers);
-            ResponseEntity<String> result = restTemplate.postForEntity(uri, request, String.class);
-            if (result.getStatusCode() == HttpStatus.OK) {
-                System.out.println(result);
-                //PageRequest request = new PageRequest(0, 1, new Sort(Sort.Direction.DESC, "version"));
-                Model mlModel = repo.findTopModelByTypeOrderByVersionDesc("ML");
-                mlModel.setInitializedDatabases(true);
-                repo.save(mlModel);
-                return true;
-            } else {
-                return false;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
     public void initDatabases() {
 
     }
@@ -307,8 +271,8 @@ public class QueryRunner implements ConsumerHandler {
         }
     }
 
-
-    public ResponseEntity<String> preparedUpdate(String user, Map<String, Object> json) {
+    /*
+    public ResponseEntity<String> preparedUpdate(String user, HttpEntity<String> httpEntity) {
         ResponseEntity<String> response;
         if (!isReady()) {
             response = new ResponseEntity<String>("Query engine is not initialized", HttpStatus.PRECONDITION_FAILED);
@@ -321,7 +285,7 @@ public class QueryRunner implements ConsumerHandler {
             event.setQueryTime(new Date());
             event.setId(UUID.randomUUID().toString());
             //event.setAuthenticated(true);
-            event.setQuery((String) json.get("command"));
+            event.setQuery(httpEntity.getBody());
             event.setDbUser(user);
             this.preProducer.produce(PRE_TOPIC, event);
             long startedOn = System.currentTimeMillis();
@@ -369,7 +333,7 @@ public class QueryRunner implements ConsumerHandler {
                         //System.out.println("This is the PreEvent': " + recevent.toString());
                         postEvent.setPreEvent(recevent);
                         postEvent.setStartTime(new Date());
-                        ResponseEntity<String> result = executePreparedUpdate(json);
+                        ResponseEntity<String> result = executePreparedUpdate(recevent.getQuery());
                         postEvent.setEndTime(new Date());
                         if (event.isResultSetNeeded()) {
                             postEvent.setResultSet(result.getBody());
@@ -397,13 +361,14 @@ public class QueryRunner implements ConsumerHandler {
 
             }
         } else {
-            ResponseEntity<String> result = executePreparedUpdate(json);
+            ResponseEntity<String> result = executePreparedUpdate(httpEntity.getBody());
 
             //connection = new XMIPolystoreConnection(mlModel.getContents(), infos);
             System.out.println(result.getBody());
             return result;
         }
     }
+     */
 
 
     @Override
@@ -418,6 +383,42 @@ public class QueryRunner implements ConsumerHandler {
 
     private void sendPostEvent(PostEvent event) {
         this.postProducer.produce(POST_TOPIC, event);
+    }
+
+    public boolean resetDatabases() {
+        try {
+            String uri = "http://typhonql-server:7000/reset";
+            //String uri = "http://localhost:7000/reset";
+
+            RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
+            Map<String, Object> vars = new HashMap<String, Object>();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
+            headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
+            // Newly added headers
+            headers.add("QL-XMI", ml.getContents());
+
+            String dbInfo = new Gson().toJson(infos);
+            headers.add("QL-DatabaseInfo", dbInfo);
+
+            HttpEntity<Map<String, Object>> request =
+                    new HttpEntity<>(vars, headers);
+            ResponseEntity<String> result = restTemplate.postForEntity(uri, request, String.class);
+            if (result.getStatusCode() == HttpStatus.OK) {
+                System.out.println(result);
+                //PageRequest request = new PageRequest(0, 1, new Sort(Sort.Direction.DESC, "version"));
+                Model mlModel = repo.findTopModelByTypeOrderByVersionDesc("ML");
+                mlModel.setInitializedDatabases(true);
+                repo.save(mlModel);
+                return true;
+            } else {
+                return false;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     private ResponseEntity<String> executeQuery(String query) throws UnsupportedEncodingException {
@@ -534,12 +535,15 @@ public class QueryRunner implements ConsumerHandler {
         }
     }
 
-    private ResponseEntity<String> executePreparedUpdate(Map<String, Object> json) {
-        String uri = "http://typhonql-server:7000/preparedUpdate";
-        //String uri = "http://localhost:7000/preparedUpdate";
+    /*
+    private ResponseEntity<String> executePreparedUpdate(String query) {
+        //String uri = "http://typhonql-server:7000/preparedUpdate";
+        String uri = "http://localhost:7000/preparedUpdate";
         RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
 
         HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.ACCEPT, "application/json");
+        headers.add(HttpHeaders.CONTENT_TYPE, "application/json");
         headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
         headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
         // Newly added headers
@@ -548,7 +552,7 @@ public class QueryRunner implements ConsumerHandler {
         String dbInfo = new Gson().toJson(infos);
         headers.add("QL-DatabaseInfo", dbInfo);
 
-        HttpEntity<Map<String, Object>> request = new HttpEntity<>(json, headers);
+        HttpEntity<String> request = new HttpEntity<>(query, headers);
         ResponseEntity<String> result = restTemplate.postForEntity(uri, request, String.class);
 
         if (result.getStatusCode() == HttpStatus.OK) {
@@ -560,6 +564,7 @@ public class QueryRunner implements ConsumerHandler {
         }
         return result;
     }
+     */
 
 
     //To POST a new Entity
