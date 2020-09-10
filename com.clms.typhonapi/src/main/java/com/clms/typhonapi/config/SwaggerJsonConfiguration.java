@@ -17,10 +17,6 @@ import org.springframework.core.io.ResourceLoader;
 /**
  * {@code SwaggerJsonConfiguration} is responsible for reading the swagger.json
  * file for classpath or file sytstem.
- * <p/>
- *
- * @author Indra Basak
- * @since 11/23/17
  */
 @Configuration
 public class SwaggerJsonConfiguration {

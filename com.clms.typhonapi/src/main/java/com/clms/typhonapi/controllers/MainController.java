@@ -246,6 +246,7 @@ public class MainController {
         }
     }
 
+    /*
     @ApiImplicitParams({
             @ApiImplicitParam(name = "command", value = "query", required = true, dataType = "String", paramType = "parameter"),
             @ApiImplicitParam(name = "parameterNames", value = "names of parameters", required = true, dataType = "Array[String]", paramType = "parameter"),
@@ -253,9 +254,10 @@ public class MainController {
     })
     @RequestMapping(path = "/api/preparedupdate", method = RequestMethod.POST)
     @Async
-    public Future<ResponseEntity<String>> executepreparedUpdate(@RequestBody Map<String, Object> json){
-        return new AsyncResult<ResponseEntity<String>>(queryRunner.preparedUpdate("nemo",json));
+    public Future<ResponseEntity<String>> executepreparedUpdate(HttpEntity<String> httpEntity){
+        return new AsyncResult<ResponseEntity<String>>(queryRunner.preparedUpdate("nemo",httpEntity));
     }
+     */
 
     @RequestMapping(path = "/api/evolve", method = RequestMethod.POST)
     public ResponseEntity Evolve(@RequestBody String json){
