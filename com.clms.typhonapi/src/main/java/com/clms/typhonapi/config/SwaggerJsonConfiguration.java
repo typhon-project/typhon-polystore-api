@@ -22,10 +22,10 @@ import org.springframework.core.io.ResourceLoader;
 public class SwaggerJsonConfiguration {
 
 
-    //@Value("app/resources/swagger.json") String location,
+    //@Value("com.clms.typhonapi/src/main/resources/swagger.json") String location,
     @Bean
     public SwaggerJson swaggerConfiguration(
-            @Value("com.clms.typhonapi/src/main/resources/swagger.json") String location,
+            @Value("app/resources/swagger.json") String location,
             @Qualifier("webApplicationContext") ResourceLoader loader) throws IOException {
 
         InputStream istream = getResource(location, loader);
