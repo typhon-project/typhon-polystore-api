@@ -421,7 +421,7 @@ public class QueryRunner implements ConsumerHandler {
         }
     }
 
-    private ResponseEntity<String> executeQuery(String query) throws UnsupportedEncodingException {
+    public ResponseEntity<String> executeQuery(String query) throws UnsupportedEncodingException {
         String uri = "http://typhonql-server:7000/query";
         //String uri = "http://localhost:7000/query";
 
@@ -477,7 +477,7 @@ public class QueryRunner implements ConsumerHandler {
         }
     }
 
-    private ResponseEntity<String> executeUpdate(String query) throws URISyntaxException {
+    public ResponseEntity<String> executeUpdate(String query) throws URISyntaxException {
         String uri = "http://typhonql-server:7000/update";
         //String uri = "http://localhost:7000/update";
 

@@ -366,4 +366,27 @@ public class MainController {
         return queryRunner.deleteEntity(entity, id);
     }
 
+    @RequestMapping(path = "/api/noAnalytics/query", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+    @ResponseBody
+    @Async
+    public Future<ResponseEntity<String>> executeQueryWOAnalytics(HttpEntity<String> httpEntity){
+        try {
+            return new AsyncResult<ResponseEntity<String>>(queryRunner.executeQuery(httpEntity.getBody()));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            return new AsyncResult<ResponseEntity<String>>(new ResponseEntity<String>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR));
+        }
+    }
+
+    @RequestMapping(path = "/api/noAnalytics/update", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+    @ResponseBody
+    @Async
+    public Future<ResponseEntity<String>> executeUpdateWOAnalytics(HttpEntity<String> httpEntity){
+        try {
+            return new AsyncResult<ResponseEntity<String>>(queryRunner.executeUpdate(httpEntity.getBody()));
+        } catch (URISyntaxException e) {
+            return new AsyncResult<ResponseEntity<String>>(new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR));
+        }
+    }
+
 }
