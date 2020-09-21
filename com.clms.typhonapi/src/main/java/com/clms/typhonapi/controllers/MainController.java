@@ -246,6 +246,16 @@ public class MainController {
         }
     }
 
+    @RequestMapping(path = "/api/ddl", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+    @ResponseBody
+    @Async
+    public Future<ResponseEntity<String>> executeDLL(HttpEntity<String> httpEntity){
+        try {
+            return new AsyncResult<ResponseEntity<String>>(queryRunner.executeDLL(httpEntity.getBody()));
+        } catch (URISyntaxException e) {
+            return new AsyncResult<ResponseEntity<String>>(new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR));
+        }
+    }
     /*
     @ApiImplicitParams({
             @ApiImplicitParam(name = "command", value = "query", required = true, dataType = "String", paramType = "parameter"),

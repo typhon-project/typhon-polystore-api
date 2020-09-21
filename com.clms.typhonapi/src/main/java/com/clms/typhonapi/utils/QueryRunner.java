@@ -448,7 +448,7 @@ public class QueryRunner implements ConsumerHandler {
 
             if (result.getStatusCode() == HttpStatus.OK) {
                 isReady = true;
-                System.out.println("update query executed successfully");
+                System.out.println("Query executed successfully");
 
             } else {
                 System.out.println("error in query");
@@ -468,7 +468,7 @@ public class QueryRunner implements ConsumerHandler {
 
             if (result.getStatusCode() == HttpStatus.OK) {
                 isReady = true;
-                System.out.println("update query executed successfully");
+                System.out.println("Query executed successfully");
             } else {
                 System.out.println("error in query");
                 isReady = false;
@@ -504,7 +504,7 @@ public class QueryRunner implements ConsumerHandler {
 
             if (result.getStatusCode() == HttpStatus.OK) {
                 isReady = true;
-                System.out.println("update query executed successfully");
+                System.out.println("Query executed successfully");
 
             } else {
                 System.out.println("error in query");
@@ -524,7 +524,7 @@ public class QueryRunner implements ConsumerHandler {
 
             if (result.getStatusCode() == HttpStatus.OK) {
                 isReady = true;
-                System.out.println("update query executed successfully");
+                System.out.println("Query executed successfully");
 
             } else {
                 System.out.println("error in query");
@@ -533,6 +533,38 @@ public class QueryRunner implements ConsumerHandler {
             }
             return result;
         }
+    }
+
+    public ResponseEntity<String> executeDLL(String query) throws URISyntaxException{
+        String uri = "http://typhonql-server:7000/ddl";
+        //String uri = "http://localhost:7000/ddl";
+
+        RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.ACCEPT, "application/json");
+        headers.add(HttpHeaders.CONTENT_TYPE, "application/json");
+        headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
+        headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
+        // Newly added headers
+        headers.add("QL-XMI", ml.getContents());
+        String dbInfo = new Gson().toJson(infos);
+        headers.add("QL-DatabaseInfo", dbInfo);
+
+        HttpEntity<String> requestOne = new HttpEntity<>(query, headers);
+        ResponseEntity<String> result = restTemplate.postForEntity(uri, requestOne, String.class);
+
+        System.out.println(result.getBody());
+        System.out.println(result.getHeaders().get("ql-wall-time-ms"));
+
+        if (result.getStatusCode() == HttpStatus.OK) {
+            isReady = true;
+            System.out.println("DDL update executed successfully");
+
+        } else {
+            System.out.println("error in query");
+            isReady = false;
+        }
+        return result;
     }
 
     /*
