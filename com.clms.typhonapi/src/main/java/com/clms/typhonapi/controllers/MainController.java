@@ -153,8 +153,15 @@ public class MainController {
     }
 
     @RequestMapping(path = "/api/user/{userName}", method = RequestMethod.DELETE)
-    public void delete(@PathVariable String userName) {
-
+    public ResponseEntity delete(@PathVariable String userName) {
+        User user = userRepository.findById(userName).get();
+        if(user != null){
+            userRepository.delete(user);
+            return ResponseEntity.status(200).body(user);
+        }
+        else {
+            return ResponseEntity.status(404).body(null);
+        }
     }
     
     @RequestMapping(path = "/api/model/dl", method = RequestMethod.GET)
