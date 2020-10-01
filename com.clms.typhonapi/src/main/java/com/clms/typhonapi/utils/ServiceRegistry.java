@@ -140,7 +140,7 @@ public class ServiceRegistry {
 						String port;
 						String[] urlParts = url.split(":");
 
-						if (urlParts[0] == "localhost"){
+						if (urlParts[0].equals("localhost")){
 							host = urlParts[0];
 							port = urlParts[1];
 						} else {
