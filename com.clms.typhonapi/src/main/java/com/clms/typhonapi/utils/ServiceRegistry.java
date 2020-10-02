@@ -270,8 +270,8 @@ public class ServiceRegistry {
 			Element uiEl;
 			uiEl = querySelector(doc, "//elements[@name='" + "polystore_ui" + "']");
 			Element parametersEl = querySelector(uiEl, ".//parameters");
-			String externalhost = querySelector(parametersEl, "//parameters[@name='API_HOST']").getAttribute("value");
-			service.setExternalHost(externalhost);
+			//String externalhost = querySelector(parametersEl, "//parameters[@name='API_HOST']").getAttribute("value");
+			//service.setExternalHost(externalhost);
 		//new implementation
 
 		Element uri = (Element) containerEl.getElementsByTagName("uri").item(0);
@@ -289,7 +289,7 @@ public class ServiceRegistry {
 		Element portEl = querySelector(containerEl, ".//ports");
 		if (portEl != null) {
 			String portsValue = "";
-			service.setExternalHost(externalhost);
+			//service.setExternalHost(externalhost);
 			Element target = querySelector(portEl, ".//key_values[@name='target']");
 			String targetport = target.getAttribute("value");
 			int internalPort = Integer.parseInt(targetport);
