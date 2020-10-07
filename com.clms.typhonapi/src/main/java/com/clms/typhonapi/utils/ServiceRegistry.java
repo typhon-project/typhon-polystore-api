@@ -155,9 +155,9 @@ public class ServiceRegistry {
 					} else {
 						service.setExternal(false);
 						fillContainerInfo(doc, service,i);
-						_services.add(service);
-						continue;
 					}
+					_services.add(service);
+					continue;
 				}
 
 		        if (db.getAttribute("xsi:type").equals("typhonDL:DB") && db != null) {
