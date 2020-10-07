@@ -256,7 +256,6 @@ public class ServiceRegistry {
 		}
 		
 		db.setName(dbElement.getAttribute("name"));
-		
 		return db;
 	}
 	
@@ -302,6 +301,7 @@ public class ServiceRegistry {
 			}
 			service.setInternalPort(internalPort);
 		}
+		service.setStatus(ServiceStatus.ONLINE);
 	}
 
 	private Element querySelector(Node node, String query) {
