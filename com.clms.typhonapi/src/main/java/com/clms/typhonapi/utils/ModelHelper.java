@@ -25,28 +25,28 @@ import com.clms.typhonapi.storage.ModelStorage;
 public class ModelHelper {
 
 	@Autowired
-    private ModelStorage repo;
-	
+  private ModelStorage repo;
+
 	public Model getDlModel() {
 		return getModel("DL", -1);
 	}
-	
+
 	public Model getDlModel(int version) {
 		return getModel("DL", version);
 	}
-	
+
 	public Model getMlModel() {
 		return getModel("ML", -1);
 	}
-	
+
 	public Model getMlModel(int version) {
 		return getModel("ML", version);
 	}
-	
+
 	public ArrayList<Model> getDlModels() {
 		return getModels("DL");
 	}
-	
+
 	public ArrayList<Model> getMlModels() {
 		return getModels("ML");
 	}
@@ -58,13 +58,13 @@ public class ModelHelper {
 	public void addMlModel(String name, String contents) throws Exception {
 		addModel("ML", name, contents);
 	}
-	
+
 	private boolean addModel(String type, String name, String contents) throws Exception {
 		if (!isValid(contents)) {
 			throw new Exception("Not valid model");
 		}
 		Model latest = getModel(type);
-		
+
 		Model m = new Model();
 		m.setId(UUID.randomUUID().toString());
 		m.setDateReceived(new Date());
@@ -88,14 +88,14 @@ public class ModelHelper {
 			return false;
 		}
 	}
-	
+
 	public Model getModel(String type) {
 		return getModel(type, -1);
 	}
-	
+
 	public Model getModel(String type, int version) {
 		Optional<Model> model = null;
-		
+
 		if (version < 0) {
 			model = repo.findAll()
 				.stream()
@@ -108,14 +108,14 @@ public class ModelHelper {
 					.filter(m -> m.getType().equalsIgnoreCase(type) && m.getVersion() == version)
 					.findFirst();
 		}
-		
+
 		if (!model.isPresent()) {
 			return null;
 		}
-		
+
 		return model.get();
 	}
-	
+
 	private ArrayList<Model> getModels(String type) {
 		return new ArrayList<Model>(repo.findAll()
 				.stream()
@@ -123,21 +123,21 @@ public class ModelHelper {
 				.sorted(Comparator.comparing(Model::getVersion).reversed())
 				.collect(Collectors.toList()));
 	}
-	
+
 	private boolean isValid(String xmi) {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		try {
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			ByteArrayInputStream input = new ByteArrayInputStream(xmi.getBytes("UTF-8"));
 			builder.parse(input);
-						
+
 			return true;
 		} catch (ParserConfigurationException e) {
 		} catch (UnsupportedEncodingException e) {
 		} catch (SAXException e) {
 		} catch (IOException e) {
 		}
-		
+
 		return false;
 	}
 }

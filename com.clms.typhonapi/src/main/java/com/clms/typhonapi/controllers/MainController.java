@@ -32,18 +32,21 @@ import javax.servlet.http.HttpServletRequest;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartRequest;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
+@Slf4j
 @RestController
 @CrossOrigin(origins = "*", maxAge = 3600)
 @Api(value="Polystore Services")
 public class MainController {
-
 	private static boolean status = true;
-	
+
 	@Autowired
     private UserHelper userHelper;
     @Autowired
@@ -58,7 +61,7 @@ public class MainController {
     private EvolutionHelper evolutionHelper;
     @Autowired
     private DbUtils dbUtils;
-    
+
     public MainController() {
 
     }
@@ -70,23 +73,22 @@ public class MainController {
     	try {
             queryRunner.init(modelHelper.getMlModel());
         }
-    	catch (Exception e){
-            System.out.println(e.getMessage());
+    	catch (Exception e) {
+            log.error(e.getMessage());
         }
     }
-
 
     @RequestMapping(path = "/api/users/authenticate", method = RequestMethod.POST)
     public boolean login(@RequestBody Map<String,String> json) {
     	User user = userHelper.get(json.get("username"), json.get("password"));
     	return user != null;
     }
-    
+
     @RequestMapping(value = "/api/status",method = RequestMethod.GET)
     public boolean getStatus() {
     	return status;
     }
-    
+
     @RequestMapping(value = "/api/down", method = RequestMethod.GET)
     public boolean down() {
     	try {
@@ -99,19 +101,18 @@ public class MainController {
 			}
 			status = false;
 		} catch (InterruptedException e) {
-			
+			log.error(e.getMessage());
 		}
     	return status;
     }
-    
+
     @RequestMapping(value = "/api/up", method = RequestMethod.GET)
     public boolean up() {
     	queryRunner.init(modelHelper.getMlModel());
 		status = true;
-    	    	
     	return status;
     }
-    
+
     @ApiOperation(value = "Register new user")
     @RequestMapping(path = "/api/user/register", method = RequestMethod.POST)
     public void add(@RequestBody User u) {
@@ -122,7 +123,6 @@ public class MainController {
     @RequestMapping(path = "/api/users", method = RequestMethod.GET)
     public List<User> all() {
     	return userRepository.findAll();
-
     }
 
     @ApiOperation(value= "Get user by username")
@@ -136,7 +136,7 @@ public class MainController {
             return ResponseEntity.status(404).body(null);
         }
     }
-    
+
     @ApiOperation(value="Update user by username")
     @RequestMapping(path = "/api/user/{userName}", method = RequestMethod.POST)
     public ResponseEntity update(@PathVariable String userName, @RequestBody User u) {
@@ -163,12 +163,12 @@ public class MainController {
             return ResponseEntity.status(404).body(null);
         }
     }
-    
+
     @RequestMapping(path = "/api/model/dl", method = RequestMethod.GET)
     public ArrayList<Model> getDlModels() {
     	return modelHelper.getDlModels();
     }
-    
+
     @RequestMapping(path = "/api/model/ml", method = RequestMethod.GET)
     public ArrayList<Model> getMlModels() {
     	return modelHelper.getMlModels();
@@ -197,14 +197,14 @@ public class MainController {
     	modelHelper.addMlModel(json.get("name"), json.get("contents"));
     	evolutionHelper.evolve(modelHelper.getMlModel());
     }
-    
+
     @RequestMapping(path = "/api/model/{type}/{version}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE, method = RequestMethod.GET   )
     public @ResponseBody ResponseEntity<byte[]> getTyphonModel(@PathVariable String type, @PathVariable int version) {
     	HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("Content-disposition", "attachment; filename=model.xmi");
-     
+
         Model m = modelHelper.getModel(type, version);
-        	
+
         return ResponseEntity.ok()
           .headers(responseHeaders)
           .body((m == null ? "" : m.getContents()).getBytes());
@@ -308,14 +308,14 @@ public class MainController {
             }
         }
     }
-    
+
     @RequestMapping(path = "/api/download/{fileName}", method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<byte[]> Backup(@PathVariable String fileName) throws IOException{
         ResponseEntity response;
         HttpHeaders responseHeaders = new HttpHeaders();
 
         File f = new File("backups/" + fileName);
-        
+
         responseHeaders.set("Content-disposition", "attachment; filename="+ f.getName());
         return ResponseEntity.ok()
                 .headers(responseHeaders)
