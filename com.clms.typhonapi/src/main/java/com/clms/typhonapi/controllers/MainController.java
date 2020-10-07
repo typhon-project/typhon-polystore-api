@@ -176,8 +176,8 @@ public class MainController {
 
 
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "name", value = "name of model", required = true, dataType = "String", paramType = "body"),
-            @ApiImplicitParam(name = "contents", value = "contents of model", required = true, dataType = "String", paramType = "body")
+        @ApiImplicitParam(name = "name", value = "name of model", required = true, dataType = "String", paramType = "body"),
+        @ApiImplicitParam(name = "contents", value = "contents of model", required = true, dataType = "String", paramType = "body")
     })
     @RequestMapping(path = "/api/model/dl", method = RequestMethod.POST)
     public void setTyphonDLModel(@RequestBody Map<String, String> json) throws Exception {
@@ -189,8 +189,8 @@ public class MainController {
     }
 
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "name", value = "name of model", required = true, dataType = "String", paramType = "body"),
-            @ApiImplicitParam(name = "contents", value = "contents of model", required = true, dataType = "String", paramType = "body")
+        @ApiImplicitParam(name = "name", value = "name of model", required = true, dataType = "String", paramType = "body"),
+        @ApiImplicitParam(name = "contents", value = "contents of model", required = true, dataType = "String", paramType = "body")
     })
     @RequestMapping(path = "/api/model/ml", method = RequestMethod.POST)
     public void setTyphonMlModel(@RequestBody Map<String, String> json) throws Exception {
@@ -351,33 +351,33 @@ public class MainController {
 
     //create a new instance of an entity of ML
     @RequestMapping(
-            path = "/crud/{entity}",
-            method = RequestMethod.POST
-            )
+        path = "/crud/{entity}",
+        method = RequestMethod.POST
+    )
     public ResponseEntity cEntity(@PathVariable String entity, @RequestBody Map<String, Object> jsonBody) {
         return queryRunner.postEntity(entity, jsonBody);
     }
 
     //read, update and delete an instance of an entity of ML
     @RequestMapping(
-            path = "/crud/{entity}/{id}",
-            method = RequestMethod.GET
-            )
+        path = "/crud/{entity}/{id}",
+        method = RequestMethod.GET
+    )
     public ResponseEntity rEntity(@PathVariable String entity, @PathVariable String id) {
         return queryRunner.getEntity(entity, id);
     }
 
     @RequestMapping(
-            path = "/crud/{entity}/{id}",
-            method = RequestMethod.PATCH
+        path = "/crud/{entity}/{id}",
+        method = RequestMethod.PATCH
     )
     public ResponseEntity uEntity(@PathVariable String entity, @PathVariable String id, @RequestBody Map<String, Object> jsonBody) {
         return queryRunner.patchEntity(entity, id, jsonBody);
     }
 
     @RequestMapping(
-            path = "/crud/{entity}/{id}",
-            method = RequestMethod.DELETE
+        path = "/crud/{entity}/{id}",
+        method = RequestMethod.DELETE
     )
     public ResponseEntity dEntity(@PathVariable String entity, @PathVariable String id) {
         return queryRunner.deleteEntity(entity, id);

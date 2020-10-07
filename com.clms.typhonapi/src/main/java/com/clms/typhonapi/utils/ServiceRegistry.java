@@ -33,7 +33,7 @@ public class ServiceRegistry {
 	public ServiceRegistry() {
 		_services = new ArrayList<>();
 	}
-	
+
 	public void load(Model dlModel) {
 		_services.clear();
 		if (dlModel == null	) {
@@ -43,79 +43,85 @@ public class ServiceRegistry {
 		dlModel.setInitializedConnections(true);
 		repo.save(dlModel);
 	}
-	
+
 	public ArrayList<Service> getDatabases() {
-        return new ArrayList<>(_services.stream()
-        		.filter(s -> s.getServiceType() == ServiceType.Database)
-        		.collect(Collectors.toList()));
+    return new ArrayList<>(_services.stream()
+    	.filter(s -> s.getServiceType() == ServiceType.Database)
+    	.collect(Collectors.toList()));
 	}
 
 	public ArrayList<Service> getServices() {
 		return new ArrayList<>(_services.stream()
-				.collect(Collectors.toList()));
+			.collect(Collectors.toList()));
 	}
 
 	public Service getService(ServiceType type) {
 		return _services
-				.stream()
-				.filter(s -> s.getServiceType() == type)
-				.findFirst()
-				.orElse(null);
+			.stream()
+			.filter(s -> s.getServiceType() == type)
+			.findFirst()
+			.orElse(null);
 	}
-	
+
 	private void load(String xmi) {
 		if (xmi == null || xmi.isEmpty()) {
 			return;
 		}
-		
-		//parse XMI
+
+		// parse XMI
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		try {
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			ByteArrayInputStream input = new ByteArrayInputStream(xmi.getBytes("UTF-8"));
 			Document doc = builder.parse(input);
-						
+
 			NodeList nList = doc.getElementsByTagName("elements");
 			list =nList;
 			for (int i = 0; i < nList.getLength(); i++) {
 				Node nNode = nList.item(i);
+
 				if (nNode.getNodeType() != Node.ELEMENT_NODE) {
 					continue;
 				}
-				
+
 				Service service = null;
-				
-		        Element db = (Element) nNode;
- 		        if(db.getAttribute("xsi:type").equals("typhonDL:Software") && db.getAttribute("name").equals("zookeeper")){
+
+		    Element db = (Element) nNode;
+ 		    if (db.getAttribute("xsi:type").equals("typhonDL:Software") && db.getAttribute("name").equals("zookeeper")) {
 					Element kafkaEl = querySelector(doc, ".//elements[@name='Kafka']");
-					if(kafkaEl!=null){
+					if (kafkaEl!=null) {
 						Service kafka = new Service();
 						kafka.setName("kafka");
 						kafka.setServiceType(ServiceType.Queue);
 						kafka.setExternalHost(querySelector(kafkaEl,".//parameters[@name='KAFKA_ADVERTISED_HOST_NAME']").getAttribute("value"));
-						//Element portsEl = querySelector(kafkaEl,".//ports");
-						//Element target = querySelector(portsEl, ".//key_values[@name='target']");
+						// Element portsEl = querySelector(kafkaEl,".//ports");
+						// Element target = querySelector(portsEl, ".//key_values[@name='target']");
 						Element portsEl = querySelector(kafkaEl,".//parameters[@name='KAFKA_LISTENERS']");
 						String ports = portsEl.getAttribute("value");
 						String internalPort = ports.split(",")[1].split(":")[2];
 						String externalPort = ports.split(",")[0].split(":")[2];
 						kafka.setInternalPort(Integer.parseInt(internalPort));
 						kafka.setExternalPort(Integer.parseInt(externalPort));
-						//int internalPort = Integer.parseInt(targetport);
-						//Element published = querySelector(portsEl, ".//key_values[@name='published']");
+						// int internalPort = Integer.parseInt(targetport);
+						// Element published = querySelector(portsEl, ".//key_values[@name='published']");
 						/*if(published!=null){
 							String publishport = published.getAttribute("value");
 							int externalPort = Integer.parseInt(publishport);
 							kafka.setExternalPort(externalPort);
 
 						} */
-					//	kafka.setInternalPort(internalPort);
+						//kafka.setInternalPort(internalPort);
 						kafka.setInternalHost("kafka");
 						_services.add(kafka);
 						continue;
 					}
 				}
-		        if(db.getAttribute("xsi:type").equals("typhonDL:Software") && !db.getAttribute("name").equals("zookeeper") && !db.getAttribute("name").equals("Kafka") && !db.getAttribute("name").equals("authAll") && !db.getAttribute("name").equals("nlae")){
+
+				if (db.getAttribute("xsi:type").equals("typhonDL:Software")
+							&& !db.getAttribute("name").equals("zookeeper")
+							&& !db.getAttribute("name").equals("Kafka")
+							&& !db.getAttribute("name").equals("authAll")
+							&& !db.getAttribute("name").equals("nlae")) {
 					service = new Service();
 					service.setName(db.getAttribute("name"));
 					service.setServiceType(ServiceType.Software);
@@ -123,15 +129,16 @@ public class ServiceRegistry {
 					fillContainerInfo(doc, service,i);
 					_services.add(service);
 					continue;
-		        }
+		    }
 
-		        if (db.getAttribute("xsi:type").equals("typhonDL:Software") && db.getAttribute("name").equals("nlae")) {
+		    if (db.getAttribute("xsi:type").equals("typhonDL:Software")
+						&& db.getAttribute("name").equals("nlae")) {
 					service = new Service();
 					service.setName(db.getAttribute("name"));
 					service.setServiceType(ServiceType.Database);
 					service.setDbType(DatabaseType.NLAE);
 
-					if(db.getAttribute("external")!=null && !db.getAttribute("external").isEmpty()){
+					if (db.getAttribute("external")!=null && !db.getAttribute("external").isEmpty()) {
 						service.setStatus(ServiceStatus.ONLINE);
 						service.setExternal(true);
 						Element uri = (Element) db.getElementsByTagName("uri").item(0);
@@ -160,10 +167,10 @@ public class ServiceRegistry {
 					continue;
 				}
 
-		        if (db.getAttribute("xsi:type").equals("typhonDL:DB") && db != null) {
-		        	service = parseDbElement(db,list);
+		    if (db.getAttribute("xsi:type").equals("typhonDL:DB") && db != null) {
+		     	service = parseDbElement(db, list);
 
-					if(db.getAttribute("external")!=null && !db.getAttribute("external").isEmpty()){
+					if (db.getAttribute("external")!=null && !db.getAttribute("external").isEmpty()){
 						service.setExternal(true);
 						Element uri = (Element) db.getElementsByTagName("uri").item(0);
 						String url = uri.getAttribute("value");
@@ -177,13 +184,14 @@ public class ServiceRegistry {
 					else{
 						service.setExternal(false);
 					}
-		        }
-		        if (service != null && !service.getExternal() && service.getServiceType()!=ServiceType.Software) {
-		        	service.setStatus(ServiceStatus.OFFLINE);
+		    }
+
+				if (service != null && !service.getExternal() && service.getServiceType() != ServiceType.Software) {
+		     	service.setStatus(ServiceStatus.OFFLINE);
 					fillContainerInfo(doc, service,i);
 					System.out.println("Parsed: " + service);
-		        	_services.add(service);
-		        }
+		     	_services.add(service);
+		    }
 			}
 		} catch (ParserConfigurationException e) {
 			e.printStackTrace();
@@ -200,10 +208,9 @@ public class ServiceRegistry {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
 	}
-	
-	private Service parseDbElement(Element eElement,NodeList list) {
+
+	private Service parseDbElement (Element eElement,NodeList list) {
 		Service db = new Service();
 		db.setServiceType(ServiceType.Database);
 		Element dbElement = eElement;
@@ -254,15 +261,15 @@ public class ServiceRegistry {
 				System.out.println("Database not supported: "+dbType);
 				break;
 		}
-		
+
 		db.setName(dbElement.getAttribute("name"));
 		return db;
 	}
-	
+
 	private void fillContainerInfo(Document doc, Service service,int i) {
 		Element containerEl;
 		//containerEl = querySelector(doc, "//containers[@name='" + service.getName() + "']");
-		
+
 		containerEl = querySelector(doc, "//containers//deploys[@reference=\"//@elements."+i+"\"]/..");
 		if(containerEl==null)
 			return;
@@ -323,7 +330,7 @@ public class ServiceRegistry {
 		}
         return (Element) result;
 	}
-	
+
 	private NodeList querySelectorAll(Node node, String query) {
 		XPathFactory xpathfactory = XPathFactory.newInstance();
         XPath xpath = xpathfactory.newXPath();
@@ -343,5 +350,5 @@ public class ServiceRegistry {
 		}
         return (NodeList) result;
 	}
-	
+
 }
