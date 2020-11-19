@@ -127,11 +127,6 @@
             <artifactId>jackson-datatype-jsr310</artifactId>
             <version>2.9.9</version>
         </dependency>
-        <dependency>
-        <groupId>io.springfox</groupId>
-        <artifactId>springfox-swagger2</artifactId>
-        <version>2.9.2</version>
-        </dependency>
         <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
         <!-- https://mvnrepository.com/artifact/net.sf.jsqlparser/jsqlparser -->
         <dependency>
@@ -179,14 +174,18 @@
                     <from>
                         <image>docker.io/clms/polystore-base</image>
                         <auth>
+                            <!--suppress UnresolvedMavenProperty -->
                             <username>${env.REGISTRY_USERNAME}</username>
+                            <!--suppress UnresolvedMavenProperty -->
                             <password>${env.REGISTRY_PASSWORD}</password>
                         </auth>
                     </from>
                     <to>
                         <image>docker.io/clms/typhon-polystore-api</image>
                         <auth>
+                            <!--suppress UnresolvedMavenProperty -->
                             <username>${env.REGISTRY_USERNAME}</username>
+                            <!--suppress UnresolvedMavenProperty -->
                             <password>${env.REGISTRY_PASSWORD}</password>
                         </auth>
                     </to>
