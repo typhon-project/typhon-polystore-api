@@ -74,9 +74,11 @@ public class ServiceRegistry {
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			ByteArrayInputStream input = new ByteArrayInputStream(xmi.getBytes("UTF-8"));
 			Document doc = builder.parse(input);
-						
 			NodeList nList = doc.getElementsByTagName("elements");
 			list =nList;
+			Element kafkaEl = null;
+			boolean k8sFlag = false;
+
 			for (int i = 0; i < nList.getLength(); i++) {
 				Node nNode = nList.item(i);
 				if (nNode.getNodeType() != Node.ELEMENT_NODE) {
@@ -84,10 +86,11 @@ public class ServiceRegistry {
 				}
 				
 				Service service = null;
+
 				
 		        Element db = (Element) nNode;
  		        if(db.getAttribute("xsi:type").equals("typhonDL:Software") && db.getAttribute("name").equals("zookeeper")){
-					Element kafkaEl = querySelector(doc, ".//elements[@name='Kafka']");
+					kafkaEl = querySelector(doc, ".//elements[@name='Kafka']");
 					if(kafkaEl!=null){
 						Service kafka = new Service();
 						kafka.setName("kafka");
@@ -160,6 +163,13 @@ public class ServiceRegistry {
 					continue;
 				}
 
+		        if(db.getAttribute("xsi:type").equals("typhonDL:ClusterType")){
+		        	if (db.getAttribute("name") == "Kubernetes"){
+		        		System.out.println("We have a Kubernetes deployment...");
+						k8sFlag = true;
+					}
+				}
+
 		        if (db.getAttribute("xsi:type").equals("typhonDL:DB") && db != null) {
 		        	service = parseDbElement(db,list);
 
@@ -182,9 +192,23 @@ public class ServiceRegistry {
 		        	service.setStatus(ServiceStatus.OFFLINE);
 					fillContainerInfo(doc, service,i);
 					System.out.println("Parsed: " + service);
+					service.setStatus(ServiceStatus.ONLINE);
 		        	_services.add(service);
 		        }
 			}
+
+			if (kafkaEl == null && k8sFlag) {
+				Service kafka = new Service();
+				kafka.setName("kafka");
+				kafka.setServiceType(ServiceType.Queue);
+				kafka.setInternalHost("typhon-cluster-kafka-external-bootstrap.typhon");
+				kafka.setInternalPort(9094);
+				//kafka.setExternalHost();
+				//kafka.setExternalPort();
+
+				_services.add(kafka);
+			}
+
 		} catch (ParserConfigurationException e) {
 			e.printStackTrace();
 		} catch (UnsupportedEncodingException e) {

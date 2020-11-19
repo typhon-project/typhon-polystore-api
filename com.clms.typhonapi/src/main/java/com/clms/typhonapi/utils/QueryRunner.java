@@ -222,7 +222,6 @@ public class QueryRunner implements ConsumerHandler {
                         } catch (Exception e) {
                             System.out.println(e);
                         }
-
                         //System.out.println("This is the PreEvent': " + recevent.toString());
 
                         postEvent.setPreEvent(recevent);
@@ -270,106 +269,6 @@ public class QueryRunner implements ConsumerHandler {
             return result;
         }
     }
-
-    /*
-    public ResponseEntity<String> preparedUpdate(String user, HttpEntity<String> httpEntity) {
-        ResponseEntity<String> response;
-        if (!isReady()) {
-            response = new ResponseEntity<String>("Query engine is not initialized", HttpStatus.PRECONDITION_FAILED);
-            return response;
-        }
-
-        PreEvent event = new PreEvent();
-
-        if (isAnalyticsAvailiable()) {
-            event.setQueryTime(new Date());
-            event.setId(UUID.randomUUID().toString());
-            //event.setAuthenticated(true);
-            event.setQuery(httpEntity.getBody());
-            event.setDbUser(user);
-            this.preProducer.produce(PRE_TOPIC, event);
-            long startedOn = System.currentTimeMillis();
-            int timeout = 10 * 1000;
-            boolean timedOut = false;
-            int eventHash = event.getId().hashCode();
-            //System.out.println("This is the PreEvent: " + event.toString());
-            PreEvent recevent;
-            while (true) {
-                if (receivedQueries.containsKey(eventHash)) {
-                    recevent = receivedQueries.get(eventHash);
-                    //System.out.println("This is the recevent: " + recevent.toString());
-                    receivedQueries.remove(eventHash);
-                    if (recevent.isAuthenticated() == false) {
-                        response = new ResponseEntity<String>("Not authorized on Analytics Queue", HttpStatus.UNAUTHORIZED);
-                        System.out.println("The PreEvent' isn't authenticated...");
-                        return response;
-                    } else if (recevent.isAuthenticated() == true) {
-                        PostEvent postEvent = new PostEvent();
-                        try {
-                            if (recevent.isInvertedNeeded()) {
-                                if (recevent.getInvertedQuery().isEmpty() || recevent.getInvertedQuery() == null) {
-                                    System.out.println("Inverted Query was either empty or null...");
-                                }
-                                else {
-                                    //Map<String, Object> temp;
-                                    //temp = json;
-                                    //temp.put("command", recevent.getInvertedQuery());
-                                    //postEvent.setInvertedQueryResultSet(executePreparedUpdate(temp).getBody());
-                                    ResponseEntity<String> invertedQueryResponse;
-                                    String invertedQueryResponseBody;
-                                    //System.out.println("The invertedQuery is: " + recevent.getInvertedQuery());
-                                    invertedQueryResponse = executeQuery(recevent.getInvertedQuery());
-
-                                    invertedQueryResponseBody = invertedQueryResponse.getBody();
-                                    //System.out.println("The response status of the inverted query is : " + invertedQueryResponse.getStatusCode() + invertedQueryResponse.getStatusCodeValue());
-                                    //System.out.println("The response of the inverted query is : " + invertedQueryResponse);
-                                    //System.out.println("The response body of the inverted query is : " + invertedQueryResponseBody);
-                                    postEvent.setInvertedQueryResultSet(invertedQueryResponseBody);
-                                }
-                            }
-                        } catch (Exception e) {
-                            System.out.println(e);
-                        }
-                        //System.out.println("This is the PreEvent': " + recevent.toString());
-                        postEvent.setPreEvent(recevent);
-                        postEvent.setStartTime(new Date());
-                        ResponseEntity<String> result = executePreparedUpdate(recevent.getQuery());
-                        postEvent.setEndTime(new Date());
-                        if (event.isResultSetNeeded()) {
-                            postEvent.setResultSet(result.getBody());
-                        }
-                        sendPostEvent(postEvent);
-                        //System.out.println("This is the PostEvent: " + postEvent.toString());
-                        return result;
-                    }
-                }
-
-                if (System.currentTimeMillis() - startedOn > timeout) {
-                    timedOut = true;
-                    response = new ResponseEntity<String>("Auth queue timeout", HttpStatus.REQUEST_TIMEOUT);
-                    return response;
-                }
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                if (timedOut) {
-                    response = new ResponseEntity<String>("Analytics Query post timeout", HttpStatus.REQUEST_TIMEOUT);
-                    return response;
-                }
-
-            }
-        } else {
-            ResponseEntity<String> result = executePreparedUpdate(httpEntity.getBody());
-
-            //connection = new XMIPolystoreConnection(mlModel.getContents(), infos);
-            System.out.println(result.getBody());
-            return result;
-        }
-    }
-     */
-
 
     @Override
     public void onNewMesaage(Event event) {
@@ -566,37 +465,6 @@ public class QueryRunner implements ConsumerHandler {
         }
         return result;
     }
-
-    /*
-    private ResponseEntity<String> executePreparedUpdate(String query) {
-        //String uri = "http://typhonql-server:7000/preparedUpdate";
-        String uri = "http://localhost:7000/preparedUpdate";
-        RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.ACCEPT, "application/json");
-        headers.add(HttpHeaders.CONTENT_TYPE, "application/json");
-        headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
-        headers.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
-        // Newly added headers
-        headers.add("QL-XMI", ml.getContents());
-
-        String dbInfo = new Gson().toJson(infos);
-        headers.add("QL-DatabaseInfo", dbInfo);
-
-        HttpEntity<String> request = new HttpEntity<>(query, headers);
-        ResponseEntity<String> result = restTemplate.postForEntity(uri, request, String.class);
-
-        if (result.getStatusCode() == HttpStatus.OK) {
-            isReady = true;
-            System.out.println("prepared update query executed successfully");
-        } else {
-            System.out.println("error in query");
-            isReady = false;
-        }
-        return result;
-    }
-     */
 
 
     //To POST a new Entity

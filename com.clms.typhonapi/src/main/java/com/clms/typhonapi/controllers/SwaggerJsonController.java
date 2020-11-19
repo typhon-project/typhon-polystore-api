@@ -1,9 +1,7 @@
 package com.clms.typhonapi.controllers;
 
-
-import javax.servlet.http.HttpServletRequest;
-
 import com.clms.typhonapi.config.SwaggerJson;
+import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,17 +11,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.spring.web.json.Json;
-
-/**
- * {@code SwaggerJsonController} is responsible for fulfilling Swagger/SpringFox
- * related requests .
- * <p/>
- *
- * @author Indra Basak
- * @since 11/23/17
- */
-
-
 
 @RestController
 public class SwaggerJsonController {
