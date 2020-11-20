@@ -1,16 +1,15 @@
 package com.clms.typhonapi.utils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 import com.clms.typhonapi.models.*;
 import com.clms.typhonapi.storage.ModelStorage;
-import org.apache.catalina.Engine;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
-import scala.Int;
 
 import javax.xml.parsers.*;
 import javax.xml.xpath.XPath;
@@ -25,8 +24,8 @@ import java.io.*;
 public class ServiceRegistry {
 
 	private ArrayList<Service> _services;
-	@Autowired
-	private DbUtils dbHelper;
+	//@Autowired
+	//private DbUtils dbHelper;
 	@Autowired
 	private ModelStorage repo;
 	private NodeList list;
@@ -72,12 +71,13 @@ public class ServiceRegistry {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		try {
 			DocumentBuilder builder = factory.newDocumentBuilder();
-			ByteArrayInputStream input = new ByteArrayInputStream(xmi.getBytes("UTF-8"));
+			ByteArrayInputStream input = new ByteArrayInputStream(xmi.getBytes(StandardCharsets.UTF_8));
 			Document doc = builder.parse(input);
 			NodeList nList = doc.getElementsByTagName("elements");
 			list =nList;
-			Element kafkaEl = null;
+			Element kafkaEl;
 			boolean k8sFlag = false;
+			boolean zookeeperFlag = false;
 
 			for (int i = 0; i < nList.getLength(); i++) {
 				Node nNode = nList.item(i);
@@ -90,15 +90,23 @@ public class ServiceRegistry {
 				
 		        Element db = (Element) nNode;
  		        if(db.getAttribute("xsi:type").equals("typhonDL:Software") && db.getAttribute("name").equals("zookeeper")){
+					zookeeperFlag = true;
 					kafkaEl = querySelector(doc, ".//elements[@name='Kafka']");
+
 					if(kafkaEl!=null){
 						Service kafka = new Service();
 						kafka.setName("kafka");
 						kafka.setServiceType(ServiceType.Queue);
-						kafka.setExternalHost(querySelector(kafkaEl,".//parameters[@name='KAFKA_ADVERTISED_HOST_NAME']").getAttribute("value"));
+						try{
+							kafka.setExternalHost(querySelector(kafkaEl,".//parameters[@name='KAFKA_ADVERTISED_HOST_NAME']").getAttribute("value"));
+						}
+						catch (NullPointerException e){
+							System.out.println("NullPointerException in kafka value attribute...");
+						}
 						//Element portsEl = querySelector(kafkaEl,".//ports");
 						//Element target = querySelector(portsEl, ".//key_values[@name='target']");
 						Element portsEl = querySelector(kafkaEl,".//parameters[@name='KAFKA_LISTENERS']");
+						assert portsEl != null;
 						String ports = portsEl.getAttribute("value");
 						String internalPort = ports.split(",")[1].split(":")[2];
 						String externalPort = ports.split(",")[0].split(":")[2];
@@ -164,13 +172,13 @@ public class ServiceRegistry {
 				}
 
 		        if(db.getAttribute("xsi:type").equals("typhonDL:ClusterType")){
-		        	if (db.getAttribute("name") == "Kubernetes"){
+		        	if (db.getAttribute("name").equals("Kubernetes")){
 		        		System.out.println("We have a Kubernetes deployment...");
 						k8sFlag = true;
 					}
 				}
 
-		        if (db.getAttribute("xsi:type").equals("typhonDL:DB") && db != null) {
+		        if (db.getAttribute("xsi:type").equals("typhonDL:DB")) {
 		        	service = parseDbElement(db,list);
 
 					if(db.getAttribute("external")!=null && !db.getAttribute("external").isEmpty()){
@@ -197,41 +205,34 @@ public class ServiceRegistry {
 		        }
 			}
 
-			if (kafkaEl == null && k8sFlag) {
+			if (k8sFlag && !zookeeperFlag) {
 				Service kafka = new Service();
 				kafka.setName("kafka");
 				kafka.setServiceType(ServiceType.Queue);
-				kafka.setInternalHost("typhon-cluster-kafka-external-bootstrap.typhon");
-				kafka.setInternalPort(9094);
+				kafka.setInternalHost("typhon-cluster-kafka-bootstrap");
+				kafka.setInternalPort(9092);
 				//kafka.setExternalHost();
 				//kafka.setExternalPort();
 
 				_services.add(kafka);
 			}
 
-		} catch (ParserConfigurationException e) {
-			e.printStackTrace();
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		} catch (SAXException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
+		} catch (ParserConfigurationException | SAXException | IOException e) {
 			e.printStackTrace();
 		}
-
-		try {
-			//dbHelper.updateDbConnections();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+//
+//		try {
+//			//dbHelper.updateDbConnections();
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
 
 	}
 	
 	private Service parseDbElement(Element eElement,NodeList list) {
 		Service db = new Service();
 		db.setServiceType(ServiceType.Database);
-		Element dbElement = eElement;
-		String typeReference = dbElement.getAttribute("type");
+		String typeReference = eElement.getAttribute("type");
 		int typeElement = Integer.parseInt(typeReference.split("\\.")[1]);
 		//int refDbType = Integer.parseInt(typeReference.substring(typeReference.length()-1,typeReference.length()))+1;
 		Element dbTypeElement = (Element) list.item(typeElement);//"(.//elements[@type='typhonDL:DBType'])["+Integer.toString(typeElement)+"]");
@@ -243,7 +244,7 @@ public class ServiceRegistry {
 			}
 		}
 
-		NodeList creds = dbElement.getElementsByTagName("credentials");
+		NodeList creds = eElement.getElementsByTagName("credentials");
 		if(creds!=null && creds.getLength()!=0){
 			Element credsElement = (Element) creds.item(0);
 			db.setUsername(credsElement.getAttribute("username"));
@@ -279,7 +280,7 @@ public class ServiceRegistry {
 				break;
 		}
 		
-		db.setName(dbElement.getAttribute("name"));
+		db.setName(eElement.getAttribute("name"));
 		return db;
 	}
 	
@@ -290,9 +291,9 @@ public class ServiceRegistry {
 		containerEl = querySelector(doc, "//containers//deploys[@reference=\"//@elements."+i+"\"]/..");
 		if(containerEl==null)
 			return;
-			Element uiEl;
-			uiEl = querySelector(doc, "//elements[@name='" + "polystore_ui" + "']");
-			Element parametersEl = querySelector(uiEl, ".//parameters");
+			//Element uiEl;
+			//uiEl = querySelector(doc, "//elements[@name='" + "polystore_ui" + "']");
+			//Element parametersEl = querySelector(uiEl, ".//parameters");
 			//String externalhost = querySelector(parametersEl, "//parameters[@name='API_HOST']").getAttribute("value");
 			//service.setExternalHost(externalhost);
 		//new implementation
@@ -311,9 +312,10 @@ public class ServiceRegistry {
 		service.setExternalPort(Integer.parseInt(port));
 		Element portEl = querySelector(containerEl, ".//ports");
 		if (portEl != null) {
-			String portsValue = "";
+			//String portsValue = "";
 			//service.setExternalHost(externalhost);
 			Element target = querySelector(portEl, ".//key_values[@name='target']");
+			assert target != null;
 			String targetport = target.getAttribute("value");
 			int internalPort = Integer.parseInt(targetport);
 			Element published = querySelector(portEl, ".//key_values[@name='published']");
@@ -331,7 +333,7 @@ public class ServiceRegistry {
 	private Element querySelector(Node node, String query) {
 		XPathFactory xpathfactory = XPathFactory.newInstance();
         XPath xpath = xpathfactory.newXPath();
-        XPathExpression expr = null;
+        XPathExpression expr;
 		try {
 			expr = xpath.compile(query);
 		} catch (XPathExpressionException e) {
@@ -347,25 +349,25 @@ public class ServiceRegistry {
 		}
         return (Element) result;
 	}
-	
-	private NodeList querySelectorAll(Node node, String query) {
-		XPathFactory xpathfactory = XPathFactory.newInstance();
-        XPath xpath = xpathfactory.newXPath();
-        XPathExpression expr = null;
-		try {
-			expr = xpath.compile(query);
-		} catch (XPathExpressionException e) {
-			e.printStackTrace();
-			return null;
-		}
-        Object result;
-		try {
-			result = expr.evaluate(node, XPathConstants.NODESET);
-		} catch (XPathExpressionException e) {
-			e.printStackTrace();
-			return null;
-		}
-        return (NodeList) result;
-	}
+//
+//	private NodeList querySelectorAll(Node node, String query) {
+//		XPathFactory xpathfactory = XPathFactory.newInstance();
+//        XPath xpath = xpathfactory.newXPath();
+//        XPathExpression expr;
+//		try {
+//			expr = xpath.compile(query);
+//		} catch (XPathExpressionException e) {
+//			e.printStackTrace();
+//			return null;
+//		}
+//        Object result;
+//		try {
+//			result = expr.evaluate(node, XPathConstants.NODESET);
+//		} catch (XPathExpressionException e) {
+//			e.printStackTrace();
+//			return null;
+//		}
+//        return (NodeList) result;
+//	}
 	
 }
