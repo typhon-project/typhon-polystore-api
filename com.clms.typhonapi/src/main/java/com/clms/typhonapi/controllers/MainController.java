@@ -1,5 +1,4 @@
 package com.clms.typhonapi.controllers;
-
 import com.clms.typhonapi.models.Model;
 import com.clms.typhonapi.models.User;
 import com.clms.typhonapi.storage.UserStorage;
@@ -12,11 +11,8 @@ import com.clms.typhonapi.utils.UserHelper;
 
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
-import org.springframework.web.bind.annotation.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,16 +22,13 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.Future;
-
 import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.multipart.MultipartRequest;
-
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -99,8 +92,8 @@ public class MainController {
 			}
 			status = false;
 		} catch (InterruptedException e) {
-			
-		}
+            e.printStackTrace();
+        }
     	return status;
     }
     
@@ -234,47 +227,22 @@ public class MainController {
     @ResponseBody
     @Async
     public Future<ResponseEntity<String>> executeQuery(HttpEntity<String> httpEntity){
-        try {
-            return new AsyncResult<ResponseEntity<String>>(queryRunner.run("nemo", httpEntity,false));
-        } catch (UnsupportedEncodingException | URISyntaxException e) {
-            e.printStackTrace();
-            return new AsyncResult<ResponseEntity<String>>(new ResponseEntity<String>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR));
-        }
+        return new AsyncResult<>(queryRunner.run("nemo", httpEntity, false));
     }
 
     @RequestMapping(path = "/api/update", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
     @ResponseBody
     @Async
     public Future<ResponseEntity<String>> executeUpdate(HttpEntity<String> httpEntity){
-        try {
-            return new AsyncResult<ResponseEntity<String>>(queryRunner.run("nemo", httpEntity, true));
-        } catch (UnsupportedEncodingException | URISyntaxException e) {
-            return new AsyncResult<ResponseEntity<String>>(new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR));
-        }
+        return new AsyncResult<>(queryRunner.run("nemo", httpEntity, true));
     }
 
     @RequestMapping(path = "/api/ddl", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
     @ResponseBody
     @Async
     public Future<ResponseEntity<String>> executeDLL(HttpEntity<String> httpEntity){
-        try {
-            return new AsyncResult<ResponseEntity<String>>(queryRunner.executeDLL(httpEntity.getBody()));
-        } catch (URISyntaxException e) {
-            return new AsyncResult<ResponseEntity<String>>(new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR));
-        }
+        return new AsyncResult<>(queryRunner.executeDLL(httpEntity.getBody()));
     }
-    /*
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "command", value = "query", required = true, dataType = "String", paramType = "parameter"),
-            @ApiImplicitParam(name = "parameterNames", value = "names of parameters", required = true, dataType = "Array[String]", paramType = "parameter"),
-            @ApiImplicitParam(name = "boundRows", value = "values of parameters", required = true, dataType = "Array[String]", paramType = "parameter")
-    })
-    @RequestMapping(path = "/api/preparedupdate", method = RequestMethod.POST)
-    @Async
-    public Future<ResponseEntity<String>> executepreparedUpdate(HttpEntity<String> httpEntity){
-        return new AsyncResult<ResponseEntity<String>>(queryRunner.preparedUpdate("nemo",httpEntity));
-    }
-     */
 
     @RequestMapping(path = "/api/evolve", method = RequestMethod.POST)
     public ResponseEntity Evolve(@RequestBody String json){
@@ -294,7 +262,7 @@ public class MainController {
             if(json.get("type").equals("mariadb")) {
                 File filename  = dbUtils.mariaBackupProcess(json.get("host"), json.get("port"), json.get("username"), json.get("password"), json.get("db_name"), json.get("backup_name"));
                 if(filename!=null) {
-                    Map<String,String> resp = new HashMap<String, String>();
+                    Map<String,String> resp = new HashMap<>();
                     resp.put("filename",filename.getName());
                     response = ResponseEntity.status(HttpStatus.OK).body(resp);
                 	return response;
@@ -311,7 +279,6 @@ public class MainController {
     
     @RequestMapping(path = "/api/download/{fileName}", method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<byte[]> Backup(@PathVariable String fileName) throws IOException{
-        ResponseEntity response;
         HttpHeaders responseHeaders = new HttpHeaders();
 
         File f = new File("backups/" + fileName);
@@ -387,23 +354,14 @@ public class MainController {
     @ResponseBody
     @Async
     public Future<ResponseEntity<String>> executeQueryWOAnalytics(HttpEntity<String> httpEntity){
-        try {
-            return new AsyncResult<ResponseEntity<String>>(queryRunner.executeQuery(httpEntity.getBody()));
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-            return new AsyncResult<ResponseEntity<String>>(new ResponseEntity<String>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR));
-        }
+        return new AsyncResult<>(queryRunner.executeQuery(Objects.requireNonNull(httpEntity.getBody())));
     }
 
     @RequestMapping(path = "/api/noAnalytics/update", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
     @ResponseBody
     @Async
     public Future<ResponseEntity<String>> executeUpdateWOAnalytics(HttpEntity<String> httpEntity){
-        try {
-            return new AsyncResult<ResponseEntity<String>>(queryRunner.executeUpdate(httpEntity.getBody()));
-        } catch (URISyntaxException e) {
-            return new AsyncResult<ResponseEntity<String>>(new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR));
-        }
+        return new AsyncResult<>(queryRunner.executeUpdate(Objects.requireNonNull(httpEntity.getBody())));
     }
 
 }

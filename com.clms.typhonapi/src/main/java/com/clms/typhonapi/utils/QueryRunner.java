@@ -1,36 +1,26 @@
 package com.clms.typhonapi.utils;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLEncoder;
-import java.util.*;
-import java.nio.charset.StandardCharsets;
-import org.json.*;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
+import ac.york.typhon.analytics.commons.datatypes.events.Event;
+import ac.york.typhon.analytics.commons.datatypes.events.PreEvent;
+import ac.york.typhon.analytics.commons.datatypes.events.PostEvent;
 
 import com.clms.typhonapi.kafka.QueueConsumer;
 import com.clms.typhonapi.kafka.ConsumerHandler;
 import com.clms.typhonapi.kafka.QueueProducer;
 import com.clms.typhonapi.models.*;
 import com.clms.typhonapi.storage.ModelStorage;
+import com.google.gson.Gson;
 
-import ac.york.typhon.analytics.commons.datatypes.events.Event;
-import ac.york.typhon.analytics.commons.datatypes.events.PreEvent;
-import ac.york.typhon.analytics.commons.datatypes.events.PostEvent;
+import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
+import java.util.*;
 
-import javax.servlet.http.HttpServletRequest;
-
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.*;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 @Component
 public class QueryRunner implements ConsumerHandler {
@@ -41,7 +31,7 @@ public class QueryRunner implements ConsumerHandler {
     private static String POST_TOPIC = "POST";
     private static String PRE_TOPIC = "PRE";
     private static String AUTH_TOPIC = "AUTH";
-    private Map<Integer, PreEvent> receivedQueries = new HashMap<Integer, PreEvent>();
+    private Map<Integer, PreEvent> receivedQueries = new HashMap<>();
     private String kafkaConnection = "";
     private boolean isReady;
     HttpComponentsClientHttpRequestFactory clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory(
@@ -57,18 +47,18 @@ public class QueryRunner implements ConsumerHandler {
     public void init(Model mlModel) {
 
         isReady = false;
-
+        /*
         try {
             //dbHelper.updateDbConnections();
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
 
         if (mlModel == null) {
             return;
         }
         ml = mlModel;
-        if (isAnalyticsAvailiable()) {
+        if (isAnalyticsAvailable()) {
             Service analyticsQueue = serviceRegistry.getService(ServiceType.Queue);
             if (analyticsQueue != null) {
                 receivedQueries.clear();
@@ -81,7 +71,7 @@ public class QueryRunner implements ConsumerHandler {
                 System.out.println("[~~~~~~~WARNING~~~~~~~] No analytics service found in dl...");
             }
         }
-        infos = new ArrayList<DatabaseInfo>();
+        infos = new ArrayList<>();
         String dbms;
         String swattype;
         for (Service service : serviceRegistry.getDatabases()) {
@@ -152,27 +142,23 @@ public class QueryRunner implements ConsumerHandler {
         return isReady;
     }
 
-    public boolean isAnalyticsAvailiable() {
-        if (serviceRegistry.getService(ServiceType.Queue) == null) {
-            return false;
-        } else {
-            return true;
-        }
+    public boolean isAnalyticsAvailable() {
+        return serviceRegistry.getService(ServiceType.Queue) != null;
     }
 
     public void initDatabases() {
 
     }
 
-    public ResponseEntity<String> run(String user, HttpEntity<String> httpEntity, boolean isUpdate) throws UnsupportedEncodingException, URISyntaxException {
+    public ResponseEntity<String> run(String user, HttpEntity<String> httpEntity, boolean isUpdate){
         ResponseEntity<String> response;
         if (!isReady()) {
-            response = new ResponseEntity<String>("Query engine is not initialized", HttpStatus.PRECONDITION_FAILED);
+            response = new ResponseEntity<>("Query engine is not initialized", HttpStatus.PRECONDITION_FAILED);
             return response;
         }
         PreEvent event = new PreEvent();
 
-        if (isAnalyticsAvailiable()) {
+        if (isAnalyticsAvailable()) {
             event.setQueryTime(new Date());
             event.setId(UUID.randomUUID().toString());
             event.setQuery(httpEntity.getBody());
@@ -186,7 +172,7 @@ public class QueryRunner implements ConsumerHandler {
             preProducer.produce(PRE_TOPIC, event);
             long startedOn = System.currentTimeMillis();
             int timeout = 10 * 1000;
-            boolean timedOut = false;
+            //boolean timedOut = false;
             int eventHash = event.getId().hashCode();
             //System.out.println("This is the PreEvent: " + event.toString());
             //PreEvent recevent;
@@ -195,8 +181,8 @@ public class QueryRunner implements ConsumerHandler {
                     PreEvent recevent = receivedQueries.get(eventHash);
                     //System.out.println("This is the recevent: " + recevent.toString());
                     receivedQueries.remove(eventHash);
-                    if (recevent.isAuthenticated() == false) {
-                        response = new ResponseEntity<String>("Not authorized on Analytics Queue", HttpStatus.UNAUTHORIZED);
+                    if (!recevent.isAuthenticated()) {
+                        response = new ResponseEntity<>("Not authorized on Analytics Queue", HttpStatus.UNAUTHORIZED);
                         System.out.println("The PreEvent' isn't authenticated...");
                         return response;
                     } else if (recevent.isAuthenticated()) {
@@ -220,13 +206,13 @@ public class QueryRunner implements ConsumerHandler {
                                 }
                             }
                         } catch (Exception e) {
-                            System.out.println(e);
+                            e.printStackTrace();
                         }
                         //System.out.println("This is the PreEvent': " + recevent.toString());
 
                         postEvent.setPreEvent(recevent);
                         postEvent.setStartTime(new Date());
-                        ResponseEntity<String> result = null;
+                        ResponseEntity<String> result;
                         if (isUpdate) {
                                 result = executeUpdate(recevent.getQuery());
 
@@ -248,8 +234,8 @@ public class QueryRunner implements ConsumerHandler {
                 }
 
                 if (System.currentTimeMillis() - startedOn > timeout) {
-                    timedOut = true;
-                    response = new ResponseEntity<String>("Auth queue timeout", HttpStatus.REQUEST_TIMEOUT);
+                    //timedOut = true;
+                    response = new ResponseEntity<>("Auth queue timeout", HttpStatus.REQUEST_TIMEOUT);
                     return response;
                 }
                 try {
@@ -261,17 +247,17 @@ public class QueryRunner implements ConsumerHandler {
         } else {
             ResponseEntity<String> result;
             if (isUpdate) {
-                result = executeUpdate(httpEntity.getBody());
+                result = executeUpdate(Objects.requireNonNull(httpEntity.getBody()));
 
             } else {
-                result = executeQuery(httpEntity.getBody());
+                result = executeQuery(Objects.requireNonNull(httpEntity.getBody()));
             }
             return result;
         }
     }
 
     @Override
-    public void onNewMesaage(Event event) {
+    public void onNewMessage(Event event) {
         receivedQueries.put(event.getId().hashCode(), (PreEvent) event);
     }
 
@@ -290,7 +276,7 @@ public class QueryRunner implements ConsumerHandler {
             //String uri = "http://localhost:7000/reset";
 
             RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
-            Map<String, Object> vars = new HashMap<String, Object>();
+            Map<String, Object> vars = new HashMap<>();
 
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_ENCODING, "gzip");
@@ -320,7 +306,7 @@ public class QueryRunner implements ConsumerHandler {
         }
     }
 
-    public ResponseEntity<String> executeQuery(String query) throws UnsupportedEncodingException {
+    public ResponseEntity<String> executeQuery(String query){
         String uri = "http://typhonql-server:7000/query";
         //String uri = "http://localhost:7000/query";
 
@@ -376,7 +362,7 @@ public class QueryRunner implements ConsumerHandler {
         }
     }
 
-    public ResponseEntity<String> executeUpdate(String query) throws URISyntaxException {
+    public ResponseEntity<String> executeUpdate(String query) {
         String uri = "http://typhonql-server:7000/update";
         //String uri = "http://localhost:7000/update";
 
@@ -434,7 +420,7 @@ public class QueryRunner implements ConsumerHandler {
         }
     }
 
-    public ResponseEntity<String> executeDLL(String query) throws URISyntaxException{
+    public ResponseEntity<String> executeDLL(String query){
         String uri = "http://typhonql-server:7000/ddl";
         //String uri = "http://localhost:7000/ddl";
 

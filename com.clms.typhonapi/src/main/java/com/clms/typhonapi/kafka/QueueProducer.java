@@ -28,15 +28,12 @@ public class QueueProducer {
     
     public void produce(String topic, Event message) {
     	ProducerRecord<Long, Event> record 
-			= new ProducerRecord<Long, Event>(topic, message);
+			= new ProducerRecord<>(topic, message);
 		try {
 			producer.send(record).get();
-		} catch (ExecutionException e) {
+		} catch (ExecutionException | InterruptedException e) {
 			System.out.println("Error in sending record");
 			System.out.println(e);
-		} catch (InterruptedException e) {
-	          System.out.println("Error in sending record");
-	          System.out.println(e);
 		}
-    }
+	}
 }

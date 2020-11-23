@@ -38,7 +38,7 @@ public class QueueConsumer implements Runnable {
 
           consumerRecords.forEach(record -> {
               System.out.println("Got result from AUTH!!! " + record.value().getId());
-              handler.onNewMesaage(record.value());
+              handler.onNewMessage(record.value());
            });
 
            consumer.commitAsync();

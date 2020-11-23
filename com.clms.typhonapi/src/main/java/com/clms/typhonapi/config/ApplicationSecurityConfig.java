@@ -32,9 +32,7 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder authentication)
-            throws Exception
-    {
+    public void configureGlobal(AuthenticationManagerBuilder authentication) {
     	authentication.authenticationProvider(authProvider);
     	
         /*authentication.inMemoryAuthentication()

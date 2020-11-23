@@ -25,22 +25,19 @@ public class DbUtils {
 	@Autowired
 	private ServiceRegistry serviceRegistry;
 	
-	private Map<String, Object> dbConnections = new HashMap<String, Object>();
+	private Map<String, Object> dbConnections = new HashMap<>();
 	
     public File mariaBackupProcess(String host, String port, String user, String password, String database_name, String backup_name){
         ProcessBuilder pb = new ProcessBuilder();
         File backupFile;
         File f = new File("/backups/");
-        if(f.exists() && f.isDirectory()) {
-             backupFile = new File("/backups/"+backup_name+"maria_"+database_name+"_"+DateTime.now().toString("ddMMyyyy")+".sql");
-        }
-        else{
-            boolean direcot = new File("/backups/").mkdir();
-            backupFile=new File("/backups/"+backup_name+"maria_"+database_name+"_"+DateTime.now().toString("ddMMyyyy")+".sql");
-        }
+		if (!f.exists() || !f.isDirectory()) {
+			boolean direcot = new File("/backups/").mkdir();
+		}
+		backupFile = new File("/backups/"+backup_name+"maria_"+database_name+"_"+DateTime.now().toString("ddMMyyyy")+".sql");
 
 
-        pb.command("mysqldump","--host="+host,"-p "+port,"--user="+user,"--password="+password,database_name);
+		pb.command("mysqldump","--host="+host,"-p "+port,"--user="+user,"--password="+password,database_name);
         pb.directory(new File(System.getProperty("user.home")));
         pb.redirectError(ProcessBuilder.Redirect.INHERIT);
         pb.redirectOutput(ProcessBuilder.Redirect.to(backupFile));
@@ -126,8 +123,10 @@ public class DbUtils {
 				 con = getMysqlDBConnection(db);
 				 break;
 			 case cassandra:
+			 	 System.out.println("Not implemented getConnection for Cassandra.");
 			 	 break;
 			 case neo4j:
+				 System.out.println("Not implemented getConnection for neo4j.");
 				 break;
 			 default:
 				 throw new Exception("Unhandled database type: " + db.getDbType());
@@ -174,7 +173,7 @@ public class DbUtils {
 	}
 	
 	private Connection getMariaDBConnection(Service db) {
-		Connection conn = null;
+		Connection conn;
 		
 		System.out.println("Trying to connect to: " + db);
 		
@@ -193,7 +192,7 @@ public class DbUtils {
 	}
 
 	private Connection getMysqlDBConnection(Service db) {
-		Connection conn = null;
+		Connection conn;
 
 		System.out.println("Trying to connect to: " + db);
 

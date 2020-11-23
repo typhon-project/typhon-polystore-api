@@ -1,8 +1,6 @@
 package com.clms.typhonapi.models;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.apache.catalina.Engine;
-
 
 @JsonSerialize
 public class Service {

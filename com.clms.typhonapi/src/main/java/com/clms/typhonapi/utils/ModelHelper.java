@@ -1,15 +1,17 @@
 package com.clms.typhonapi.utils;
 
+import com.clms.typhonapi.models.Model;
+import com.clms.typhonapi.storage.ModelStorage;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -17,9 +19,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.xml.sax.SAXException;
-
-import com.clms.typhonapi.models.Model;
-import com.clms.typhonapi.storage.ModelStorage;
 
 @Component
 public class ModelHelper {
@@ -81,12 +80,7 @@ public class ModelHelper {
 		}
 
 		repo.insert(m);
-		if(m.getType()=="DL"){
-			return true;
-		}
-		else{
-			return false;
-		}
+		return m.getType().equals("DL");
 	}
 	
 	public Model getModel(String type) {
@@ -94,7 +88,7 @@ public class ModelHelper {
 	}
 	
 	public Model getModel(String type, int version) {
-		Optional<Model> model = null;
+		Optional<Model> model;
 		
 		if (version < 0) {
 			model = repo.findAll()
@@ -108,16 +102,16 @@ public class ModelHelper {
 					.filter(m -> m.getType().equalsIgnoreCase(type) && m.getVersion() == version)
 					.findFirst();
 		}
-		
-		if (!model.isPresent()) {
+
+		if (model.isEmpty()) {
 			return null;
 		}
-		
+
 		return model.get();
 	}
 	
 	private ArrayList<Model> getModels(String type) {
-		return new ArrayList<Model>(repo.findAll()
+		return new ArrayList<>(repo.findAll()
 				.stream()
 				.filter(m -> m.getType().equalsIgnoreCase(type))
 				.sorted(Comparator.comparing(Model::getVersion).reversed())
@@ -128,16 +122,14 @@ public class ModelHelper {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		try {
 			DocumentBuilder builder = factory.newDocumentBuilder();
-			ByteArrayInputStream input = new ByteArrayInputStream(xmi.getBytes("UTF-8"));
+			ByteArrayInputStream input = new ByteArrayInputStream(xmi.getBytes(StandardCharsets.UTF_8));
 			builder.parse(input);
 						
 			return true;
-		} catch (ParserConfigurationException e) {
-		} catch (UnsupportedEncodingException e) {
-		} catch (SAXException e) {
-		} catch (IOException e) {
+		} catch (ParserConfigurationException | SAXException | IOException e) {
+			e.printStackTrace();
 		}
-		
+
 		return false;
 	}
 }

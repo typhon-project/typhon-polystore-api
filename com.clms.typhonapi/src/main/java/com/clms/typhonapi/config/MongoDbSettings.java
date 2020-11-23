@@ -11,8 +11,7 @@ public class MongoDbSettings {
 
     @Bean
     public MongoClientOptions mongoOptions() {
-        MongoClientOptions options=MongoClientOptions.builder().connectTimeout(20000).socketTimeout(20000).build();
-        return  options;
+        return MongoClientOptions.builder().connectTimeout(20000).socketTimeout(20000).build();
     }
 
 }

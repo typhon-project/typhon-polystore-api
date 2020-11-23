@@ -1,5 +1,7 @@
 package com.clms.typhonapi.utils;
 
+import com.clms.typhonapi.models.User;
+
 import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,9 +11,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
-
-import com.clms.typhonapi.models.User;
-import com.clms.typhonapi.storage.UserStorage;
 
 @Component
 public class CustomAuthenticationProvider implements AuthenticationProvider {

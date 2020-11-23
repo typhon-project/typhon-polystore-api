@@ -13,7 +13,7 @@ public class UserHelper {
     private UserStorage userService;
 	
 	public void createInitialUser() {
-		if (userService.findAll().isEmpty() == false) {
+		if (!userService.findAll().isEmpty()) {
 			return;
 		}
 		
