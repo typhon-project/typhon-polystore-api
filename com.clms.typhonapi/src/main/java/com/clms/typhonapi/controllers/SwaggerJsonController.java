@@ -14,16 +14,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.spring.web.json.Json;
 
-/**
- * {@code SwaggerJsonController} is responsible for fulfilling Swagger/SpringFox
- * related requests .
- * <p/>
- *
- * @author Indra Basak
- * @since 11/23/17
- */
-
-
 
 @RestController
 public class SwaggerJsonController {

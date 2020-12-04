@@ -1,5 +1,6 @@
 package com.clms.typhonapi.kafka;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Properties;
 
@@ -33,7 +34,7 @@ public class QueueConsumer implements Runnable {
     @Override
     public void run() {
         while (true) {
-          ConsumerRecords<Long, Event> consumerRecords = consumer.poll(1000);
+          ConsumerRecords<Long, Event> consumerRecords = consumer.poll(Duration.ofMillis(1000));
 
           consumerRecords.forEach(record -> {
               System.out.println("Got result from AUTH!!! " + record.value().getId());

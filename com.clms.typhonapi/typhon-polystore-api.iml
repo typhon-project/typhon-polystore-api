@@ -134,6 +134,7 @@
     <orderEntry type="library" name="Maven: org.apache.flink:flink-connector-kafka-base_2.12:1.10.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.flink:flink-streaming-java_2.12:1.10.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.flink:flink-runtime_2.12:1.10.0" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.flink:flink-java:1.10.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.flink:flink-queryable-state-client-java:1.10.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.flink:flink-hadoop-fs:1.10.0" level="project" />
     <orderEntry type="library" name="Maven: commons-io:commons-io:2.4" level="project" />
@@ -163,26 +164,8 @@
     <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpcore:4.4.11" level="project" />
     <orderEntry type="library" name="Maven: commons-codec:commons-codec:1.11" level="project" />
     <orderEntry type="library" name="Maven: typhon:ac.york.typhon.analytics:0.0.1-SNAPSHOT" level="project" />
-    <orderEntry type="library" name="Maven: com.github.jsqlparser:jsqlparser:1.2" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.flink:flink-java:1.10.0" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.flink:flink-streaming-java_2.11:1.10.0" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.flink:flink-runtime_2.11:1.10.0" level="project" />
-    <orderEntry type="library" name="Maven: com.typesafe.akka:akka-actor_2.11:2.5.21" level="project" />
-    <orderEntry type="library" name="Maven: org.scala-lang.modules:scala-java8-compat_2.11:0.7.0" level="project" />
-    <orderEntry type="library" name="Maven: com.typesafe.akka:akka-stream_2.11:2.5.21" level="project" />
-    <orderEntry type="library" name="Maven: com.typesafe:ssl-config-core_2.11:0.3.7" level="project" />
-    <orderEntry type="library" name="Maven: org.scala-lang.modules:scala-parser-combinators_2.11:1.1.1" level="project" />
-    <orderEntry type="library" name="Maven: com.typesafe.akka:akka-protobuf_2.11:2.5.21" level="project" />
-    <orderEntry type="library" name="Maven: com.typesafe.akka:akka-slf4j_2.11:2.5.21" level="project" />
-    <orderEntry type="library" name="Maven: org.clapper:grizzled-slf4j_2.11:1.3.2" level="project" />
-    <orderEntry type="library" name="Maven: com.github.scopt:scopt_2.11:3.5.0" level="project" />
-    <orderEntry type="library" name="Maven: com.twitter:chill_2.11:0.7.6" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.flink:flink-clients_2.11:1.10.0" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.flink:flink-optimizer_2.11:1.10.0" level="project" />
     <orderEntry type="library" name="Maven: engineering.swat.typhon:typhonql-ast:0.1.0-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: org.rascalmpl:rascal:0.18.2" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.flink:flink-connector-kafka_2.11:1.10.0" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.flink:flink-connector-kafka-base_2.11:1.10.0" level="project" />
     <orderEntry type="library" name="Maven: org.glassfish.jersey.core:jersey-client:2.27" level="project" />
     <orderEntry type="library" name="Maven: javax.ws.rs:javax.ws.rs-api:2.1" level="project" />
     <orderEntry type="library" name="Maven: org.glassfish.jersey.core:jersey-common:2.27" level="project" />
