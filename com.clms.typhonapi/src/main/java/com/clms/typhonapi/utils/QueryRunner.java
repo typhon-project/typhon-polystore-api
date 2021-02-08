@@ -16,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import com.clms.typhonapi.kafka.QueueConsumer;
@@ -436,44 +438,49 @@ public class QueryRunner implements ConsumerHandler {
         String dbInfo = new Gson().toJson(infos);
         headers.add("QL-DatabaseInfo", dbInfo);
 
-        if(query.trim().charAt(0) == '{'){
-            HttpEntity<String> requestOne = new HttpEntity<>(query, headers);
-            //System.out.println("Created the new HttpEntity and about to do the request... ");
-            //System.out.println("The request's body is: " + requestOne.getBody());
-            //System.out.println("The request's headers are: " + requestOne.getHeaders());
-            ResponseEntity<String> result = restTemplate.postForEntity(uri, requestOne, String.class);
+        try {
+            if(query.trim().charAt(0) == '{'){
+                HttpEntity<String> requestOne = new HttpEntity<>(query, headers);
+                //System.out.println("Created the new HttpEntity and about to do the request... ");
+                //System.out.println("The request's body is: " + requestOne.getBody());
+                //System.out.println("The request's headers are: " + requestOne.getHeaders());
+                ResponseEntity<String> result = restTemplate.postForEntity(uri, requestOne, String.class);
 
-            System.out.println(result.getBody());
-            System.out.println(result.getHeaders().get("ql-wall-time-ms"));
+                System.out.println(result.getBody());
+                System.out.println(result.getHeaders().get("ql-wall-time-ms"));
 
-            if (result.getStatusCode() == HttpStatus.OK) {
-                isReady = true;
-                System.out.println("Query executed successfully");
+                if (result.getStatusCode() == HttpStatus.OK) {
+                    isReady = true;
+                    System.out.println("Query executed successfully");
 
-            } else {
-                System.out.println("error in query");
-                isReady = false;
+                } else {
+                    System.out.println("error in query");
+                    isReady = false;
+                }
+                return result;
             }
-            return result;
+            else {
+                //System.out.println("Yes, you placed an invalid JSON query...");
+                Map<String, Object> mappedQuery = new HashMap<>();
+                mappedQuery.put("query",query);
+                HttpEntity<Map<String, Object>> requestOther = new HttpEntity<>(mappedQuery, headers);
+
+                ResponseEntity<String> result = restTemplate.postForEntity(uri, requestOther, String.class);
+                System.out.println(result.getBody());
+                System.out.println(result.getHeaders().get("ql-wall-time-ms"));
+
+                if (result.getStatusCode() == HttpStatus.OK) {
+                    isReady = true;
+                    System.out.println("Query executed successfully");
+                } else {
+                    System.out.println("error in query");
+                    isReady = false;
+                }
+                return result;
+            }
         }
-        else {
-            //System.out.println("Yes, you placed an invalid JSON query...");
-            Map<String, Object> mappedQuery = new HashMap<>();
-            mappedQuery.put("query",query);
-            HttpEntity<Map<String, Object>> requestOther = new HttpEntity<>(mappedQuery, headers);
-
-            ResponseEntity<String> result = restTemplate.postForEntity(uri, requestOther, String.class);
-            System.out.println(result.getBody());
-            System.out.println(result.getHeaders().get("ql-wall-time-ms"));
-
-            if (result.getStatusCode() == HttpStatus.OK) {
-                isReady = true;
-                System.out.println("Query executed successfully");
-            } else {
-                System.out.println("error in query");
-                isReady = false;
-            }
-            return result;
+        catch (HttpServerErrorException rce) {
+            return new ResponseEntity<>(rce.getResponseBodyAsString(), rce.getResponseHeaders(), rce.getStatusCode());
         }
     }
 
@@ -492,46 +499,51 @@ public class QueryRunner implements ConsumerHandler {
         String dbInfo = new Gson().toJson(infos);
         headers.add("QL-DatabaseInfo", dbInfo);
 
-        if(query.trim().charAt(0) == '{'){
-            HttpEntity<String> requestOne = new HttpEntity<>(query, headers);
-            //System.out.println("Created the new HttpEntity and about to do the request... ");
-            //System.out.println("The request's body is: " + requestOne.getBody());
-            //System.out.println("The request's headers are: " + requestOne.getHeaders());
-            ResponseEntity<String> result = restTemplate.postForEntity(uri, requestOne, String.class);
+        try {
+            if(query.trim().charAt(0) == '{'){
+                HttpEntity<String> requestOne = new HttpEntity<>(query, headers);
+                //System.out.println("Created the new HttpEntity and about to do the request... ");
+                //System.out.println("The request's body is: " + requestOne.getBody());
+                //System.out.println("The request's headers are: " + requestOne.getHeaders());
+                ResponseEntity<String> result = restTemplate.postForEntity(uri, requestOne, String.class);
 
-            System.out.println(result.getBody());
-            System.out.println(result.getHeaders().get("ql-wall-time-ms"));
+                System.out.println(result.getBody());
+                System.out.println(result.getHeaders().get("ql-wall-time-ms"));
 
-            if (result.getStatusCode() == HttpStatus.OK) {
-                isReady = true;
-                System.out.println("Query executed successfully");
+                if (result.getStatusCode() == HttpStatus.OK) {
+                    isReady = true;
+                    System.out.println("Query executed successfully");
 
-            } else {
-                System.out.println("error in query");
-                isReady = false;
+                } else {
+                    System.out.println("error in query");
+                    isReady = false;
+                }
+                return result;
             }
-            return result;
+            else{
+                //System.out.println("Yes, you placed an invalid JSON query...");
+                Map<String, Object> mappedQuery = new HashMap<>();
+                mappedQuery.put("query",query);
+                HttpEntity<Map<String, Object>> requestOther = new HttpEntity<>(mappedQuery, headers);
+
+                ResponseEntity<String> result = restTemplate.postForEntity(uri, requestOther, String.class);
+                System.out.println(result.getBody());
+                System.out.println(result.getHeaders().get("ql-wall-time-ms"));
+
+                if (result.getStatusCode() == HttpStatus.OK) {
+                    isReady = true;
+                    System.out.println("Query executed successfully");
+
+                } else {
+                    System.out.println("error in query");
+                    isReady = false;
+
+                }
+                return result;
+            }
         }
-        else{
-            //System.out.println("Yes, you placed an invalid JSON query...");
-            Map<String, Object> mappedQuery = new HashMap<>();
-            mappedQuery.put("query",query);
-            HttpEntity<Map<String, Object>> requestOther = new HttpEntity<>(mappedQuery, headers);
-
-            ResponseEntity<String> result = restTemplate.postForEntity(uri, requestOther, String.class);
-            System.out.println(result.getBody());
-            System.out.println(result.getHeaders().get("ql-wall-time-ms"));
-
-            if (result.getStatusCode() == HttpStatus.OK) {
-                isReady = true;
-                System.out.println("Query executed successfully");
-
-            } else {
-                System.out.println("error in query");
-                isReady = false;
-
-            }
-            return result;
+        catch (HttpServerErrorException rce) {
+            return new ResponseEntity<>(rce.getResponseBodyAsString(), rce.getResponseHeaders(), rce.getStatusCode());
         }
     }
 
